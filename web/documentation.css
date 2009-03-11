@@ -1,0 +1,59 @@
+body {
+	font-family: Arial, Helvetica, sans-serif;
+	margin: 20px;
+}
+
+H1, H2, H3, H4, H5, H6 {
+    color: #026789;
+    margin-top: 18px;
+    margin-bottom: 4px;
+}
+
+a { color: maroon; }
+
+pre {
+	font-family: monospace,fixed;
+	border: 1px solid cornflowerblue;
+	background-color: #F8F8F8;
+	font-size: 80%;
+	margin-left: 50px;
+	margin-right: 50px;
+	padding: 5px;
+}
+
+code, dt {
+	font-family: monospace,fixed;
+	color: #026789;
+	font-weight: bold;
+	font-size: 80%;
+}
+
+p {
+	margin-top: 5px;
+	margin-bottom: 5px;
+	padding: 0;
+}
+
+ul {
+	margin: 0px;
+	list-style-type: square;
+}
+
+li {
+}
+
+ol#toc {
+	border: 1px solid black;
+	margin: 0;
+	padding: 20px 0 20px 0;
+}
+
+#toc ol, #toc li {
+	list-style-type: none;
+	margin: 3px 0 3px 20px;
+}
+
+
+blockquote {
+	font-size: smaller;
+}

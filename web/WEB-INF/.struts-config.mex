@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlowViewLayout Version="1.2">
+  <StrutsActivity path="/configuration.do" location="950,50" dimension="278,88" />
+  <StrutsActivity path="/oai-request.do" location="350,150" dimension="350,88" />
+  <StrutsActivity path="/form/configuration.jsp" location="50,150" dimension="140,49" />
+  <StrutsActivity path="/form/ListIdentifiers.jsp" location="950,250" dimension="142,49" />
+  <StrutsActivity path="/form/Identify.jsp" location="50,350" dimension="115,49" />
+  <StrutsActivity path="/form/ListRecords.jsp" location="650,350" dimension="132,49" />
+  <StrutsActivity path="/form/ListSets.jsp" location="350,350" dimension="114,49" />
+  <StrutsActivity path="/form/ListMetadataFormats.jsp" location="950,350" dimension="178,49" />
+  <StrutsActivity path="/form/GetRecord.jsp" location="50,450" dimension="128,49" />
+  <StrutsActivity path="/form/oaiRequest.jsp" location="50,250" dimension="131,49" />
+  <StrutsActivity path="/form/congiguration.jsp" location="480,45" dimension="142,49" />
+  <StrutsTransition id="/oai-request.do,ListRecords,/form/ListRecords.jsp,1" routingType="0">
+    <AutomaticBendpoints>
+      <AbsolutePoint location="665,238" />
+      <AbsolutePoint location="665,350" />
+    </AutomaticBendpoints>
+  </StrutsTransition>
+  <StrutsTransition id="/form/oaiRequest.jsp,null,/oai-request.do,2" routingType="0">
+    <AutomaticBendpoints>
+      <AbsolutePoint location="181,274" />
+      <AbsolutePoint location="495,274" />
+      <AbsolutePoint location="495,238" />
+    </AutomaticBendpoints>
+  </StrutsTransition>
+  <StrutsTransition id="/oai-request.do,GetRecord,/form/GetRecord.jsp,1" routingType="0">
+    <AutomaticBendpoints>
+      <AbsolutePoint location="525,238" />
+      <AbsolutePoint location="525,474" />
+      <AbsolutePoint location="178,474" />
+    </AutomaticBendpoints>
+  </StrutsTransition>
+  <StrutsTransition id="/oai-request.do,ListIdentifiers,/form/ListIdentifiers.jsp,1" routingType="0">
+    <AutomaticBendpoints>
+      <AbsolutePoint location="700,224" />
+      <AbsolutePoint location="1021,224" />
+      <AbsolutePoint location="1021,250" />
+    </AutomaticBendpoints>
+  </StrutsTransition>
+  <StrutsTransition id="/oai-request.do,Identify,/form/Identify.jsp,1" routingType="0">
+    <AutomaticBendpoints>
+      <AbsolutePoint location="350,184" />
+      <AbsolutePoint location="265,184" />
+      <AbsolutePoint location="265,374" />
+      <AbsolutePoint location="165,374" />
+    </AutomaticBendpoints>
+  </StrutsTransition>
+  <StrutsTransition id="/form/configuration.jsp,null,/configuration.do,2" routingType="0">
+    <AutomaticBendpoints>
+      <AbsolutePoint location="120,150" />
+      <AbsolutePoint location="120,109" />
+      <AbsolutePoint location="950,109" />
+    </AutomaticBendpoints>
+  </StrutsTransition>
+  <StrutsTransition id="/oai-request.do,ListMetadataFormats,/form/ListMetadataFormats.jsp,1" routingType="0">
+    <AutomaticBendpoints>
+      <AbsolutePoint location="700,194" />
+      <AbsolutePoint location="1107,194" />
+      <AbsolutePoint location="1107,350" />
+    </AutomaticBendpoints>
+  </StrutsTransition>
+  <StrutsTransition id="/oai-request.do,ListSets,/form/ListSets.jsp,1" routingType="0">
+    <AutomaticBendpoints>
+      <AbsolutePoint location="449,238" />
+      <AbsolutePoint location="449,350" />
+    </AutomaticBendpoints>
+  </StrutsTransition>
+</FlowViewLayout>
+
