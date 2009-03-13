@@ -441,8 +441,9 @@ public class Converter {
 						.replaceAll(WEIRD_CHARACTERS, "0")));
 
                  libconvertlog.info("[LIB] OAI Toolkit corrected the MARC record " + 
-                         currentMarcFile.getName() + 
-                         "having the bad character in the Leader field at " + 
+                         currentMarcFile.getName() +
+                         "#" + record.getControlNumber() +
+                         " having the bad character in the Leader field at " +
                          invalidCharacter + "." + 
                          leaderReplaced);       
                  /*logger.warn( "[LIB] The MARC record " +
@@ -467,8 +468,9 @@ public class Converter {
                             record.addVariableField(fd);
                      
                      libconvertlog.info("[LIB] OAI Toolkit corrected the MARC record " + 
-                         currentMarcFile.getName() + 
-                         "having the bad character in the Non-Leader field at" + 
+                         currentMarcFile.getName() +
+                         "#" + record.getControlNumber() +
+                         " having the bad character in the Non-Leader field at" +
                          invalidCharacter + "." + 
                          NonleaderReplaced);    
                      /*logger.warn( "[LIB] The MARC record " +
@@ -522,8 +524,9 @@ public class Converter {
                             record.addVariableField(fd);
                     
                          libconvertlog.info("[LIB] OAI Toolkit corrected the MARC record " + 
-                         currentMarcFile.getName() + 
-                         "having the bad character in the Non-Leader field at" + 
+                         currentMarcFile.getName() +
+                         "#" + record.getControlNumber() +
+                         " having the bad character in the Non-Leader field at" +
                          invalidCharacter + "." + 
                          NonleaderReplaced);  
                          /*logger.warn( "[LIB] The MARC record " +
