@@ -1,9 +1,9 @@
 /**
   * Copyright (c) 2009 University of Rochester
   *
-  * This program is free software; you can redistribute it and/or modify it under the terms of the MIT/X11 license. The text of the  
+  * This program is free software; you can redistribute it and/or modify it under the terms of the MIT/X11 license. The text of the
   * license can be found at http://www.opensource.org/licenses/mit-license.php and copy of the license can be found on the project
-  * website http://www.extensiblecatalog.org/. 
+  * website http://www.extensiblecatalog.org/.
   *
   */
 
@@ -51,25 +51,25 @@ import info.extensiblecatalog.OAIToolkit.utils.TextUtil;
 
 /**
  * Convert MARC records to MARCXML
- *  
+ *
  * @author Király Péter pkiraly@tesuji.eu
  */
 public class Converter {
-        
+
         private static String library_convertlog = "librarian_convert";
         private static String programmer_log = "programmer";
 
 	//private static final Logger logger = Logging.getLogger();
         private static final Logger libconvertlog = Logging.getLogger(library_convertlog);
         private static final Logger prglog = Logging.getLogger(programmer_log);
-       
+
 	/** The range of non allowable characters in XML 1.0 (ASCII Control Characters) */
-	private static final String WEIRD_CHARACTERS = 
+	private static final String WEIRD_CHARACTERS =
 		"[\u0001-\u0008\u000b-\u000c\u000e-\u001f]";
 
-	/** Regex Pattern for the non allowable characters in XML 1.0 (ASCII 
+	/** Regex Pattern for the non allowable characters in XML 1.0 (ASCII
 	 * Control Characters) */
-	private static final Pattern WEIRD_CHARACTERS_PATTERN = 
+	private static final Pattern WEIRD_CHARACTERS_PATTERN =
 		Pattern.compile(WEIRD_CHARACTERS);
 
 	/** encoding of the MARC file */
@@ -82,55 +82,55 @@ public class Converter {
 
 	/** perform Unicode normalization */
 	private boolean normalize = true;
-	
+
 	/** How many records can an xml file contain? */
 	private int splitSize = 10000;
-	
-	/** The directory that the toolkit moves records into 
+
+	/** The directory that the toolkit moves records into
 	 * when there is a processing error for that file. */
 	private String errorDir;
-	
+
 	/** The file, where to the application writes out bad records */
 	private File badRecordFile;
-	
+
 	private boolean doIndentXml = false;
-	
+
 	/** create XML 1.1 */
 	private boolean createXml11 = false;
 
-	/** Translate the Bad Characters in the Leader (1-8, B-C, E-1F hexadecimal codes) 
+	/** Translate the Bad Characters in the Leader (1-8, B-C, E-1F hexadecimal codes)
 	 * to zeros */
 	private boolean translateLeaderBadCharsToZero = false;
-        
-        /** Translate the Bad Characters in the (Non-Leader)Control and Data Fields (1-8, B-C, E-1F hexadecimal codes) 
+
+        /** Translate the Bad Characters in the (Non-Leader)Control and Data Fields (1-8, B-C, E-1F hexadecimal codes)
 	 * to spaces */
 	private boolean translateNonleaderBadCharsToSpaces = false;
-        
+
 	private String controlNumberOfLastReadRecord = null;
-	
-	/** 
+
+	/**
 	 * The {@link Modifier} which apply XSLT transformation over MARCXML, to
-	 * modify records 
+	 * modify records
 	 */
 	private Modifier modifier = null;
-	
+
 	/**
 	 * Record importer ({@link IImporter}), which import MARCXML to
-	 * database. This is used here only if the <code>-load</code> and 
+	 * database. This is used here only if the <code>-load</code> and
 	 * <code>-production</code> flags are turned on.
 	 */
 	private IImporter recordImporter = null;
-	
+
 	private LoadStatistics loadStatistics = null;
-	
+
 	private boolean ignoreRepositoryCode = false;
-	
+
 	private String defaultRepositoryCode = null;
-	
+
 	private MarcWriter badRecordWriter = null;
-	
+
 	private File currentMarcFile = null;
-	
+
 	public Converter() {
 	}
 
@@ -140,7 +140,7 @@ public class Converter {
 
 	/**
 	 * Convert MARC format to XML
-	 * 
+	 *
 	 * @param marcFile
 	 *            The MARC file
 	 * @param xmlFile
@@ -148,13 +148,13 @@ public class Converter {
 	 * @return The number of records converted
 	 * @throws Exception
 	 */
-	public ConversionStatistics convert(File marcFile, File xmlFile) 
+	public ConversionStatistics convert(File marcFile, File xmlFile)
 			throws Exception {
-		
+
 		ConversionStatistics statistics = new ConversionStatistics();
 		currentMarcFile = marcFile;
 		InputStream inputStream = null;
-		
+
 		try {
 			inputStream = new FileInputStream(marcFile);
 		} catch (FileNotFoundException e) {
@@ -184,16 +184,16 @@ public class Converter {
 
 		/** do the record have invalid characters? */
 		boolean hasInvalidChars;
-		
+
 		/** the index of an invalid character */
 		//int invalidCharIndex;
-		
+
 		/** the weird character matcher */
 		Matcher matcher;
-		
+
 		/** record counter */
 		int counter = 0;
-		
+
 		/** the previous percent value */
 		int prevPercent = 0;
 
@@ -201,14 +201,16 @@ public class Converter {
 		int percent;
 		try {
 			while (reader.hasNext()) {
-				
+
 				try {
 					record = reader.next();
 				} catch (MarcException me) {
-					libconvertlog.error("[LIB] " + ExceptionPrinter.getStack(me) 
-							+ " The control number of the last successfully "
-							+ "read record is '" 
-							+ controlNumberOfLastReadRecord + "'\n");
+					libconvertlog.error("[LIB] " + ExceptionPrinter.getStack(me) + "\n");
+							//+ " \n \t The control number of the last successfully "
+							//+ "read record is '"
+							//+ controlNumberOfLastReadRecord + "'\n");
+                    //libconvertlog.error("[LIB] " + "The control number of this record is" + record.getControlNumber() + "\n");
+                    //libconvertlog.error("[LIB] " + "The record buffer is" + record.toString() + "\n");
                                         statistics.addInvalid();
 					continue;
 				} catch (Exception e) {
@@ -222,27 +224,27 @@ public class Converter {
 				if (Constants.MARC_8_ENCODING.equals(convertEncoding)) {
 					record.getLeader().setCharCodingScheme('a');
 				}
-					
+
 				hasInvalidChars = false;
 				matcher = WEIRD_CHARACTERS_PATTERN.matcher(record.toString());
 				if(matcher.find()) {
 					hasInvalidChars = doReplacements(record, matcher);
 				}
 				if(!hasInvalidChars) {
-					
+
 					if(!ignoreRepositoryCode) {
 						merge003and001(record);
 					}
-					
+
 					if(modifier != null) {
 						String xml = modifier.modifyRecord(record);
 						//System.out.println(xml);
 						try {
 							Record newRecord = MARCRecordWrapper.MARCXML2Record(xml);
 							if(newRecord == null){
-								prglog.error("[PRG] Error occured when transforming record " 
+								prglog.error("[PRG] Error occured when transforming record "
 									+ marcFile.getName() + "#" + record.getControlNumber());
-							} else { 
+							} else {
 								record = newRecord;
 							}
 						} catch(Exception e) {
@@ -264,9 +266,9 @@ public class Converter {
 					}
 
 					// close previous, open new
-					if(recordImporter == null 
-						&& 0 < splitSize 
-						&& statistics.getConverted() > 0 
+					if(recordImporter == null
+						&& 0 < splitSize
+						&& statistics.getConverted() > 0
 						&& 0 == statistics.getConverted() % splitSize)
 					{
 						writer.close();
@@ -277,13 +279,13 @@ public class Converter {
 					prglog.error("[PRG] INVALID " + record.getControlNumber());
 					statistics.addInvalid();
 				}
-					
+
 				if((0 == counter % 100)){
 					System.out.print('.');
 					if(reader.hasNext()) {
 						try {
 							if(inputStream != null && inputStream.available() != 0) {
-								percent = (int)((fileSize - inputStream.available()) 
+								percent = (int)((fileSize - inputStream.available())
 									* 100 / fileSize);
 								if((0 == percent % 10) && percent != prevPercent) {
 									System.out.println(" (" + percent + "%)");
@@ -319,8 +321,8 @@ public class Converter {
                 prglog.info("[PRG] " + statistics.toString());
 		return statistics;
 	}
-	
-	private OutputStream getOutputStream(File xmlFile, int counter) 
+
+	private OutputStream getOutputStream(File xmlFile, int counter)
 			throws Exception {
 		OutputStream out = null;
 		if (null != xmlFile) {
@@ -330,9 +332,9 @@ public class Converter {
 				} else {
 					String newFilename = xmlFile.getAbsolutePath()
 										.replace(".xml", "_" + counter + ".xml");
-                                        libconvertlog.info("[PRG] Continue " + xmlFile.getName() + " to " 
+                                        libconvertlog.info("[PRG] Continue " + xmlFile.getName() + " to "
 							+ newFilename + "\n\n");
-					prglog.info("[PRG] Continue " + xmlFile.getName() + " to " 
+					prglog.info("[PRG] Continue " + xmlFile.getName() + " to "
 							+ newFilename + "\n\n");
 					out = new FileOutputStream(newFilename);
 				}
@@ -347,7 +349,7 @@ public class Converter {
 	}
 
 	private MarcXmlWriter getWriter(File xmlFile, int counter) throws Exception {
-		
+
 		OutputStream out = getOutputStream(xmlFile, counter);
 
 		MarcXmlWriter writer = null;
@@ -361,9 +363,9 @@ public class Converter {
 
 		return writer;
 	}
-	
+
 	private MarcWriter getBadRecordWriter(File marcFile) {
-		badRecordFile = new File(errorDir, 
+		badRecordFile = new File(errorDir,
 				ImporterConstants.ERROR_FILE_PREFIX + marcFile.getName());
 		try {
 			return new MarcStreamWriter(new FileOutputStream(badRecordFile));
@@ -395,7 +397,7 @@ public class Converter {
 				throw new Exception(e);
 			} catch (MarcException e) {
 				e.printStackTrace();
-				throw new Exception("There is a problem with character conversion: " 
+				throw new Exception("There is a problem with character conversion: "
 					+ convertEncoding + " " + e);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -403,7 +405,7 @@ public class Converter {
 			}
 		}
 	}
-	
+
 	private RecordLine getLineOfRecord(String recordString, int position) {
 		return new RecordLine(recordString, position);
 	}
@@ -421,8 +423,8 @@ public class Converter {
 			this.convertEncoding = null;
 		}
 	}
-	
-                
+
+
 	/**
 	 * Replace invalid characters in a record
 	 * @param record
@@ -430,8 +432,8 @@ public class Converter {
 	 */
 	@SuppressWarnings("unchecked")
 	private void modifyRecord(Record record, RecordLine line, String invalidCharacter, String badCharacterLocator) {
-            
-            
+
+
             // change LEADER
                 if(translateLeaderBadCharsToZero == true) {
                     String leaderReplaced = "The character is replaced with zero.\n";
@@ -440,12 +442,11 @@ public class Converter {
 					record.getLeader().toString()
 						.replaceAll(WEIRD_CHARACTERS, "0")));
 
-                 libconvertlog.info("[LIB] OAI Toolkit corrected the MARC record " + 
-                         currentMarcFile.getName() +
-                         "#" + record.getControlNumber() +
-                         " having the bad character in the Leader field at " +
-                         invalidCharacter + "." + 
-                         leaderReplaced);       
+                 libconvertlog.info("[LIB] OAI Toolkit corrected the MARC record #" +
+                         record.getControlNumber() +
+                         "having the bad character in the Leader field at " +
+                         invalidCharacter + "." +
+                         leaderReplaced);
                  /*logger.warn( "[LIB] The MARC record " +
                             (currentMarcFile.getName()) +
                             "#" + record.getControlNumber() +
@@ -457,7 +458,7 @@ public class Converter {
                             badCharacterLocator) ;*/
                     }
                 }
-                   
+
                 // change control fields
                 if(translateNonleaderBadCharsToSpaces == true) {
                     String NonleaderReplaced = "The character is replaced with space.\n";
@@ -466,13 +467,12 @@ public class Converter {
                             ControlField fd = (ControlField)record.getVariableField(tag);
                             fd.setData(fd.getData().replaceAll(WEIRD_CHARACTERS, " "));
                             record.addVariableField(fd);
-                     
-                     libconvertlog.info("[LIB] OAI Toolkit corrected the MARC record " + 
-                         currentMarcFile.getName() +
-                         "#" + record.getControlNumber() +
-                         " having the bad character in the Non-Leader field at" +
-                         invalidCharacter + "." + 
-                         NonleaderReplaced);    
+
+                     libconvertlog.info("[LIB] OAI Toolkit corrected the MARC record #" +
+                         record.getControlNumber() +
+                         "having the bad character in the Non-Leader field at" +
+                         invalidCharacter + "." +
+                         NonleaderReplaced);
                      /*logger.warn( "[LIB] The MARC record " +
                                 (currentMarcFile.getName()) +
                                  "#" + record.getControlNumber() +
@@ -482,7 +482,7 @@ public class Converter {
                                 "." + ApplInfo.LN +
                                 NonleaderReplaced +
                                 badCharacterLocator) ; */
-             
+
                     // change data fields
                     } else if (line.getLine().startsWith("LEADER") == false){
                             String tag = line.getLine().substring(0,3);
@@ -522,13 +522,12 @@ public class Converter {
                                     fd.addSubfield(sf);
                             }
                             record.addVariableField(fd);
-                    
-                         libconvertlog.info("[LIB] OAI Toolkit corrected the MARC record " + 
-                         currentMarcFile.getName() +
-                         "#" + record.getControlNumber() +
-                         " having the bad character in the Non-Leader field at" +
-                         invalidCharacter + "." + 
-                         NonleaderReplaced);  
+
+                         libconvertlog.info("[LIB] OAI Toolkit corrected the MARC record #" +
+                         record.getControlNumber() +
+                         "having the bad character in the Non-Leader field at" +
+                         invalidCharacter + "." +
+                         NonleaderReplaced);
                          /*logger.warn( "[LIB] The MARC record " +
                                     (currentMarcFile.getName()) +
                                      "#" + record.getControlNumber() +
@@ -563,20 +562,20 @@ public class Converter {
                 else {
                     libconvertlog.error("[LIB] The control field 001 is missing in the record. " +
                             "The file which it belongs to is: " +
-                            currentMarcFile.getName() + 
+                            currentMarcFile.getName() +
                             "Please correct these errors and run the Toolkit again." +
-                            "\n The whole record is as follows:\n" + 
-                            record.toString());                    
+                            "\n The whole record is as follows:\n" +
+                            record.toString());
                 }
 	}
-	
+
 	/**
-	 * Handle weird character replacements. Collect the location of such 
-	 * caracters, call the character replacement method 
+	 * Handle weird character replacements. Collect the location of such
+	 * caracters, call the character replacement method
 	 * ({@link #modifyRecord(Record, RecordLine)}), log the locations.
 	 * @param record The marc record object
 	 * @param matcher The regex matcher, which contains the locations
-	 * @return true if the record still contains invalid characters, 
+	 * @return true if the record still contains invalid characters,
 	 * otherwise false
 	 */
 	private boolean doReplacements(Record record, Matcher matcher) {
@@ -593,7 +592,7 @@ public class Converter {
 		for(Integer i : invalidCharsIndex) {
 			RecordLine line = getLineOfRecord(recordString, i);
 			badCharLocator.append(line.getErrorLocation()).append(ApplInfo.LN);
-			invalidChars.add(line.getInvalidChar()+ " (" 
+			invalidChars.add(line.getInvalidChar()+ " ("
 					+ line.getInvalidCharHexa() + ")" + " position: " + i);
                         String invalidCharacter = (line.getInvalidChar() + " (" + line.getInvalidCharHexa() + ")" + "position: " + i);
                         String badCharacterLocator = (line.getErrorLocation() + ApplInfo.LN);
@@ -613,7 +612,7 @@ public class Converter {
 			hasInvalidChars = matcher.find() ? true : false;
 		}
 		StringBuffer logEntry = new StringBuffer();
-		logEntry.append("[LIB] The MARC record ")
+		logEntry.append("[LIB] The MARC record #")
 			.append(currentMarcFile.getName())
 			.append("#").append(record.getControlNumber())
 			.append(" is corrupted.")
@@ -622,7 +621,7 @@ public class Converter {
 			.append("." + ApplInfo.LN)
 			.append(replaced)
 			.append(badCharLocator);
-                        
+
 		if(translateLeaderBadCharsToZero == false && translateNonleaderBadCharsToSpaces == false) {
 			prglog.error("[PRG] " + logEntry.toString());
 		}
@@ -675,7 +674,7 @@ public class Converter {
 	public void setTranslateLeaderBadCharsToZero(boolean translateLeaderBadCharsToZero) {
 		this.translateLeaderBadCharsToZero = translateLeaderBadCharsToZero;
 	}
-        
+
         public boolean isTranslateNonleaderBadCharsToSpaces() {
 		return translateNonleaderBadCharsToSpaces;
 	}
@@ -683,7 +682,7 @@ public class Converter {
 	public void setTranslateNonleaderBadCharsToSpaces(boolean translateNonleaderBadCharsToSpaces) {
 		this.translateNonleaderBadCharsToSpaces = translateNonleaderBadCharsToSpaces;
 	}
-        
+
 	public String getControlNumberOfLastReadRecord() {
 		return controlNumberOfLastReadRecord;
 	}

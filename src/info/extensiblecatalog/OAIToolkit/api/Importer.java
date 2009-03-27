@@ -1,9 +1,9 @@
 /**
   * Copyright (c) 2009 University of Rochester
   *
-  * This program is free software; you can redistribute it and/or modify it under the terms of the MIT/X11 license. The text of the  
+  * This program is free software; you can redistribute it and/or modify it under the terms of the MIT/X11 license. The text of the
   * license can be found at http://www.opensource.org/licenses/mit-license.php and copy of the license can be found on the project
-  * website http://www.extensiblecatalog.org/. 
+  * website http://www.extensiblecatalog.org/.
   *
   */
 
@@ -60,49 +60,49 @@ import info.extensiblecatalog.OAIToolkit.utils.XMLUtil;
  * @author Peter Kiraly
  */
 public class Importer {
-	
+
 	/** The logger object */
         private static String library_convertlog = "librarian_convert";
 	private static String library_loadlog = "librarian_load";
         private static String programmer_log = "programmer";
-        
+
 
 	//private static final Logger Log = Logging.getLogger();
         private static final Logger libconvertlog = Logging.getLogger(library_convertlog);
         private static final Logger libloadlog = Logging.getLogger(library_loadlog);
         private static final Logger prglog = Logging.getLogger(programmer_log);
-        
+
 	public static final String VERSION = "0.5.1";
 
 	private IImporter recordImporter;
-	
+
 	/** The configurations came from command line arguments */
 	public ImporterConfiguration configuration = new ImporterConfiguration();
-	
+
 	private DirectoryNameGiver dirNameGiver;
-	
+
 	/** statistics about conversion step */
 	private ConversionStatistics conversionStatistics;
-	
+
 	/** statistics about modification step */
 	private ModificationStatistics modificationStatistics;
 
 	/** statistics about load step */
 	private LoadStatistics importStatistics;
-	
+
 	public Importer() {}
-	
+
 	/** Initialize the record handlers */
 	private void init() throws Exception {
 		String root = new File(".").getAbsoluteFile().getParent();
 		ApplInfo.init(root, configuration.getLogDir());
-		dirNameGiver = new DirectoryNameGiver(configuration); 
+		dirNameGiver = new DirectoryNameGiver(configuration);
 	}
 
     public void execute() {
-    	if(!configuration.isNeedConvert() 
-    		&& !configuration.isNeedModify() 
-    		&& !configuration.isNeedLoad()) 
+    	if(!configuration.isNeedConvert()
+    		&& !configuration.isNeedModify()
+    		&& !configuration.isNeedLoad())
     	{
     		CLIProcessor.help();
     	}
@@ -117,7 +117,7 @@ public class Importer {
     	}
     	if(configuration.isNeedLoad()) {
     		if(!configuration.isProductionMode()
-    			|| (configuration.isProductionMode() 
+    			|| (configuration.isProductionMode()
     				&& !configuration.isNeedConvert()))
     		{
     			importStatistics = null;
@@ -131,10 +131,10 @@ public class Importer {
     }
 
 	private void convert(){
-		if(!configuration.checkSourceDir() 
-			|| !configuration.checkDestinationDir() 
+		if(!configuration.checkSourceDir()
+			|| !configuration.checkDestinationDir()
 			|| !configuration.checkDestinationXmlDir()
-			|| !configuration.errorDir() 
+			|| !configuration.errorDir()
 			|| !configuration.errorXmlDir()) {
 			return;
 		}
@@ -147,7 +147,7 @@ public class Importer {
 			//Log.info("originalDestinationXmlDir: " + originalDestinationXmlDir);
 			//File original = new File(originalDestinationXmlDir);
 			//Log.info(original.getAbsolutePath());
-			//File parent = original.getParentFile(); 
+			//File parent = original.getParentFile();
 			//File tempXml = new File(parent, "tempXml");
 			File tempXml = dirNameGiver.getConvertTarget();
 			if(!tempXml.exists()) {
@@ -158,23 +158,23 @@ public class Importer {
 			}
 			//configuration.setDestinationXmlDir(tempXml.getName());
 		}
-		
+
 
 		if(configuration.isNeedLogDetail()) {
                         libconvertlog.info(" *********** START OF CONVERT PROCESS ************ \n");
 			prglog.info("[PRG] Start conversion from MARC files " +
-					"at " + dirNameGiver.getConvertSource() 
-					+ " to MARCXML files at " 
+					"at " + dirNameGiver.getConvertSource()
+					+ " to MARCXML files at "
 					+ dirNameGiver.getConvertTarget());
                         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
                         Date convStartDate = new Date();
                         libconvertlog.info("[LIB] Conversion started at " + dateFormat.format(convStartDate));
                         libconvertlog.info("[LIB] Start conversion from MARC files " +
-					"at " + dirNameGiver.getConvertSource() 
-					+ " to MARCXML files at " 
+					"at " + dirNameGiver.getConvertSource()
+					+ " to MARCXML files at "
 					+ dirNameGiver.getConvertTarget() + "\n\n");
 		}
-		
+
 		Converter converter = new Converter();
 		if(null != configuration.getMarcEncoding()) {
 			converter.setEncoding(configuration.getMarcEncoding());
@@ -188,7 +188,7 @@ public class Importer {
 		if(configuration.isNeedModify() && configuration.isProductionMode()) {
 			converter.setModifier(new Modifier(configuration));
 		}
-		
+
 		if(configuration.isNeedLoad() && configuration.isProductionMode()) {
 			initRecordImporter();
 			converter.setRecordImporter(recordImporter);
@@ -203,9 +203,9 @@ public class Importer {
                 converter.setTranslateNonleaderBadCharsToSpaces(configuration.isTranslateNonleaderBadCharsToSpaces());
 		converter.setIgnoreRepositoryCode(configuration.doesIgnoreRepositoryCode());
 		converter.setDefaultRepositoryCode(configuration.getDefaultRepositoryCode());
-		
+
 		prglog.info("[PRG] " + converter.getSettings());
-		
+
 		File fSourceDir = dirNameGiver.getConvertSource();
 		File[] files = fSourceDir.listFiles(new MARCFileNameFilter());
 		if(0 == files.length) {
@@ -213,12 +213,12 @@ public class Importer {
 					+ configuration.getSourceDir());
 		}
 		Arrays.sort(files, new FileNameComparator());
-		
+
 		conversionStatistics = new ConversionStatistics();
 		ConversionStatistics fileStatistics;
 
 		for(File marcFile : files) {
-			File xmlFile = new File(configuration.getDestinationXmlDir(), 
+			File xmlFile = new File(configuration.getDestinationXmlDir(),
 					marcFile.getName().replaceAll(".mrc$", ".xml"));
 			try {
 				// setting the XML file
@@ -241,13 +241,13 @@ public class Importer {
 				}
 
 				if(configuration.isNeedLogDetail()) {
-					prglog.info("[PRG] Moving " + marcFile.getName() + " to " 
+					prglog.info("[PRG] Moving " + marcFile.getName() + " to "
 							+ dirNameGiver.getConvertDestination());
 				}
 				// setting the destination file
-				File successFile = new File(dirNameGiver.getConvertDestination(), 
+				File successFile = new File(dirNameGiver.getConvertDestination(),
 						marcFile.getName());
-				
+
 				// delete if exists (otherwise the moving won't success)
 				if(successFile.exists()) {
 					boolean deleted = successFile.delete();
@@ -256,20 +256,20 @@ public class Importer {
 				// remove
 				boolean remove = marcFile.renameTo(successFile);
 				if(configuration.isNeedLogDetail()) {
-					prglog.info("[PRG] remove marc file (" + marcFile.getName() + ") to " 
-							+ dirNameGiver.getConvertDestination() 
+					prglog.info("[PRG] remove marc file (" + marcFile.getName() + ") to "
+							+ dirNameGiver.getConvertDestination()
 							+ ": " + remove);
 				}
-				
+
 				conversionStatistics.add(fileStatistics);
 				if(importStatistics != null) {
 					importStatistics.add(converter.getLoadStatistics());
 				}
-					
+
 			} catch(Exception e){
 				if(e instanceof MarcException) {
-					prglog.error("[PRG] " + e.getMessage() 
-					+ ". The last successfully read record's Control Number is " 
+					prglog.error("[PRG] " + e.getMessage()
+					+ ". The last successfully read record's Control Number is "
 					+ converter.getControlNumberOfLastReadRecord()
 					+ ". The error may be in the next record.");
        				} else {
@@ -290,7 +290,7 @@ public class Importer {
 				if(configuration.isNeedLogDetail()) {
 					prglog.info("[PRG] remove MARC to error directory: " + remove);
 				}
-				
+
 				if(xmlFile.exists()){
 					File xmlErrorFile = new File(configuration.getErrorXmlDir(), xmlFile.getName());
 					if(xmlErrorFile.exists()) {
@@ -308,7 +308,7 @@ public class Importer {
 				}
 			}
 		}
-		
+
 		if(configuration.isNeedLogDetail()) {
                         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
                         Date convEndDate = new Date();
@@ -325,7 +325,7 @@ public class Importer {
 						+ importStatistics.toString());
 			}
 		}
-		
+
 		if(recordImporter != null) {
 			recordImporter.optimize();
 		}
@@ -359,7 +359,7 @@ public class Importer {
 		Arrays.sort(files, new FileNameComparator());
 		Modifier modifier = new Modifier(configuration);
 		int counter;
-		
+
 		modificationStatistics = new ModificationStatistics();
 		ModificationStatistics fileStatistics = null;
 
@@ -371,8 +371,8 @@ public class Importer {
 				if(!checkXml(xmlFile)) {
 					continue;
 				}
-				
-				fileStatistics = new ModificationStatistics(); 
+
+				fileStatistics = new ModificationStatistics();
 				System.setProperty("file.encoding", "UTF-8");
 				long fileSize = xmlFile.length();
 				in = new FileInputStream(xmlFile);
@@ -381,7 +381,7 @@ public class Importer {
 						dirNameGiver.getModifyTarget(), xmlFile.getName()));
 				out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n".getBytes());
 				out.write("<collection xmlns=\"http://www.loc.gov/MARC21/slim\">\n".getBytes());
-				
+
 				if(configuration.isNeedLogDetail()) {
 					prglog.info("[PRG] Modifying records...");
 				}
@@ -400,10 +400,10 @@ public class Importer {
 						if(marcReader.hasNext()) {
 							try {
 								if(in != null && in.available() != 0) {
-									percent = (int)((fileSize - in.available()) 
+									percent = (int)((fileSize - in.available())
 										* 100 / fileSize);
-									if((0 == percent % 10) 
-											&& percent != prevPercent) 	
+									if((0 == percent % 10)
+											&& percent != prevPercent)
 									{
 										System.out.println(" (" + percent + "%)");
 										prevPercent = percent;
@@ -425,12 +425,12 @@ public class Importer {
 							badRecordWriter = new MarcXmlWriter(
 								new FileOutputStream(
 									new File(
-										configuration.getErrorXmlDir(), 
+										configuration.getErrorXmlDir(),
 										"error_records_in_" + xmlFile.getName()
 									)),
 								"UTF8", // encoding
 								true//, // indent
-								);//configuration.isCreateXml11()); // xml 1.0 
+								);//configuration.isCreateXml11()); // xml 1.0
 						}
 						badRecordWriter.write(record);
 					}
@@ -438,9 +438,9 @@ public class Importer {
 				}
 				out.write("</collection>\n".getBytes());
 				out.close();
-				
+
 				if(configuration.isNeedLogDetail()) {
-					prglog.info("[PRG] Modify statistics for " + xmlFile.getName() 
+					prglog.info("[PRG] Modify statistics for " + xmlFile.getName()
 							+ ": " + fileStatistics.toString());
 				}
 				modificationStatistics.add(fileStatistics);
@@ -464,53 +464,53 @@ public class Importer {
 			}
 		} // for File...
 		if(configuration.isNeedLogDetail()) {
-			prglog.info("[PRG] Modify statistics summary: " 
+			prglog.info("[PRG] Modify statistics summary: "
 					+ modificationStatistics.toString());
                         Date modifyEndDate = new Date();
                         prglog.info("[LIB] Modify completed at " + dateFormat.format(modifyEndDate));
-                        prglog.info("[LIB] Modify statistics summary: " 
+                        prglog.info("[LIB] Modify statistics summary: "
 					+ modificationStatistics.toString() + "\n");
                         prglog.info(" *********** END OF MODIFY PROCESS ************ \n");
 		}
 	} // modify
 
 	private void load(){
-		if(!configuration.checkSourceDir() 
-			|| !configuration.checkDestinationXmlDir() 
+		if(!configuration.checkSourceDir()
+			|| !configuration.checkDestinationXmlDir()
 			|| !configuration.errorXmlDir()) {
 			return;
 		}
                 libloadlog.info(" *********** START OF LOAD PROCESS ************ \n");
-		prglog.info("[PRG] Start loading of MARCXML files from " 
+		prglog.info("[PRG] Start loading of MARCXML files from "
 				+ dirNameGiver.getLoadSource());
                 DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
                 Date loadStartDate = new Date();
                 libloadlog.info("[LIB] Load started at " + dateFormat.format(loadStartDate));
-                libloadlog.info("[LIB] Start loading of MARCXML files from " 
+                libloadlog.info("[LIB] Start loading of MARCXML files from "
 				+ dirNameGiver.getLoadSource() + "\n\n");
-                
+
 		File[] files = dirNameGiver.getLoadSource().listFiles(
 				new XMLFileNameFilter());
 		if(0 == files.length) {
 			prglog.warn("[PRG] There's no XML file in the source directory.");
 		}
 		Arrays.sort(files, new FileNameComparator());
-		
+
 		prglog.info("[PRG] Storage type: " + configuration.getStorageType());
-		
+
 		initRecordImporter();
 		Modifier modifier = null;
 		if(configuration.isNeedModify() && configuration.isProductionMode()) {
 			modifier = new Modifier(configuration);
 		}
-		
+
 		int counter = 0;
 		MarcXmlWriter badRecordWriter = null;
 		importStatistics = new LoadStatistics();
 		LoadStatistics fileStatistics = null;
-		
+
 		for(File xmlFile : files) {
-			
+
 			recordImporter.setCurrentFile(xmlFile.getName());
 			fileStatistics = new LoadStatistics();
 
@@ -519,21 +519,21 @@ public class Importer {
 				if(configuration.isNeedLogDetail()) {
 					prglog.info("[PRG] loading " + xmlFile.getName());
 				}
-				
+
 				if(!checkXml(xmlFile)) {
 					continue;
 				}
-				
+
 				System.setProperty("file.encoding", "UTF-8");
 				long fileSize = xmlFile.length();
 				InputStream in = new FileInputStream(xmlFile);
 				MarcReader marcReader = new MarcXmlReader(in);
-				
+
 				if(configuration.isNeedLogDetail()) {
 					prglog.info("[PRG] Importing records...");
 				}
 				counter = 0;
-				
+
 				int prevPercent = 0;
 				Record record;
 
@@ -548,7 +548,7 @@ public class Importer {
 					}
 					List<ImportType> typeList = recordImporter.importRecord(record);
 					fileStatistics.add(typeList);
-					fileStatistics.add(recordImporter.getCheckTime(), 
+					fileStatistics.add(recordImporter.getCheckTime(),
 							recordImporter.getInsertTime());
 					if(typeList.contains(ImportType.INVALID)) {
 						recordImporter.writeBadRecord(record);
@@ -564,8 +564,7 @@ public class Importer {
 									prevPercent = percent;
 								}
 							} catch(Exception e) {
-								e.printStackTrace();
-								
+
 							}
 						}
 						//System.gc();
@@ -581,19 +580,19 @@ public class Importer {
                                         libloadlog.info("[LIB] " + fileStatistics.toString(xmlFile.getName()) + "\n\n");
 				}
 				importStatistics.add(fileStatistics);
-				
+
 				// move file to destination xml directory
 				if(configuration.isDoDeleteTemporaryFiles()) {
 					prglog.info("[PRG] Delete " + xmlFile);
 					boolean remove = xmlFile.delete();
 					if(configuration.isNeedLogDetail()) {
-						prglog.info("[PRG] Deleting XML file (" + xmlFile.getName() 
+						prglog.info("[PRG] Deleting XML file (" + xmlFile.getName()
 							+ ") " + remove);
 					}
 				} else if(!dirNameGiver.getLoadSource().equals(
 						dirNameGiver.getLoadDestination())) {
 					File destXmlFile = new File(
-						dirNameGiver.getLoadDestination(), 
+						dirNameGiver.getLoadDestination(),
 						xmlFile.getName());
 					if(destXmlFile.exists()) {
 						boolean deleted = destXmlFile.delete();
@@ -605,8 +604,8 @@ public class Importer {
 					}
 					boolean remove = xmlFile.renameTo(destXmlFile);
 					if(configuration.isNeedLogDetail()) {
-						prglog.info("[PRG] Move XML file (" + xmlFile.getName() 
-							+ ") to destination_xml directory (" 
+						prglog.info("[PRG] Move XML file (" + xmlFile.getName()
+							+ ") to destination_xml directory ("
 							+ destXmlFile.getAbsolutePath() + "): " + remove);
 					}
 				}
@@ -614,27 +613,27 @@ public class Importer {
 
 			} catch(IOException e) {
 				e.printStackTrace();
-				prglog.error("[PRG] [IOException] " + e.getMessage() 
-						+ " " + xmlFile.getName() 
-						+ " lastRecordToImport: " 
+				prglog.error("[PRG] [IOException] " + e.getMessage()
+						+ " " + xmlFile.getName()
+						+ " lastRecordToImport: "
 						+ recordImporter.getLastRecordToImport());
                         } catch(MarcException e) {
                                 e.printStackTrace();
-				prglog.error("[PRG] [MarcException] " + e.getMessage() 
-						+ " " + xmlFile.getName() 
-						+ " lastRecordToImport: " 
+				prglog.error("[PRG] [MarcException] " + e.getMessage()
+						+ " " + xmlFile.getName()
+						+ " lastRecordToImport: "
 						+ recordImporter.getLastRecordToImport());
                         } catch(RuntimeException e) {
 				e.printStackTrace();
-				prglog.error("[PRG] [RuntimeException] " + e.getMessage() 
-						+ " " + xmlFile.getName() 
-						+ " lastRecordToImport: " 
+				prglog.error("[PRG] [RuntimeException] " + e.getMessage()
+						+ " " + xmlFile.getName()
+						+ " lastRecordToImport: "
 						+ recordImporter.getLastRecordToImport());
                         } catch(Exception e) {
                                 e.printStackTrace();
-				prglog.error("[PRG] " + e.getMessage() 
-						+ " " + xmlFile.getName() 
-						+ " lastRecordToImport: " 
+				prglog.error("[PRG] " + e.getMessage()
+						+ " " + xmlFile.getName()
+						+ " lastRecordToImport: "
 						+ recordImporter.getLastRecordToImport());
                         } finally {
 				if(null != badRecordWriter) {
@@ -643,8 +642,8 @@ public class Importer {
 						badRecordWriter = null;
 					} catch(Exception e) {
 						e.printStackTrace();
-						prglog.error("[PRG] Error in closing bad records file " 
-								+ e.getMessage() 
+						prglog.error("[PRG] Error in closing bad records file "
+								+ e.getMessage()
 								+ " error_records_in_" + xmlFile.getName());
 					}
 				}
@@ -667,23 +666,23 @@ public class Importer {
 				if(!isDeleted) {
 					prglog.error("[PRG] Unable to delete " + dirNameGiver.getLoadSource());
 				}
-			} else { 
+			} else {
 				prglog.error("[PRG] Can't delete the temporary xml directory, because" +
 						" there exist " + numOfFiles + " files in it.");
 			}
 		}
-		
+
 		if(configuration.isNeedLogDetail()) {
 			prglog.info("[PRG] optimizing database...");
 		}
-		
+
 		recordImporter.optimize();
 		if(configuration.isNeedLogDetail()) {
 			prglog.info("[PRG] Import done");
-                        
+
 		}
 	}
-	
+
 	private boolean checkXml(File xmlFile) {
 		try {
 			//boolean isValid = XMLUtil.validate(xmlFile, schemaFile, configuration.isNeedLogDetail());
@@ -700,12 +699,12 @@ public class Importer {
 				+ "isn't well formed. Please correct the errors and "
 				+ "load again. Error description: " + e.getMessage();
 			if(e instanceof SAXParseException) {
-				error += " Location: " 
+				error += " Location: "
 					+ ((SAXParseException)e).getLineNumber()
 					+ ":" + ((SAXParseException)e).getColumnNumber() + ".";
 			}
 			libloadlog.error("[LIB] " + error);
-			File xmlErrorFile = new File(dirNameGiver.getLoadError(), 
+			File xmlErrorFile = new File(dirNameGiver.getLoadError(),
 					xmlFile.getName());
 			if(xmlErrorFile.exists()) {
 				boolean deleted = xmlErrorFile.delete();
@@ -713,16 +712,16 @@ public class Importer {
 			}
 			boolean remove = xmlFile.renameTo(xmlErrorFile);
 			if(configuration.isNeedLogDetail()) {
-				prglog.info("[PRG] Remove XML file (" + xmlFile.getName() 
+				prglog.info("[PRG] Remove XML file (" + xmlFile.getName()
 						+ ") to error_xml directory: " + remove);
 			}
 			importStatistics.add(ImportType.INVALID_FILES);
 			return false;
 		}
 	}
-	
+
 	private void initRecordImporter() {
-		
+
 		String schemaFile = ImporterConstants.MARC_SCHEMA_URL;
 		if (null != configuration.getMarcSchema()) {
 			File schema = new File(configuration.getMarcSchema());
@@ -736,15 +735,15 @@ public class Importer {
 		}
 
 		if(configuration.getStorageType().equals(StorageTypes.MIXED)
-			&& configuration.getLuceneIndex() != null) 
+			&& configuration.getLuceneIndex() != null)
 		{
 			prglog.info("[PRG] LuceneIndex: " + configuration.getLuceneIndex());
-			recordImporter = new MixedImporter(schemaFile, 
+			recordImporter = new MixedImporter(schemaFile,
 						configuration.getLuceneIndex());
-		} 
+		}
 		// if we use Lucene, use LuceneImporter
 		else if(configuration.getStorageType().equals(StorageTypes.LUCENE)
-				&& configuration.getLuceneIndex() != null) 
+				&& configuration.getLuceneIndex() != null)
 		{
 			prglog.info("[PRG] LuceneIndex: " + configuration.getLuceneIndex());
 			recordImporter = new LuceneImporter(schemaFile,
@@ -770,7 +769,7 @@ public class Importer {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public LoadStatistics getImportStatistics() {
 		return importStatistics;
 	}

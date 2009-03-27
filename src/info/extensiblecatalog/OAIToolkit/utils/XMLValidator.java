@@ -1,9 +1,9 @@
 /**
   * Copyright (c) 2009 University of Rochester
   *
-  * This program is free software; you can redistribute it and/or modify it under the terms of the MIT/X11 license. The text of the  
+  * This program is free software; you can redistribute it and/or modify it under the terms of the MIT/X11 license. The text of the
   * license can be found at http://www.opensource.org/licenses/mit-license.php and copy of the license can be found on the project
-  * website http://www.extensiblecatalog.org/. 
+  * website http://www.extensiblecatalog.org/.
   *
   */
 
@@ -33,7 +33,7 @@ import org.xml.sax.SAXParseException;
  * @author Peter Kiraly
  */
 public class XMLValidator {
-	
+
 	/** The programmer's log object */
         private static String programmer_log = "programmer";
         private static final Logger prglog = Logging.getLogger(programmer_log);
@@ -43,14 +43,14 @@ public class XMLValidator {
 	 * The validator object. It validates the XML file.
 	 */
 	private Validator validator;
-	
+
 	/**
 	 * Constuct a new XMLValidator object.
 	 * @param schemaFile The XML Schema file which against the XML file will
 	 * be validated
 	 */
 	public XMLValidator(String schemaFileName) {
-		
+
 		// 1. Lookup a factory for the W3C XML Schema language
 		SchemaFactory factory = SchemaFactory.newInstance(
 				"http://www.w3.org/2001/XMLSchema");
@@ -88,7 +88,7 @@ public class XMLValidator {
 		// 3. Get a validator from the schema.
 		validator = schema.newValidator();
 	}
-	
+
 	public XMLValidator() {
 		this("");
 	}
@@ -124,7 +124,7 @@ public class XMLValidator {
 
 		// 4. Parse the document you want to check.
 		Source source = new StreamSource(
-				new InputStreamReader(xmlContent, 
+				new InputStreamReader(xmlContent,
 						Charset.forName("UTF-8")));
 
 		// 5. Check the document
@@ -166,15 +166,15 @@ public class XMLValidator {
 	 * @param indented - flag whether the XML is intended or not
 	 * @return
 	 */
-	public String showContext(SAXParseException ex, String content, 
+	public String showContext(SAXParseException ex, String content,
 			boolean indented) {
-		StringBuffer error = new StringBuffer(); 
+		StringBuffer error = new StringBuffer();
 		int lineNumber = ((SAXParseException) ex).getLineNumber();
 		int charNumber = ((SAXParseException) ex).getColumnNumber();
-		error.append(" The error is at line: " + lineNumber + " char #"
+		error.append(" \n\tThe error is at line: " + lineNumber + " char #"
 			+ charNumber + ".");
 		String[] lines = content.split(ApplInfo.LN);
-		error.append(ApplInfo.LN + "Source:" + ApplInfo.LN);
+		//error.append(ApplInfo.LN + "\tSource:" + ApplInfo.LN);
 		String line = lines[lineNumber - 1];
 		if(indented == false) {
 			int start, end;
@@ -189,15 +189,49 @@ public class XMLValidator {
 			if(end > line.length()-1) {
 				end = line.length()-1;
 			}
+            String datachunk = line.substring(start, end);
+            //System.out.println("The start index is " + start);
+            //System.out.println("The end index is " + end);
+            //System.out.println("The data chunk is " + datachunk);
+            char [] datachunkArray = datachunk.toCharArray();
+            //int datachunkArray_len = datachunkArray.length;
+            //System.out.println("The data chunk array size is " + datachunkArray_len);
+
+            char ch = datachunkArray[charNumber-2];
+            int index = charNumber-2;
+
+            //System.out.println("\nThe index is " + index);
+            //System.out.println("\nThe char ch is" + ch);
+
+            while (ch != '<' && index >0 ) {
+                if (ch == '/')
+                    index--;
+                //System.out.println("\nThe index is " + index);
+                //System.out.println("\nThe char ch is" + ch);
+                index--;
+                ch = datachunkArray[index];
+            }
+            String finaldata = "";
+            int j = 0;
+            //System.out.println("\n The index after reading till < is" + index);
+            while (ch != '>') {
+                finaldata = finaldata + datachunkArray[index + j];
+                ch = datachunkArray[index + j];
+                //System.out.println("\nThe index is " + finaldata);
+                //System.out.println("\nThe char ch is" + ch);
+                j =  j+1;
+            }
+
+           error.append("\n\tThe Tag where the error is:  " + finaldata + "\n\tThe data surrounding the error is:\n\t\t ");
 			error.append(line.substring(start, end));
 		} else {
 			error.append(line);
 		}
 		error.append(ApplInfo.LN);
 		for (int i = 1; i < charNumber - 1; i++) {
-			error.append('-');
+			//error.append('-');
 		}
-		error.append('^');
+		//error.append('^');
 		return error.toString();
 	}
 }
