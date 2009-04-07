@@ -239,7 +239,7 @@ public class OAIConfiguration {
 			defaultProps.setProperty("baseUrl", baseUrl);
 			defaultProps.setProperty("adminEmail", adminEmail);
 			defaultProps.setProperty("deletedRecord", deletedRecord);
-			defaultProps.setProperty("protocolVersion", protocolVersion);
+            defaultProps.setProperty("protocolVersion", protocolVersion);
 			defaultProps.setProperty("granularity", granularity);
 			defaultProps.setProperty("compression", TextUtil.join(Arrays.asList(compression), ", "));
 			defaultProps.setProperty("setsChunk_maxNumberOfRecords", String.valueOf(setsChunk_maxNumberOfRecords));
@@ -354,7 +354,7 @@ public class OAIConfiguration {
 		this.expirationDate = expirationDate;
 	}
 
-	public String getGranularity() {
+    public String getGranularity() {
 		return granularity;
 	}
 

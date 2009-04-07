@@ -69,14 +69,15 @@ public class LuceneImporter extends BasicRecordImporter
 	 *
 	 * @param record The marc record to insert
 	 */
-	public List<ImportType> importRecord(Record record) {
+	public List<ImportType> importRecord(Record record, boolean doFileOfDeletedRecords) {
 		recordCounter++;
 
 		List<ImportType> typeList = new ArrayList<ImportType>();
 
-		MARCRecordWrapper rec = new MARCRecordWrapper(record, currentFile, createXml11);
+		MARCRecordWrapper rec = new MARCRecordWrapper(record, currentFile, createXml11, doFileOfDeletedRecords);
 		rec.setDoIndentXml(doIndentXml);
-		lastRecordToImport = rec.getId();
+        rec.setDoFileOfDeletedRecords(doFileOfDeletedRecords);
+        lastRecordToImport = rec.getId();
 		if(lastRecordToImport == null) {
                         prglog.error("[PRG] The record hasn't got identifier (field 001)");
 			typeList.add(ImportType.INVALID);

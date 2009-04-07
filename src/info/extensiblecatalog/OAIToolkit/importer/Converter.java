@@ -220,7 +220,7 @@ public class Converter {
 				counter++;
 				controlNumberOfLastReadRecord = record.getControlNumber();
 
-				//if(!reader.isCorrupted()) {
+                				//if(!reader.isCorrupted()) {
 				if (Constants.MARC_8_ENCODING.equals(convertEncoding)) {
 					record.getLeader().setCharCodingScheme('a');
 				}
@@ -237,7 +237,7 @@ public class Converter {
 					}
 
 					if(modifier != null) {
-						String xml = modifier.modifyRecord(record);
+						String xml = modifier.modifyRecord(record, false);
 						//System.out.println(xml);
 						try {
 							Record newRecord = MARCRecordWrapper.MARCXML2Record(xml);
@@ -258,7 +258,7 @@ public class Converter {
 					if(recordImporter == null) {
 						writer.write(record);
 					} else {
-						List<ImportType> typeList = recordImporter.importRecord(record);
+						List<ImportType> typeList = recordImporter.importRecord(record, false);
 						loadStatistics.add(typeList);
 						if(typeList.contains(ImportType.INVALID)) {
 							recordImporter.writeBadRecord(record);

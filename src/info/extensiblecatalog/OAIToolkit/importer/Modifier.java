@@ -38,10 +38,12 @@ public class Modifier {
 	private List<XsltTransformator> transformators;
 	
 	private boolean doIndent = false;
+    private boolean doFileOfDeletedRecords = false;
 	
 	
-	public Modifier(boolean doIndent) {
+	public Modifier(boolean doIndent, boolean doFileOfDeletedRecords) {
 		this.doIndent = doIndent;
+        this.doFileOfDeletedRecords = doFileOfDeletedRecords;
 	}
 	
 	/**
@@ -67,14 +69,16 @@ public class Modifier {
 			} catch(TransformerConfigurationException e) {
 				e.printStackTrace();
 				prglog.info("[PRG] " + ExceptionPrinter.getStack(e));
+                
 			}
 		}
 	}
 	
 	/** Modify a Record's XML string */
-	public String modifyRecord(Record record) {
-		MARCRecordWrapper marc = new MARCRecordWrapper(record);
+	public String modifyRecord(Record record, boolean doFileOfDeletedRecords) {
+		MARCRecordWrapper marc = new MARCRecordWrapper(record, doFileOfDeletedRecords);
 		marc.setDoIndentXml(doIndent);
+        marc.setDoFileOfDeletedRecords(doFileOfDeletedRecords);
 		return modifyRecord(marc);
 	}
 

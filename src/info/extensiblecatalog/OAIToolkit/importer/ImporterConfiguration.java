@@ -130,7 +130,8 @@ public class ImporterConfiguration {
 	private String destinationSuffix = "dest";
 	
 	private boolean doDeleteTemporaryFiles = false;
-	
+
+    private boolean fileOfDeletedRecords = false;
 	private String xsltString;
 	
 	private List<String> xslts = new ArrayList<String>();
@@ -151,6 +152,7 @@ public class ImporterConfiguration {
 		sb.append(", destinationXmlDir: ").append(destinationXmlDir);
 		sb.append(", errorDir: ").append(errorDir);
 		sb.append(", errorXmlDir: ").append(errorXmlDir);
+        sb.append(", fileOfDeletedRecords: ").append(fileOfDeletedRecords);
 		sb.append(", marcSchema: ").append(marcSchema);
 		sb.append(", logDir: ").append(logDir);
 		sb.append(", marcEncoding: ").append(marcEncoding);
@@ -159,8 +161,8 @@ public class ImporterConfiguration {
 		sb.append(", luceneIndex: ").append(luceneIndex);
 		sb.append(", storageType: ").append(storageType);
 		sb.append(", createXml11: ").append(createXml11);
-                sb.append(", translateLeaderBadCharsToZero: ").append(translateLeaderBadCharsToZero);
-                sb.append(", translateNonleaderBadCharsToSpaces: ").append(translateNonleaderBadCharsToSpaces);
+        sb.append(", translateLeaderBadCharsToZero: ").append(translateLeaderBadCharsToZero);
+        sb.append(", translateNonleaderBadCharsToSpaces: ").append(translateNonleaderBadCharsToSpaces);
 		sb.append(", convertDir: ").append(convertDir);
 		sb.append(", modifyDir: ").append(modifyDir);
 		sb.append(", loadDir: ").append(loadDir);
@@ -210,6 +212,14 @@ public class ImporterConfiguration {
 
 	public void setErrorXmlDir(String errorXmlDir) {
 		this.errorXmlDir = errorXmlDir;
+	}
+
+    public boolean isFileOfDeletedRecords() {
+		return fileOfDeletedRecords;
+	}
+
+	public void setFileOfDeletedRecords(boolean fileOfDeletedRecords) {
+		this.fileOfDeletedRecords = fileOfDeletedRecords;
 	}
 
 	public String getLogDir() {

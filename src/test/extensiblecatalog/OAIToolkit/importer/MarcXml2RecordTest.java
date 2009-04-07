@@ -56,14 +56,14 @@ public class MarcXml2RecordTest extends TestCase {
 	public void xtestDropPipeline() throws Exception {
 		File marcFile = new File("test/error.mrc");
 		List<String> xslt = Arrays.asList(new String[]{"drop_pipeline.xsl"});
-		Modifier modifier = new Modifier(true);
+		Modifier modifier = new Modifier(true,false);
 		modifier.addStyleSheets(xslt);
 		
 		MarcReader reader = new MarcStreamReader(new FileInputStream(marcFile));
 		
 		while(reader.hasNext()) {
 			Record rec = reader.next();
-			MARCRecordWrapper w = new MARCRecordWrapper(rec);
+			MARCRecordWrapper w = new MARCRecordWrapper(rec, false);
 			w.setDoIndentXml(true);
 			//System.out.println(w.getXml());
 			System.out.println(modifier.modifyRecord(w));
@@ -73,7 +73,7 @@ public class MarcXml2RecordTest extends TestCase {
 	public void testMergeFields() throws Exception {
 		File marcFile = new File("test/error.mrc");
 		List<String> xslt = Arrays.asList(new String[]{"drop_pipeline.xsl"});
-		Modifier modifier = new Modifier(true);
+		Modifier modifier = new Modifier(true,false);
 		modifier.addStyleSheets(xslt);
 		
 		MarcReader reader = new MarcStreamReader(new FileInputStream(marcFile));
@@ -96,7 +96,7 @@ public class MarcXml2RecordTest extends TestCase {
 			
 			System.out.println(record.toString());
 	
-			MARCRecordWrapper w = new MARCRecordWrapper(record);
+			MARCRecordWrapper w = new MARCRecordWrapper(record,false);
 			w.setDoIndentXml(true);
 			//System.out.println(w.getXml());
 			System.out.println(modifier.modifyRecord(w));
@@ -139,7 +139,7 @@ public class MarcXml2RecordTest extends TestCase {
 				}
 			}
 
-			MARCRecordWrapper w = new MARCRecordWrapper(record);
+			MARCRecordWrapper w = new MARCRecordWrapper(record, false);
 			w.setDoIndentXml(true);
 			System.out.println(w.getXml());
 			break;

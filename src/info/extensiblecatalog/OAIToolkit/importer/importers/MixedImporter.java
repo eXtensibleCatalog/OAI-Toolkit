@@ -55,11 +55,11 @@ public class MixedImporter extends BasicRecordImporter
 	 * 
 	 * @param record The marc record to insert
 	 */
-	public List<ImportType> importRecord(Record record) {
+	public List<ImportType> importRecord(Record record, boolean doFileOfDeletedRecords) {
 		
 		List<ImportType> typeList = new ArrayList<ImportType>();
 
-		MARCRecordWrapper rec = new MARCRecordWrapper(record, currentFile);
+		MARCRecordWrapper rec = new MARCRecordWrapper(record, currentFile, doFileOfDeletedRecords);
 		lastRecordToImport = rec.getId();
 		if(lastRecordToImport == null) {
 			prglog.error("[LIB] The record hasn't got identifier (field 001)");

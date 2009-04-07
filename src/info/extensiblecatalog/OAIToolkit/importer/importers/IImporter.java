@@ -26,7 +26,7 @@ public interface IImporter {
 	 * @param record The MARC record to import
 	 * @return Information about the record and the success
 	 */
-	public List<ImportType> importRecord(Record record);
+	public List<ImportType> importRecord(Record record, boolean doFileOfDeletedRecords);
 	
 	/**
 	 * Get the control number of the last record

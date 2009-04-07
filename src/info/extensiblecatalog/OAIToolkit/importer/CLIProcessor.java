@@ -211,6 +211,9 @@ public class CLIProcessor {
 				"process.");
 		Option convert_dir = OptionBuilder.create("convert_dir");
 
+        Option fileof_deleted_records = new Option("fileof_deleted_records", "The source marc file should be considered as deleted");
+
+
 		OptionBuilder.withArgName("load_dir");
 		OptionBuilder.hasArg();
 		OptionBuilder.withDescription("The directory of marcxml files after" +
@@ -270,6 +273,7 @@ public class CLIProcessor {
 		options.addOption(xml_version_11);
                 options.addOption(translate_leader_bad_chars_to_zero);
                 options.addOption(translate_nonleader_bad_chars_to_spaces);
+                options.addOption(fileof_deleted_records);
 		options.addOption(replace_repository_code);
 		options.addOption(convert_dir);
 		options.addOption(load_dir);
@@ -467,6 +471,10 @@ public class CLIProcessor {
 			if (line.hasOption("ignore_repository_code")) {
 				importer.configuration.setIgnoreRepositoryCode(true);
 			}
+
+            if (line.hasOption("fileof_deleted_records")) {
+                importer.configuration.setFileOfDeletedRecords(true);
+            }
 
 		} catch(ParseException e) {
 			prglog.error("[PRG] Parsing of command line arguments failed. " +

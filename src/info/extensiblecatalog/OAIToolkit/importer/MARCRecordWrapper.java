@@ -45,7 +45,10 @@ public class MARCRecordWrapper {
 
 	private static final Logger libloadlog = Logging.getLogger(library_loadlog);
         private static final Logger prglog = Logging.getLogger(programmer_log);
-    
+
+   /** The configurations came from command line arguments */
+	public ImporterConfiguration configuration = new ImporterConfiguration();
+
         /** The logger object */
 	//private static final Logger logger = Logging.getLogger();
 
@@ -154,9 +157,13 @@ public class MARCRecordWrapper {
 	/** flag to create XML 1.1 (true) or 1.0 (false) */
 	private boolean createXml11 = false;
 
+    /** flag to indeicate whether the parameter -fileof_deleted_records is true or false */
+    private boolean doFileOfDeletedRecords = false;
+
 	/** create a new object */
-	public MARCRecordWrapper(Record record){
+	public MARCRecordWrapper(Record record, boolean doFileOfDeletedRecords){
 		this.record = record;
+        this.doFileOfDeletedRecords = doFileOfDeletedRecords;
 		init();
 	}
 
@@ -165,8 +172,8 @@ public class MARCRecordWrapper {
 	 * @param record The raw Marc4j Record
 	 * @param currentFile The name of the file in which the record takes place
 	 */
-	public MARCRecordWrapper(Record record, String currentFile){
-		this(record, currentFile, false);
+	public MARCRecordWrapper(Record record, String currentFile, boolean doFileOfDeletedRecords){
+		this(record, currentFile, false, doFileOfDeletedRecords);
 	}
 	
 	/** 
@@ -175,11 +182,12 @@ public class MARCRecordWrapper {
 	 * @param currentFile The name of the file in which the record takes place
 	 * @param createXml11 Flag to create XML 1.1 (true) or 1.0 (false)
 	 */
-	public MARCRecordWrapper(Record record, String currentFile, boolean createXml11){
+	public MARCRecordWrapper(Record record, String currentFile, boolean createXml11, boolean doFileOfDeletedRecords){
 		this.record = record;
 		this.currentFile = currentFile;
 		this.createXml11 = createXml11;
-		init();
+        this.doFileOfDeletedRecords = doFileOfDeletedRecords;
+        init();
 	}
 
 	/**
@@ -188,7 +196,12 @@ public class MARCRecordWrapper {
 	 */
 	private void init() {
 		setLeader();
-		setStatus();
+        //libloadlog.info("The file of deleted records value is:" + getDoFileOfDeletedRecords());
+        if(getDoFileOfDeletedRecords())
+        {
+            setStatus('d');
+        }
+        else setStatus();
 		setType();
 		setBibliographicLevel();
 	}
@@ -203,6 +216,9 @@ public class MARCRecordWrapper {
 		status = leader.getRecordStatus();
 	}
 
+    private void setStatus(char st) {
+        status = st;
+    }
 	/**  
 	 * Get the status code of the record
 	 * @return The status code
@@ -278,7 +294,7 @@ public class MARCRecordWrapper {
 
 	/** Is the record deleted? */
 	public boolean isDeleted() {
-		return 'd' == status ||
+        return 'd' == status ||
 			('z' == type && ('s' == status || 'x' == status));
 	}
 	
@@ -425,6 +441,15 @@ public class MARCRecordWrapper {
 		this.doIndentXml = doIndentXml;
 	}
 	
+    /** Sets the value of the flag -fileof_deleted_records to its corresponding boolean value */
+    public void setDoFileOfDeletedRecords(boolean doFileOfDeletedRecords) {
+        this.doFileOfDeletedRecords = doFileOfDeletedRecords;
+    }
+
+    public boolean getDoFileOfDeletedRecords() {
+        return doFileOfDeletedRecords;
+    }
+
 	/** Return the first Record from MARCXML */
 	public static Record MARCXML2Record(String MARCXML) {
 		List<Record> records = MARCXML2Records(MARCXML);

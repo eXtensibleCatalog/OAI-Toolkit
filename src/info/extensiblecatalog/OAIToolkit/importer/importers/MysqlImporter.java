@@ -58,11 +58,11 @@ public class MysqlImporter extends BasicRecordImporter
 	 * update the stored record with the current value.
 	 * @param record The marc record to insert
 	 */
-	public List<ImportType> importRecord(Record record) {
+	public List<ImportType> importRecord(Record record, boolean doFileOfDeletedRecords) {
 		
 		List<ImportType> typeList = new ArrayList<ImportType>();
 
-		MARCRecordWrapper rec = new MARCRecordWrapper(record, currentFile, createXml11);
+		MARCRecordWrapper rec = new MARCRecordWrapper(record, currentFile, createXml11, doFileOfDeletedRecords);
 		lastRecordToImport = rec.getId();
 		if(lastRecordToImport == null) {
 			prglog.error("[LIB] The record hasn't got identifier (field 001)");

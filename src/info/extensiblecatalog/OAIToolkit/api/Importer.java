@@ -390,7 +390,7 @@ public class Importer {
 				/** the percent of imported records in the size of file */
 				int percent;
 				while (marcReader.hasNext()) {
-					String xml = modifier.modifyRecord(marcReader.next());
+					String xml = modifier.modifyRecord(marcReader.next(), configuration.isFileOfDeletedRecords());
 					out.write(xml.getBytes());
 					fileStatistics.addTransformed();
 
@@ -498,6 +498,7 @@ public class Importer {
 
 		prglog.info("[PRG] Storage type: " + configuration.getStorageType());
 
+
 		initRecordImporter();
 		Modifier modifier = null;
 		if(configuration.isNeedModify() && configuration.isProductionMode()) {
@@ -542,11 +543,11 @@ public class Importer {
 				while (marcReader.hasNext()) {
 					record = marcReader.next();
 
-					if(modifier != null) {
-						String xml = modifier.modifyRecord(record);
+                    if(modifier != null) {
+						String xml = modifier.modifyRecord(record, configuration.isFileOfDeletedRecords());
 						record = MARCRecordWrapper.MARCXML2Record(xml);
 					}
-					List<ImportType> typeList = recordImporter.importRecord(record);
+                    List<ImportType> typeList = recordImporter.importRecord(record, configuration.isFileOfDeletedRecords());
 					fileStatistics.add(typeList);
 					fileStatistics.add(recordImporter.getCheckTime(),
 							recordImporter.getInsertTime());
@@ -734,6 +735,9 @@ public class Importer {
 			}
 		}
 
+        if (configuration.isFileOfDeletedRecords()) {
+
+        }
 		if(configuration.getStorageType().equals(StorageTypes.MIXED)
 			&& configuration.getLuceneIndex() != null)
 		{
@@ -752,6 +756,7 @@ public class Importer {
 			// else use the MySQL based RecordImporter
 			recordImporter = new MysqlImporter(schemaFile);
 		}
+
 		recordImporter.setDoIndentXml(configuration.isDoIndentXml());
 		recordImporter.setCreateXml11(configuration.isCreateXml11());
 		recordImporter.setErrorXmlDir(configuration.getErrorXmlDir());
