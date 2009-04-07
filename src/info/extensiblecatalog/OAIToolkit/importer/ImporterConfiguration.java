@@ -125,7 +125,7 @@ public class ImporterConfiguration {
 
 	private String convertDir        = "marc";
 	private String modifyDir         = "marcxml";
-	private String loadDir           = "load";
+	private String loadDir           = "xml";
 	private String errorSuffix       = "error";
 	private String destinationSuffix = "dest";
 	

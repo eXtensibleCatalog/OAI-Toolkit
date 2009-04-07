@@ -40,7 +40,7 @@ public class DirectoryNameGiver {
 	/** The target directory of convert() */
 	private File convertTarget = null;
 
-	/** The target directory of convert() */
+	/** The error directory of convert() */
 	private File convertError = null;
 
 	/** The target directory of convert() */
