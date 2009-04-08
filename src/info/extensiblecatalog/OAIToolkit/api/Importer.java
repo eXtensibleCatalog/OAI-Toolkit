@@ -19,6 +19,7 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Date;
+import java.util.Collections;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
@@ -33,6 +34,8 @@ import org.xml.sax.SAXParseException;
 import info.extensiblecatalog.OAIToolkit.importer.CLIProcessor;
 import info.extensiblecatalog.OAIToolkit.importer.Converter;
 import info.extensiblecatalog.OAIToolkit.importer.DirectoryNameGiver;
+import info.extensiblecatalog.OAIToolkit.importer.FileListing;
+import info.extensiblecatalog.OAIToolkit.importer.DirectoryListing;
 import info.extensiblecatalog.OAIToolkit.importer.FileNameComparator;
 import info.extensiblecatalog.OAIToolkit.importer.ImporterConfiguration;
 import info.extensiblecatalog.OAIToolkit.importer.ImporterConstants;
@@ -130,7 +133,7 @@ public class Importer {
     	}
     }
 
-	private void convert(){
+	private void convert() {
 		if(!configuration.checkSourceDir()
 			|| !configuration.checkDestinationDir()
 			|| !configuration.checkDestinationXmlDir()
@@ -205,9 +208,22 @@ public class Importer {
 		converter.setDefaultRepositoryCode(configuration.getDefaultRepositoryCode());
 
 		prglog.info("[PRG] " + converter.getSettings());
+        File[] files = null;
 
 		File fSourceDir = dirNameGiver.getConvertSource();
-		File[] files = fSourceDir.listFiles(new MARCFileNameFilter());
+        FileListing f1 = new FileListing();
+        try {
+            List<File> fileslist = f1.getFileListing(fSourceDir);
+            int filesize = fileslist.size();
+            files = new File[filesize];
+            files = fileslist.toArray(files);
+        }
+        catch (FileNotFoundException fe) {
+            prglog.error("Exception" + fe);
+        }
+        
+          
+		//File[] files = fSourceDir.listFiles(new MARCFileNameFilter());
 		if(0 == files.length) {
 			prglog.warn("[PRG] There's no MARC file in the source directory: "
 					+ configuration.getSourceDir());
@@ -253,6 +269,7 @@ public class Importer {
 					boolean deleted = successFile.delete();
 					prglog.info("[PRG] Delete " + successFile + " - " + deleted);
 				}
+
 				// remove
 				boolean remove = marcFile.renameTo(successFile);
 				if(configuration.isNeedLogDetail()) {
@@ -309,6 +326,27 @@ public class Importer {
 			}
 		}
 
+        //Delete the directories
+                File[] dirs = null;
+
+                DirectoryListing d1 = new DirectoryListing();
+                try {
+                    List<File> dirslist = d1.getDirectoryListing(fSourceDir);
+                    int dirsize = dirslist.size();
+                    dirs = new File[dirsize];
+                    dirs = dirslist.toArray(dirs);
+                 }
+                catch (FileNotFoundException fe) {
+                    prglog.error("Exception" + fe);
+                }
+
+                Arrays.sort(dirs,Collections.reverseOrder());
+                for (File remfile: dirs) {
+                    if (remfile.isDirectory()) {
+                        remfile.delete();
+                    }
+                }
+                
 		if(configuration.isNeedLogDetail()) {
                         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
                         Date convEndDate = new Date();
