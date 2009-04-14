@@ -1,7 +1,7 @@
-Voyager Scripts’ Guidelines
+Voyager Scripts Guidelines
 
 This document gives a detailed explanation of the scripts and how to work through these scripts and use them effectively. Although these scripts are used to extract data from the Voyager, one could also use it as a guideline to also extract data from other ILS. Sample scripts of other ILS would be available soon.
-Voyager – University of Rochester
+Voyager - University of Rochester
 Introduction
 As described in this manual, data needs to be extracted from a commercial ILS and made available to the OAI Toolkit, and this is accomplished via the ILS Connector.  This section will detail how the University of Rochester accomplishes this task using the Voyager ILS.
 This ILS Connector can be used to produce a bulk export of records or to incrementally extract updated records based on date ranges. Voyager has a tool called marcexport that can be used to export updated and newly created records. This section will describe the process of automating marcexport and moving the MARC records to your OAI server location. The only requirement, besides Voyager, is to have OpenSSL and OpenSSH installed on both your Voyager server and OAI server.
