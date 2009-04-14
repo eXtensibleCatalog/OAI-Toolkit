@@ -119,7 +119,7 @@ public class LuceneImporter extends BasicRecordImporter
 				ids.add(id);
 			} else {
 				id = luceneMgr.getId(searchData);
-				luceneMgr.delDoc("id", id);
+                luceneMgr.delDoc("id", id);
 				typeList.add(ImportType.UPDATED);
 			}
 
@@ -137,6 +137,7 @@ public class LuceneImporter extends BasicRecordImporter
 			}
 			doc.add(luceneMgr.keyword("modification_date",
 					data.getModificationDate().toString()));
+
 			doc.add(luceneMgr.keyword("set",
 					setsToRecord.getSetId().toString()));
 			doc.add(luceneMgr.stored("xml", xml.getXml()));

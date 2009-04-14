@@ -90,7 +90,7 @@ public class LuceneSearcher {
 		String content = null;
 		try {
 			Document doc = searcher.doc(recordId);
-			if(doc != null) {
+            if(doc != null) {
 				content = doc.get("xml");
 			} else {
 				prglog.error("[PRG] There's no record with this ID: " + recordId);
