@@ -35,7 +35,7 @@ Note that we have XcExport set up to run once a day as a cron job. Since it only
 Parameters for Marcexport 
 Voyager's marcexport extracts the records from the database and puts them into a single file with a .mrc extension. This section
 will describe the parameters we use. There are different options available for this program, which are detailed in 
-Voyager’s Technical User’s Guide for the version of Voyager that you’re using. 
+Voyager's Technical User's Guide for the version of Voyager that you're using. 
 
 The entire command is:
 /m1/voyager/rochdb/sbin/Pmarcexport -o/m1/voyager/local/bin/XcMarcExport/updates$FILEDATE.mrc -rB -mB -ttoday-0 -aM
@@ -45,7 +45,7 @@ Note that the generic xxxdb is used only for documentation purposes, and you wou
 -o	Output - the first option (-o) is for the output filename. This is optional; if not specified the output file 
 	will be  marc.exp.yyyymmdd.hhmm with yyyy = year, mm = month, dd = day, hh = hour and mm = minutes that the script is run. 
 	It will also be placed in /m1/voyager/xxxdb/rpt. This default name is a little cumbersome, so we opt to give it our own name. 
-	$FILEDATE is a variable created by XcExport which is the current date in a nicer format. Also, by using the –o option, 
+	$FILEDATE is a variable created by XcExport which is the current date in a nicer format. Also, by using the -o option, 
 	we get to put the output file into our current working directory. 
 
 -r	Record type - option (-r) is the record type. In this example, we are exporting bibliographic records, so we use the B parameter with the -r option (-rB).
@@ -75,7 +75,7 @@ XcExport is a simple shell script that runs the entire export process. The scrip
   
 #!/bin/sh
 #
-# It shouldn’t be necessary since we use the full path to executables, but feel free to uncomment
+# It shouldn't be necessary since we use the full path to executables, but feel free to uncomment
 # the PATH statements below and add any relevant path information for your server
 #PATH=
 #export PATH
@@ -163,8 +163,8 @@ rm /m1/voyager/local/bin/XcMarcExport/tempfile
 echo XcExport finished!
 
 echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - "
-The PATH environmental variable shouldn’t be necessary since the script uses full paths to all files. However, having PATH information doesn’t
-hurt and if the script isn’t working it’s a good first step to try. Please note the path to some of your executable files like scp 
+The PATH environmental variable shouldn't be necessary since the script uses full paths to all files. However, having PATH information doesn't
+hurt and if the script isn't working it's a good first step to try. Please note the path to some of your executable files like scp 
 and tar may be different on your server. Please customize the script accordingly for your environment. 
 XcExport creates a variable called FILENAME, which is the current date in a nice format (yyyymmm-dd).  Pmarcexport is executed and
 produces an output file called updates$FILENAME.mrc (for example: updates2008-05-21.mrc).  
@@ -175,14 +175,15 @@ copies it to a directory called XcArchive then deletes the original output file.
 We have a routine set up where once a week any deleted/replaced records are combined in a tgz file (see the section on deleted/replaced 
 records for more details). Each time XcExport runs it checks for a recent version (4 days or less old). If it finds one, then it is copied to the OAI server.
 Finally, XcExport will extract and move Authority records. The records extracted in the first part of the script are Bib and Holding records.
-Unfortunately, Pmarcexport doesn’t allow the extraction of all three record types at the same time. 
+Unfortunately, Pmarcexport doesn't allow the extraction of all three record types at the same time. 
 
 We use the same parameters with Pmarcexport except for two:
-•	-rA  
-•	-ttoday-7
-The “A” part of –rA tells Pmarcexport to export Authority records. The –ttoday-7 means export Authority records from the last seven days.
+1.	-rA  
+2.	-ttoday-7
+
+The "A" part of -rA tells Pmarcexport to export Authority records. The -ttoday-7 means export Authority records from the last seven days.
 Feel free to adjust the time interval to what best suits your inisitution. 
-The XcExport script checks to see what day of the week it is. If it’s Monday, the script will run Pmarcexport and copy the files to the OAI server.
+The XcExport script checks to see what day of the week it is. If it's Monday, the script will run Pmarcexport and copy the files to the OAI server.
 Like the Bib and Holding records, the Authority record extract will then be gzipped and moved to an archive directory. 
 Tuesday through Thursday the Authority record section of XcExport will be ignored.
 The XcExport script is owned by the user voyager and the group endeavor. It also needs to have execute privileges as shown below.
@@ -208,20 +209,21 @@ understand the process and security ramifications.  You can find more informatio
 Both your Voyager server and the OAI server need to have OpenSSL and OpenSSH installed and have sshd (the SSH daemon) running. 
 You may already have both of these installed. To check, enter the following command:
 
- ssh –Version
+ ssh -Version
 You should see this response:
 
 OpenSSH_4.6p1, OpenSSL 0.9.8e 23 Feb 2007
-The version isn’t really important, but this might be a good time to update them if they’re really old. 
+
+The version isn't really important, but this might be a good time to update them if they're really old. 
 Since the output file is owned by voyager, we have voyager SCP the file over.  We also have created a voyager user on the OAI server. 
-While you don’t have to do it this way, you’ll have permission issues to deal with if you select to use different users. Do not set up root to root trust between servers! 
+While you don't have to do it this way, you'll have permission issues to deal with if you select to use different users. Do not set up root to root trust between servers! 
 To enable public/private key authentication, find the sshd_config file and open it with your favorite text editor. Make the following changes on both servers:
 
 RSAAuthentication yes
 PubkeyAuthentication yes
 AuthorizedKeysFile     .ssh/authorized_keys
-On your Voyager server, as the voyager user, generate the key pair. The keys should reside in the .ssh directory in voyager’s 
-home directory (/export/home/voyager in Unix, /home/voyager for Linux). Also, leave the passphrase blank, otherwise you’ll be prompted 
+On your Voyager server, as the voyager user, generate the key pair. The keys should reside in the .ssh directory in voyager's 
+home directory (/export/home/voyager in Unix, /home/voyager for Linux). Also, leave the passphrase blank, otherwise you'll be prompted 
 to enter the passphrase whenever you try to use this, thus defeating the purpose of automation. 
 
 
@@ -238,7 +240,7 @@ The id_rsa key is the private key. Take care to protect it, as anyone who has po
 to servers with a matching public key! Give it read/write permissions for voyager only. Remove all permissions for group and other. 
 
 -rw-------   1 voyager  endeavor    1675 Apr 23 12:03 id_rsa 
-On the OAI server, create a .ssh directory in voyager’s home directory.  Enter that directory and create a file called “authorized_keys” without the quotes. 
+On the OAI server, create a .ssh directory in voyager’s home directory.  Enter that directory and create a file called "authorized_keys" without the quotes. 
 Copy the contents of id_rsa.pub from your Voyager server. It will be one line that looks like this:
 
 ssh-rsa <very long string of number & letter> voyager@servername
@@ -253,9 +255,9 @@ touch testfile
 scp tesfile voyager@oaiserver:/export/home/voyager/
 
 If it's working properly, the file will get copied over without having to enter a password. Note that for the very first time you try this,
-you may be asked to accept the RSA key. This will only be asked one time. Once you accept it, then you won’t have to do it again.  
+you may be asked to accept the RSA key. This will only be asked one time. Once you accept it, then you won't have to do it again.  
 If that happens, try it again. The file should get copied over without any user interaction.  
-At this point, you could have the MARC record file copied to Voyager’s home directory on the OAI server. In our XcExport script, 
+At this point, you could have the MARC record file copied to Voyager's home directory on the OAI server. In our XcExport script, 
 however, we SCP the file to a directory where the OAI server expects it. If you want to do the same it's just a matter of setting the proper directory ownership.
 We put the Voyager user in the same group as the owner of the directory we want to SCP the file. There are other ways to accomplish this as well.
 The last part of XcExport moves the deleted/replaced records to the OAI server. The deleted/replaced records are actually generated 
@@ -271,7 +273,9 @@ We need to know which records have been deleted or replaced in your ILS so we ca
 •	replace.auth.marc
 •	replace.bib.marc
 
-The process to move them is simple; just stop Voyager, move them to another directory and start Voyager again. Once Voyager starts back up it will recreate those files (which is why it’s important to stop Voyager before moving them).  This is something you may be already doing as part of your routine maintenance for Voyager (we run this once a week). Depending on the volume of records your library processes, you can adjust yours to run more or less frequently.
+The process to move them is simple; just stop Voyager, move them to another directory and start Voyager again. Once Voyager starts back up it will recreate those files (which is why it’s 
+important to stop Voyager before moving them).  This is something you may be already doing as part of your routine maintenance for Voyager (we run this once a week). Depending on the volume of records 
+your library processes, you can adjust yours to run more or less frequently.
 
 The XcExport script will look for 
 Del_rep_archive
@@ -359,7 +363,7 @@ Or you could have a directory that contains only the latest deleted.$FILEDATE.tg
 
 Monitoring
 
-It’s important to set up some sort of mechanism in place to monitor both XcExport and archive_marc to make sure the files are actually getting
+It's important to set up some sort of mechanism in place to monitor both XcExport and archive_marc to make sure the files are actually getting
 to the OAI server.  Since both of those files are scheduled via cron, you should have a log file to record what’s going on when the script is running.
 Here (again) is the crontab entry for XcExport:
 
@@ -369,8 +373,8 @@ The log file, XcExport.txt, gets overwritten every day. You could choose to appe
 We felt this wasn’t necessary because of the scripts that we have on the OAI server (which we’ll get to in the next paragraph). While the log files are nice, 
 it still makes checking to see if the files actually arrived a manual process. 
 
-Instead of having to check two log files everday, we wrote two scripts that will check to see the files arrived. If they didn’t then 
-the OAI server will send you an email (both these scripts run from the OAI server). This is the script that checks for XcExport’s file:
+Instead of having to check two log files everday, we wrote two scripts that will check to see the files arrived. If they didn't then 
+the OAI server will send you an email (both these scripts run from the OAI server). This is the script that checks for XcExport's file:
   
 
 xcexport_monitor_script
@@ -396,7 +400,7 @@ EOF
 Fi
 
 We use the familiar $FILEDATE variable for consistency and simplicity. The script then does a file check to see if that file exists. 
-If it does, then it will echo “XcExport file arrived” into the log file. If the file hasn’t arrived then the script will send out an email. 
+If it does, then it will echo "XcExport file arrived" into the log file. If the file hasn’t arrived then the script will send out an email. 
 The script to check for the deleted/replaced file export works a little differently. Since its created three days before it is actually moved,
 we can’t use the $FILEDATE method like the xcexport_monitor_script. We instead have to use the find command in the same way the XcExport script does:
 
@@ -445,15 +449,15 @@ scheduled to run on the same days as the scripts they are monitoring. For us, de
 once a week on Monday while xcexport_monitor_script runs Monday thought Friday. 
 
 Finally, make sure that both your Voyager and OAI server are using NTP or some other time synchronization mechanism. The system times 
-for both servers need to be in sync with each other. Otherwise, you might end up with a monitoring script going off before the script that’s 
+for both servers need to be in sync with each other. Otherwise, you might end up with a monitoring script going off before the script that's 
 supposed to generate and move the file.  
 
 These scripts are provided as a convenience for keeping your Xc repository up to date. As mentioned before, there are many ways 
-to accomplish what these scripts do. It’s ultimately up to you and your institution to determine the best way.  
+to accomplish what these scripts do. It's ultimately up to you and your institution to determine the best way.  
 
 Putting it all Together
-Now that all the elements are working, put your XcExport and del_rep_archive (if you don’t’ already have one) scripts in place.  
-If XcExport doesn’t work correctly, comment out everything except for the marcexport. If that works, then enable the SCP portion.  
+Now that all the elements are working, put your XcExport and del_rep_archive (if you don't already have one) scripts in place.  
+If XcExport doesn't work correctly, comment out everything except for the marcexport. If that works, then enable the SCP portion.  
 Keep going until you find the piece that isn’t working. Run it manually a few times to be sure it works properly before scheduling it as a cron job.
 
 
