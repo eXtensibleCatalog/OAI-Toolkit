@@ -191,7 +191,7 @@ The XcExport script is owned by the user voyager and the group endeavor. It also
 -rwxr--r--   1 voyager  endeavor    1806 May 23 10:25 XcExport  
 The script can live anywhere as long as voyager can write to the directory to create the output file. We like to keep customized 
 scripts that interact with voyager in the /m1 directory structure. 
-If you want to have this script run as a cron job (which is recommended), it should to be run from voyager’s crontab. Schedule it at the 
+If you want to have this script run as a cron job (which is recommended), it should to be run from voyager's crontab. Schedule it at the 
 end of the day when no one will be updating or adding records to ensure that the script gets them all.  XcExport only takes about a minute to run,
 so it can be scheduled close to midnight. For troubleshooting purposes, it is also recommended that you have a log file for the XcExport cron job. 
 
@@ -202,7 +202,7 @@ The entire crontab entry is show below:
 Automating a Secure File Transfer between Servers
 
 After marcexport creates an output file, we need to move it to the OAI server.  There are a few different ways to accomplish this.
-We like using Secure Copy (or SCP) because it’s secure, comes with OpenSSH and can be automated. While the output file could be manually
+We like using Secure Copy (or SCP) because it's secure, comes with OpenSSH and can be automated. While the output file could be manually
 copied via SCP, you run the risk of someone forgetting and having your XC repository become out of date. Automating the process takes care of that risk. 
 Automating SCP requires setting up a public/private key authentication. Please read up on OpenSSH public key authentication to make sure you 
 understand the process and security ramifications.  You can find more information at http://sial.org/howto/openssh/publickey-auth/.
@@ -240,7 +240,7 @@ The id_rsa key is the private key. Take care to protect it, as anyone who has po
 to servers with a matching public key! Give it read/write permissions for voyager only. Remove all permissions for group and other. 
 
 -rw-------   1 voyager  endeavor    1675 Apr 23 12:03 id_rsa 
-On the OAI server, create a .ssh directory in voyager’s home directory.  Enter that directory and create a file called "authorized_keys" without the quotes. 
+On the OAI server, create a .ssh directory in voyager's home directory.  Enter that directory and create a file called "authorized_keys" without the quotes. 
 Copy the contents of id_rsa.pub from your Voyager server. It will be one line that looks like this:
 
 ssh-rsa <very long string of number & letter> voyager@servername
@@ -249,7 +249,7 @@ Set the permissions of the .ssh directory to 700 and 600 to authorized_keys as f
 
 chmod 700 .ssh
 chmod 600 authorized_keys
-That’s it. To test it, try to SCP a file from your Voyager server.
+That's it. To test it, try to SCP a file from your Voyager server.
 
 touch testfile
 scp tesfile voyager@oaiserver:/export/home/voyager/
@@ -265,15 +265,15 @@ by another script called del_rep_archive as described below.
 
 Deleted and Replaced Records
 We need to know which records have been deleted or replaced in your ILS so we can do the same to the Xc repository. Voyager keeps track of them in six separate files located in /m1/voyager/xxxdb/rpt:
-•	delete.item
-•	deleted.auth.marc
-•	deleted.bib.marc
-•	deleted.mfhd.marc
-•	discard.bib.marc
-•	replace.auth.marc
-•	replace.bib.marc
+1.	delete.item
+2.	deleted.auth.marc
+3.	deleted.bib.marc
+4.	deleted.mfhd.marc
+5.	discard.bib.marc
+6.	replace.auth.marc
+7.	replace.bib.marc
 
-The process to move them is simple; just stop Voyager, move them to another directory and start Voyager again. Once Voyager starts back up it will recreate those files (which is why it’s 
+The process to move them is simple; just stop Voyager, move them to another directory and start Voyager again. Once Voyager starts back up it will recreate those files (which is why it's 
 important to stop Voyager before moving them).  This is something you may be already doing as part of your routine maintenance for Voyager (we run this once a week). Depending on the volume of records 
 your library processes, you can adjust yours to run more or less frequently.
 
@@ -326,20 +326,20 @@ chown voyager:endeavor *$FILEDATE.tgz
 echo Archive_marc finished
 
 Just like the XcExport,  we place the current date into the file name (this will be important for another script that checks to see if the file arrived).
-The script then moves the files to an archive directory in Voyager’s home directory.  Once the files are there, we tar them in a single file archive
-(except for the item records which we don’t use in our Xc implementation) and compress it with gzip. Note if you want to tar and gzip in one command, 
-you have to use GNU tar. The version of tar that ships with Solaris doesn’t understand the –z option ( zipping).  
+The script then moves the files to an archive directory in Voyager's home directory.  Once the files are there, we tar them in a single file archive
+(except for the item records which we don't use in our Xc implementation) and compress it with gzip. Note if you want to tar and gzip in one command, 
+you have to use GNU tar. The version of tar that ships with Solaris doesn't understand the -z option ( zipping).  
 
 The script does a cd into the archive directory instead of using the full (or absolute) path to the files in the tar command.  
-If you use the absolute path in the tar command, that path will be recreated when they’re unzipped and utarred on the OAI server.  
+If you use the absolute path in the tar command, that path will be recreated when they're unzipped and utarred on the OAI server.  
 
 This script is run as root (unlike the XcExport script which is run as voyager) since we have to stop and start Voyager.  
 To make sure the ownership of the tgz file is correct, the script will set the owner to voyager and the group to endeavor.  
 If this file is owed by root the SCP will fail.
 
-The file is moved to the OAI server by the XcExport script. It’s done this way for a couple of reasons. First, we don’t allow root SSH access
-on our servers for security reasons. While you can use su to run SCP as Voyager (su – voyager –c ) in a script, you get a new shell and lose the $FILEDATE variable. 
-Instead of creating a new script just to move this file over, we added a section in the XcExport script to do it. Since that script uses the same variables, it’s a perfect fit. 
+The file is moved to the OAI server by the XcExport script. It's done this way for a couple of reasons. First, we don't allow root SSH access
+on our servers for security reasons. While you can use su to run SCP as Voyager (su - voyager -c ) in a script, you get a new shell and lose the $FILEDATE variable. 
+Instead of creating a new script just to move this file over, we added a section in the XcExport script to do it. Since that script uses the same variables, it's a perfect fit. 
 
 This is the section of code that moves the deleted.$FILEDATE.tgz:
 
@@ -350,27 +350,27 @@ else
 fi
 
 It does a find in the /export/home/voyager/Archive directory for a file that was created in the last three days and ends with .tgz.
-If such a file exists, then it is moved to the OAI server. If it doesn’t exist then the script will just echo “No new file today” in the log. 
+If such a file exists, then it is moved to the OAI server. If it doesn't exist then the script will just echo "No new file today" in the log. 
 
 Why does this file use the find command instead of just moving the file directly? Timing. The del_rep_archive script runs on Saturday morning 
-while the XcExport script runs Monday through Friday night. The deleted.$FILEDATE.tgz file will have Saturday’s date in the file name. 
-When the XcExport script runs on Monday, it will have Monday’s date in the $FILEDATE variable. If the script checks for the file using the $FILEDATE variable, 
+while the XcExport script runs Monday through Friday night. The deleted.$FILEDATE.tgz file will have Saturday's date in the file name. 
+When the XcExport script runs on Monday, it will have Monday's date in the $FILEDATE variable. If the script checks for the file using the $FILEDATE variable, 
 it will always fail. The find command will always come back with the latest version, but skip over any older files that may be in that directory.  
 
 Another way around this is to just have your XcExport script run on Saturdays or to have your del_rep_archive script run on a weekday.  
-Or you could have a directory that contains only the latest deleted.$FILEDATE.tgz file and always move whatever is in it. Once it’s moved to the OAI server,
+Or you could have a directory that contains only the latest deleted.$FILEDATE.tgz file and always move whatever is in it. Once it's moved to the OAI server,
  you would then have to move that file to another directory. There are many ways to accomplish what these scripts do. 
 
 Monitoring
 
 It's important to set up some sort of mechanism in place to monitor both XcExport and archive_marc to make sure the files are actually getting
-to the OAI server.  Since both of those files are scheduled via cron, you should have a log file to record what’s going on when the script is running.
+to the OAI server.  Since both of those files are scheduled via cron, you should have a log file to record what's going on when the script is running.
 Here (again) is the crontab entry for XcExport:
 
 05 23 * * 1-5 /m1/voyager/local/bin/XcMarcExport/XcExport > /m1/voyager/local/cronlog/XcExport.txt 2>&1
 
 The log file, XcExport.txt, gets overwritten every day. You could choose to append to this file instead of overwriting by using ">>" instead of " >". 
-We felt this wasn’t necessary because of the scripts that we have on the OAI server (which we’ll get to in the next paragraph). While the log files are nice, 
+We felt this wasn't necessary because of the scripts that we have on the OAI server (which we'll get to in the next paragraph). While the log files are nice, 
 it still makes checking to see if the files actually arrived a manual process. 
 
 Instead of having to check two log files everday, we wrote two scripts that will check to see the files arrived. If they didn't then 
@@ -400,9 +400,9 @@ EOF
 Fi
 
 We use the familiar $FILEDATE variable for consistency and simplicity. The script then does a file check to see if that file exists. 
-If it does, then it will echo "XcExport file arrived" into the log file. If the file hasn’t arrived then the script will send out an email. 
+If it does, then it will echo "XcExport file arrived" into the log file. If the file hasn't arrived then the script will send out an email. 
 The script to check for the deleted/replaced file export works a little differently. Since its created three days before it is actually moved,
-we can’t use the $FILEDATE method like the xcexport_monitor_script. We instead have to use the find command in the same way the XcExport script does:
+we can't use the $FILEDATE method like the xcexport_monitor_script. We instead have to use the find command in the same way the XcExport script does:
 
 delrep_monitor_script
 #!/bin/sh
@@ -414,13 +414,12 @@ else
 echo "Deleted records did not arrive" >> /import/deleted_records/mailfile
 date
 echo "Deleted records did not arrive"
-mailx -s "Deleted Records Did Not Arrive" rarbelo@library.rochester.edu,shreyanshv@library.rochester.edu < /import/deleted_re
-cords/mailfile 
+mailx -s "Deleted Records Did Not Arrive" rarbelo@library.rochester.edu,shreyanshv@library.rochester.edu < /import/deleted_records/mailfile 
 fi
 rm /import/deleted_records/TESTFILE
 rm /import/deleted_records/mailfile
 
-Here’s the script to monitor the Authority record import:
+Here's the script to monitor the Authority record import:
 
 Auth_Monitor_Script
 #!/bin/sh
@@ -444,7 +443,7 @@ EOF
 fi
 
 Timing is important in order for these scripts to work properly. We schedule these scripts to run 15 minutes after XcExport.
-That gives plenty of time for the exported files to arrive (it usually only takes a minute or two).   Also, make sure that they’re 
+That gives plenty of time for the exported files to arrive (it usually only takes a minute or two).   Also, make sure that they're 
 scheduled to run on the same days as the scripts they are monitoring. For us, delrec_monitor_script and Auth_Monitor_Script runs 
 once a week on Monday while xcexport_monitor_script runs Monday thought Friday. 
 
@@ -458,6 +457,6 @@ to accomplish what these scripts do. It's ultimately up to you and your institut
 Putting it all Together
 Now that all the elements are working, put your XcExport and del_rep_archive (if you don't already have one) scripts in place.  
 If XcExport doesn't work correctly, comment out everything except for the marcexport. If that works, then enable the SCP portion.  
-Keep going until you find the piece that isn’t working. Run it manually a few times to be sure it works properly before scheduling it as a cron job.
+Keep going until you find the piece that isn't working. Run it manually a few times to be sure it works properly before scheduling it as a cron job.
 
 
