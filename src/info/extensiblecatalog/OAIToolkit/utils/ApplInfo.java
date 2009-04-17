@@ -21,6 +21,7 @@ import java.util.Map;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
 
+import info.extensiblecatalog.OAIToolkit.importer.ImporterConfiguration;
 import info.extensiblecatalog.OAIToolkit.DTOs.DataTransferObject;
 import info.extensiblecatalog.OAIToolkit.DTOs.SetDTO;
 import info.extensiblecatalog.OAIToolkit.configuration.OAIConfiguration;
@@ -97,8 +98,8 @@ public class ApplInfo {
 	
 	/** The cache directory */
 	public static File cacheDirectory;
-	
-	/** List of error messages */
+
+    /** List of error messages */
 	// TODO: write out error messages in the index page
 	public static final List<String> errorMessages = new ArrayList<String>();
 	
@@ -115,6 +116,35 @@ public class ApplInfo {
 	
 	/** The minimum interval between two cache clearence */
 	public static long cacheClearInterval = 5 * 60 * 1000;
+
+    /** initialize the command line interface for the Lucene Statistics */
+	public static void statsInit(String rootDir, String statsLuceneDir, String logDir) throws Exception {
+		//initApplication();
+        System.out.println("init(luceneDir): " + statsLuceneDir);
+		System.out.println("init(logDir): " + logDir);
+		initLogging(rootDir, logDir);
+		//initDB(logDir);
+		//initSets();        
+	}
+
+    /** initialize the command line interface for the Lucene Statistics */
+	public static void statsInit(String rootDir, String logDir) throws Exception {
+		//initApplication();
+        System.out.println("init(logDir): " + logDir);
+		initLogging(rootDir, logDir);
+        String basePropertiesFileName = OAI_DIRECTORY_CNF_FILE;
+        
+        System.out.println("basePropertiesFileName: " + basePropertiesFileName);
+
+        PropertiesConfiguration applConf = ConfigUtil
+					.load(basePropertiesFileName);
+        String statsLuceneDir = applConf.getString("luceneDir");
+        System.out.println("ApplInfo::StatsLuceneDir: " + statsLuceneDir);
+        ImporterConfiguration imconfig = new ImporterConfiguration();
+        imconfig.setStatsLuceneDir(statsLuceneDir);
+        //initDB(logDir);
+		//initSets();
+	}
 
 	/** initialize the command line interface */
 	public static void init(String logDir) throws Exception {

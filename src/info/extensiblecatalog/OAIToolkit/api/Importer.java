@@ -31,6 +31,13 @@ import org.marc4j.MarcXmlWriter;
 import org.marc4j.marc.Record;
 import org.xml.sax.SAXParseException;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
+import org.apache.commons.cli.Options;
+
+import info.extensiblecatalog.OAIToolkit.db.LuceneSearcher;
+
 import info.extensiblecatalog.OAIToolkit.importer.CLIProcessor;
 import info.extensiblecatalog.OAIToolkit.importer.Converter;
 import info.extensiblecatalog.OAIToolkit.importer.DirectoryNameGiver;
@@ -51,6 +58,7 @@ import info.extensiblecatalog.OAIToolkit.importer.importers.MysqlImporter;
 import info.extensiblecatalog.OAIToolkit.importer.statistics.ConversionStatistics;
 import info.extensiblecatalog.OAIToolkit.importer.statistics.LoadStatistics;
 import info.extensiblecatalog.OAIToolkit.importer.statistics.ModificationStatistics;
+import org.apache.lucene.search.Hits;
 import info.extensiblecatalog.OAIToolkit.oai.StorageTypes;
 import info.extensiblecatalog.OAIToolkit.utils.ApplInfo;
 import info.extensiblecatalog.OAIToolkit.utils.ExceptionPrinter;
@@ -66,14 +74,16 @@ public class Importer {
 
 	/** The logger object */
         private static String library_convertlog = "librarian_convert";
-	private static String library_loadlog = "librarian_load";
+        private static String library_loadlog = "librarian_load";
         private static String programmer_log = "programmer";
+        private static String lucene_dbStatistics_log = "lucene_dbStatistics";
 
 
 	//private static final Logger Log = Logging.getLogger();
         private static final Logger libconvertlog = Logging.getLogger(library_convertlog);
         private static final Logger libloadlog = Logging.getLogger(library_loadlog);
         private static final Logger prglog = Logging.getLogger(programmer_log);
+        private static final Logger lucenestatslog = Logging.getLogger(lucene_dbStatistics_log);
 
 	public static final String VERSION = "0.5.1";
 
@@ -773,10 +783,7 @@ public class Importer {
 			}
 		}
 
-        if (configuration.isFileOfDeletedRecords()) {
-
-        }
-		if(configuration.getStorageType().equals(StorageTypes.MIXED)
+        if(configuration.getStorageType().equals(StorageTypes.MIXED)
 			&& configuration.getLuceneIndex() != null)
 		{
 			prglog.info("[PRG] LuceneIndex: " + configuration.getLuceneIndex());
@@ -800,14 +807,79 @@ public class Importer {
 		recordImporter.setErrorXmlDir(configuration.getErrorXmlDir());
 	}
 
+    private void statsinit() throws Exception {
+        String statsLuceneDir = null;
+        String root = new File(".").getAbsoluteFile().getParent();
+        if (configuration.getStatsLuceneDir()!= null) {
+            statsLuceneDir = configuration.getStatsLuceneDir();
+            ApplInfo.statsInit(root, statsLuceneDir, configuration.getLogDir());
+        }
+        else {
+            ApplInfo.statsInit(root, configuration.getLogDir());
+	}
+    }
+
+    private void statsexecute() {
+        LuceneSearcher ls = new LuceneSearcher(configuration.getStatsLuceneDir());
+
+        Hits hits_deleted = ls.search("is_deleted:true");
+        Hits hits_notdeleted = ls.search("is_deleted:false");
+        Hits hits_bib_recordtype = ls.search("record_type:1");
+        Hits hits_auth_recordtype = ls.search("record_type:2");
+        Hits hits_hold_recordtype = ls.search("record_type:3");
+        Hits hits_class_recordtype = ls.search("record_type:4");
+        Hits hits_comm_recordtype = ls.search("record_type:5");
+
+        int deleted_count = hits_deleted.length();
+        int notdeleted_count = hits_notdeleted.length();
+        int bib_count = hits_bib_recordtype.length();
+        int auth_count = hits_auth_recordtype.length();
+        int hold_count = hits_hold_recordtype.length();
+        int class_count = hits_class_recordtype.length();
+        int comm_count = hits_comm_recordtype.length();
+
+        lucenestatslog.info(" *************** Lucene Database Statistics *************** \n\n ");
+
+        lucenestatslog.info("Total records in the Lucene Database are: " + (deleted_count + notdeleted_count));
+        lucenestatslog.info("\n\t Bibliographic records: " + bib_count);
+        lucenestatslog.info("\t Authority records: " + auth_count);
+        lucenestatslog.info("\t Holdings records: " + hold_count);
+        lucenestatslog.info("\t Classification records: " + class_count);
+        lucenestatslog.info("\t Community information records: " + comm_count);
+        lucenestatslog.info("\t Deleted records: " + deleted_count);
+
+    }
+
+
 	public static void main(String[] args) {
 		Importer importer = new Importer();
-		try {
-			CLIProcessor.process(args, importer);
+        try {
+            CLIProcessor.process(args, importer);
+            CommandLineParser parser = new GnuParser();
+            Options options = CLIProcessor.getCommandLineOptions();
+            CommandLine line = parser.parse(options, args);
+
+            if (line.hasOption("lucene_statistics")) {
+				importer.configuration.setLuceneStatistics(true);
+			}
+
+			// lucene Directory for Lucene Statistics
+			if (line.hasOption("stats_lucene_dir")) {
+				importer.configuration.setStatsLuceneDir(line.getOptionValue(
+				"stats_lucene_dir"));
+			}
+
+            System.out.println("[PRG] Lucene Statistics Value is:" + importer.configuration.isLuceneStatistics());
+            if (importer.configuration.isLuceneStatistics()) {
+                importer.statsinit();
+                importer.statsexecute();
+            }
+            else {
 			importer.init();
 			prglog.info("[PRG] Importer v" + VERSION);
 			prglog.info("[PRG] " + importer.configuration.getParams());
 			importer.execute();
+            }
 		} catch(Exception e) {
 			e.printStackTrace();
 		}

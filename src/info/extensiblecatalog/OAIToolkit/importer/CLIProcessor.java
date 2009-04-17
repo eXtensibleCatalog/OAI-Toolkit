@@ -213,6 +213,12 @@ public class CLIProcessor {
 
         Option fileof_deleted_records = new Option("fileof_deleted_records", "The source marc file should be considered as deleted");
 
+        Option lucene_statistics = new Option("lucene_statistics", "Statistics for Lucene Database");
+
+        OptionBuilder.withArgName("stats_lucene_dir");
+		OptionBuilder.hasArg();
+		OptionBuilder.withDescription("The directory of Lucene index given by the user.");
+		Option stats_lucene_dir = OptionBuilder.create("stats_lucene_dir");
 
 		OptionBuilder.withArgName("load_dir");
 		OptionBuilder.hasArg();
@@ -274,6 +280,8 @@ public class CLIProcessor {
                 options.addOption(translate_leader_bad_chars_to_zero);
                 options.addOption(translate_nonleader_bad_chars_to_spaces);
                 options.addOption(fileof_deleted_records);
+                options.addOption(stats_lucene_dir);
+                options.addOption(lucene_statistics);
 		options.addOption(replace_repository_code);
 		options.addOption(convert_dir);
 		options.addOption(load_dir);
@@ -416,12 +424,12 @@ public class CLIProcessor {
 				importer.configuration.setCreateXml11(true);
 			}
 			
-                        // translate_leader_bad_chars_to_zero
+            // translate_leader_bad_chars_to_zero
 			if (line.hasOption("translate_leader_bad_chars_to_zero")) {
 				importer.configuration.setTranslateLeaderBadCharsToZero(true);
 			}
                         
-                        // translate_nonleader_bad_chars_to_spaces
+            // translate_nonleader_bad_chars_to_spaces
 			if (line.hasOption("translate_nonleader_bad_chars_to_spaces")) {
 				importer.configuration.setTranslateNonleaderBadCharsToSpaces(true);
 			}
@@ -444,7 +452,17 @@ public class CLIProcessor {
 				"load_dir"));
 			}
 
-			// error_suffix
+            if (line.hasOption("lucene_statistics")) {
+				importer.configuration.setLuceneStatistics(true);
+			}
+
+			// lucene Directory for Lucene Statistics
+			if (line.hasOption("stats_lucene_dir")) {
+				importer.configuration.setStatsLuceneDir(line.getOptionValue(
+				"stats_lucene_dir"));
+			}
+
+            // error_suffix
 			if (line.hasOption("error_suffix")) {
 				importer.configuration.setErrorSuffix(line.getOptionValue(
 				"error_suffix"));

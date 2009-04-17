@@ -132,6 +132,11 @@ public class ImporterConfiguration {
 	private boolean doDeleteTemporaryFiles = false;
 
     private boolean fileOfDeletedRecords = false;
+
+    private boolean luceneStatistics = false;
+
+    private String statsLuceneDir = "lucene_index";
+
 	private String xsltString;
 	
 	private List<String> xslts = new ArrayList<String>();
@@ -339,7 +344,23 @@ public class ImporterConfiguration {
 	public void setLuceneIndex(String luceneIndex) {
 		this.luceneIndex = luceneIndex;
 	}
-	
+
+    public String getStatsLuceneDir() {
+		return statsLuceneDir;
+	}
+
+	public void setStatsLuceneDir(String statsLuceneDir) {
+		this.statsLuceneDir = statsLuceneDir;
+	}
+
+    public boolean isLuceneStatistics() {
+		return luceneStatistics;
+	}
+
+	public void setLuceneStatistics(boolean luceneStatistics) {
+		this.luceneStatistics = luceneStatistics;
+    }
+
 	public boolean isDoIndentXml() {
 		return doIndentXml;
 	}
