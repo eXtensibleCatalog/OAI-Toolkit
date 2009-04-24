@@ -69,7 +69,7 @@
 				>GetRecord</html:link> (oai_marc)</li>
 			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:extensiblecatalog.info:bib:1290748&metadataPrefix=mods"
 				>GetRecord</html:link> (mods)</li>
-			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:extensiblecatalog.info:bib:1290748&metadataPrefix=marc21"
+			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:extensiblecatalog.info:bib:1290748&metadataPrefix=marcxml"
 				>GetRecord</html:link> (marc21)</li>
 			<li><html:link action="oai-request?verb=GetRecord"
 				>w/o param</html:link></li>
@@ -89,15 +89,15 @@
 		<ul type="square">
 			<li><html:link action="oai-request?verb=ListRecords&metadataPrefix=oai_marc"
 				>ListRecords</html:link></li>
-			<li><html:link action="oai-request?verb=ListRecords&metadataPrefix=marc21"
+			<li><html:link action="oai-request?verb=ListRecords&metadataPrefix=marcxml"
 				>all (no params)</html:link></li>
-			<li><html:link action="oai-request?verb=ListRecords&metadataPrefix=marc21&amp;from=2002-06-01T19:20:30%2B0200"
+			<li><html:link action="oai-request?verb=ListRecords&metadataPrefix=marcxml&amp;from=2002-06-01T19:20:30%2B0200"
 				>from 2002-06-01</html:link></li>
-			<li><html:link action="oai-request?verb=ListRecords&metadataPrefix=marc21&amp;from=2002-06-01T19:20:30%2B0200&amp;until=2003-06-01T19:20:30%2B0200"
+			<li><html:link action="oai-request?verb=ListRecords&metadataPrefix=marcxml&amp;from=2002-06-01T19:20:30%2B0200&amp;until=2003-06-01T19:20:30%2B0200"
 				>from 2002-06-01 until 2003-06-01</html:link></li>
-			<li><html:link action="oai-request?verb=ListRecords&metadataPrefix=marc21&amp;from=2004-06-01T19:20:30%2B0200&amp;set=auth"
+			<li><html:link action="oai-request?verb=ListRecords&metadataPrefix=marcxml&amp;from=2004-06-01T19:20:30%2B0200&amp;set=auth"
 				>from: 2004-06-01, set: auth</html:link></li>
-			<li><html:link action="oai-request?verb=ListRecords&metadataPrefix=marc21&amp;set=bib"
+			<li><html:link action="oai-request?verb=ListRecords&metadataPrefix=marcxml&amp;set=bib"
 				>set: bib</html:link></li>
 		</ul>
 	</fieldset>

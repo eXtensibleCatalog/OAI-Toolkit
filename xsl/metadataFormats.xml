@@ -13,7 +13,7 @@
 		<xslt-file-name>MARC21slim2OAIMARC.xsl</xslt-file-name>
 	</metadata-format>
 	<metadata-format>
-		<metadata-prefix>marc21</metadata-prefix>
+		<metadata-prefix>marcxml</metadata-prefix>
 		<schema>http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd</schema>
 		<metadata-namespace>http://www.loc.gov/MARC21/slim</metadata-namespace>
 	</metadata-format>

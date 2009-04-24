@@ -121,6 +121,7 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 			//Document doc = hit.getDocument();
 			Document doc = hits.doc(currentRecord);
 			id = hits.id(currentRecord);
+
 			/*
 			prglog.info(id + ", " + doc.get("external_id") + ", " + doc.get("record_type") + ", " 
 					+ doc.get("xml").substring(90, 300));
