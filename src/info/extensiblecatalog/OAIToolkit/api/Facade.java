@@ -160,6 +160,7 @@ public class Facade {
 	 * @param oaiForm The OAI request form bean
 	 */
 	public Facade(OaiRequestForm oaiForm) {
+        
 		form = oaiForm;
 		verb = form.getVerb();
 		from = form.getFrom();
@@ -179,12 +180,22 @@ public class Facade {
 		if(form.isCacheable()) {
 			cacheable = true;
 		}
-		parseResumptionToken();
-		dataProvider.setParams(tokenId, from, until, set, metadataPrefix, 
+
+        boolean res = parseResumptionToken();
+        prglog.info("Value of boolean returned from resumptionToken is " + res);
+        if (res == true){
+        dataProvider.setParams(tokenId, from, until, set, metadataPrefix,
 				offset);
 		initCacheRegister();
-	}
-	
+        }
+
+		//RecordListResult result = initial_parseResumptionToken();
+        //if (result!=null) {
+        //    form.setXml(result.getContent());
+        //}
+        }
+        
+		
 	/**
 	 * Creates the common header for all responses
 	 * @param url The requested URL
@@ -387,7 +398,9 @@ public class Facade {
 			if(result.getNextResumptionToken() != null) {
 				t0 = System.currentTimeMillis();
 				resumptionToken = result.getNextResumptionToken();
-				parseResumptionToken();
+                parseResumptionToken();
+				//RecordListResult result_resumption_token = parseResumptionToken();
+                //form.setXml(result_resumption_token.getContent());
 				prglog.info("[PRG] actual resumption token: " + resumptionToken 
 						+ ", second phase: " + (System.currentTimeMillis()-t0));
 			} else {
@@ -576,7 +589,7 @@ public class Facade {
 		} catch(NumberFormatException e) {
 			prglog.error("[PRG] " + e);
 			form.setXml(ErrorCodes.badArgumentError("The identifier parameter"
-					+ " should ends with an integer."));
+					+ " should end with an integer."));
 			return;
 		}
 
@@ -630,9 +643,12 @@ public class Facade {
 				+ ", " + metadataPrefix + ", " + set + ", " + resumptionToken
 				 + ", " + verb);
 		RecordListResult result = new RecordListResult(); 
-		
-		if(verb.equals("ListRecords")) {
-			
+
+        boolean var = parseResumptionToken();
+        if (var)  {
+            if(verb.equals("ListRecords")) {
+
+           		
 			// the metadataPrefix is mandatory
 			if(dataProvider.getMetadataPrefix() == null) {
 				prglog.error("[PRG] no metadata");
@@ -650,6 +666,8 @@ public class Facade {
 				result.setContent(XMLUtil.xmlTag("error", e.getMessage()));
 				return result;
 			}
+
+                    
 		}
 
 		int recordLimit = 0;
@@ -769,6 +787,15 @@ public class Facade {
 		}
 		return result;
 	}
+
+    else {
+        prglog.error("[PRG] Bad Resumption token " );
+
+        result.setContent((ErrorCodes.badResumptionTokenError(
+						"The resumption token entered does not exist. Please enter the correct resumption token.")));
+        return result;
+      }
+    }
 	
 	/**
 	 * Create an OAI-PMH-compatible list from the metadata format
@@ -913,15 +940,29 @@ public class Facade {
 		return "";
 	}
 	
-	private void parseResumptionToken() {
-		if (resumptionToken != null) {
+	private boolean parseResumptionToken() {
+        boolean var = true;
+        try {
+         if (resumptionToken != null) {
 			String[] tokens = resumptionToken.split("\\|");
 			tokenId = tokens[0];
-			offset  = Integer.parseInt(tokens[1]);
-		}
+			offset  = Integer.parseInt(tokens[1]);          
+            }
+
+        } catch (Exception e) {
+        prglog.error("[PRG] Bad Resumption token " + e);
+
+            form.setXml((ErrorCodes.badResumptionTokenError(
+						"The resumption token entered does not exist. Please enter the correct resumption token.")).toString());
+            var = false;
+            prglog.info("[PRG] Variable value in Exception " + var);
+        }
+        prglog.info("[PRG] Variable value in Exception " + var);
+        return var;
 	}
 
-	/**
+
+    /**
 	 * Set up an XSLT transformator to transform records to
 	 * different XML schemas. 
 	 * @param metadataPrefix The current metadata prefix, which stand for the
