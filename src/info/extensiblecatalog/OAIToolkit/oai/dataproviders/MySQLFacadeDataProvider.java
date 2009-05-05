@@ -168,7 +168,7 @@ public class MySQLFacadeDataProvider extends BasicFacadeDataProvider
 		return content;
 	}
 	
-	public void prepair() {
+	public void prepareQuery() {
 		if(null != tokenId) {
 			ResumptionTokenDTO tokenDTO = getSQLsFromResumptionToken(tokenId);
 			if(tokenDTO == null){

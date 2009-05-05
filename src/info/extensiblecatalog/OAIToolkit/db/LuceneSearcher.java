@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.BitSet;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -28,6 +29,7 @@ import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Hits;
+import org.apache.lucene.search.HitCollector;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
@@ -48,13 +50,16 @@ public class LuceneSearcher {
 	private String earliestDatestamp;
 	//private FieldSelector xmlSelector;
 	private FieldSelector allFieldSelector;
+    //private BitSet bits;
 	
 	public LuceneSearcher(String luceneDir) {
 		try {
 			File indexDir = new File(luceneDir);
 			Directory fsDir = FSDirectory.getDirectory(indexDir);
 			searcher = new IndexSearcher(fsDir);
-		} catch(IOException e) {
+            indexReader = IndexReader.open(indexDir);
+            //bits = new BitSet(indexReader.maxDoc());
+            } catch(IOException e) {
 			prglog.error("[PRG] " + e);
 		}
 		
@@ -135,15 +140,31 @@ public class LuceneSearcher {
 		return doc;
 	}
 
-	public List<Object[]> getRecordByIDAndRecordType(Integer id, 
+	public List<Object[]> getRecordByIDAndRecordType(Integer id,
 			Integer recordType) {
 		List<Object[]> list = new ArrayList<Object[]>();
-		try {
+        //final List<Integer> ids = new ArrayList<Integer>();
+        try {
 			BooleanQuery query = new BooleanQuery();
 			query.add(new TermQuery(new Term("id", id.toString())), 
 					Occur.MUST);
 			query.add(new TermQuery(new Term("record_type", 
 					recordType.toString())), Occur.MUST);
+
+            /*
+            searcher.search(query, new HitCollector() {
+             public void collect(int doc, float score) {
+                bits.set(doc);
+                ids.add(doc);
+             }
+             });
+
+             for (int i=0; i< ids.size(); i++) {
+                 list.add(indexReader.document(ids.get(i)));
+             }
+
+*/
+           
 			Hits hits = searcher.search(query);
 			prglog.info("[PRG] " + query + ", found: " + hits.length());
 			int docId;
@@ -151,7 +172,7 @@ public class LuceneSearcher {
 				docId = hits.id(i);
 				list.add(new Object[]{docId, 
 						indexReader.document(docId, allFieldSelector)});
-			}
+			} 
 		} catch (IOException e) {
 			prglog.error("[PRG] " + e);
 		}
@@ -164,6 +185,30 @@ public class LuceneSearcher {
 		return getHitCount(query);
 	}
 
+    public BitSet searchForBits(Query query, Sort sort) {
+        try {
+            //indexReader = IndexReader.open(indexDir);
+
+        final BitSet bits = new BitSet(indexReader.maxDoc());
+        
+            searcher.search(query, new HitCollector() {
+                 public void collect(int doc, float score) {
+                     bits.set(doc);
+                 }
+                 });
+                 return bits;
+      } catch (IOException e) {
+        prglog.error("[PRG] " + e);
+        return null;
+        }
+        
+    }
+
+    /*public BitSet getBits() {
+        return bits;
+    } */
+
+    
 	public int getHitCount(Query query) {
 		int count = 0;
 		try {
@@ -205,6 +250,7 @@ public class LuceneSearcher {
 	public Document getDoc(int i) {
 		Document doc = null;
 		try {
+            //doc = indexReader.document(i);
 			doc = searcher.doc(i);
 		} catch(IOException e) {
 			prglog.error("[PRG] " + e);

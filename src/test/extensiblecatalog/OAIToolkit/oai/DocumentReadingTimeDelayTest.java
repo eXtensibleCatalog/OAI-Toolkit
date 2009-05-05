@@ -32,7 +32,7 @@ public class DocumentReadingTimeDelayTest extends TestCase {
 	
 	public DocumentReadingTimeDelayTest() {
 		try {
-			indexReader = IndexReader.open("e:/lucene_index");
+			indexReader = IndexReader.open("c:/lucene_MST/index");
 		} catch (CorruptIndexException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

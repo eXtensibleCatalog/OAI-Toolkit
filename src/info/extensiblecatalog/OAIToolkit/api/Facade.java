@@ -648,7 +648,6 @@ public class Facade {
         if (var)  {
             if(verb.equals("ListRecords")) {
 
-           		
 			// the metadataPrefix is mandatory
 			if(dataProvider.getMetadataPrefix() == null) {
 				prglog.error("[PRG] no metadata");
@@ -666,10 +665,7 @@ public class Facade {
 				result.setContent(XMLUtil.xmlTag("error", e.getMessage()));
 				return result;
 			}
-
-                    
-		}
-
+            }
 		int recordLimit = 0;
 		if(verb.equals(Constants.LIST_IDENTIFIERS)) {
 			recordLimit = ApplInfo.oaiConf
@@ -689,8 +685,9 @@ public class Facade {
 		}
 		prglog.info("[PRG] maxLength: " + maxLength);
 		
-		dataProvider.prepair();
-		int totalRecordNr = dataProvider.getTotalRecordCount();
+		dataProvider.prepareQuery();
+
+        int totalRecordNr = dataProvider.getTotalRecordCount();
 		prglog.info("[PRG] totalRecordNr: " + totalRecordNr);
 		if(dataProvider.hasBadResumptionTokenError()) {
 			result.setContent(ErrorCodes.badResumptionTokenError());

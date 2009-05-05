@@ -31,6 +31,7 @@ import info.extensiblecatalog.OAIToolkit.db.ResumptionTokensMgr;
 import info.extensiblecatalog.OAIToolkit.utils.ApplInfo;
 import info.extensiblecatalog.OAIToolkit.utils.Logging;
 import info.extensiblecatalog.OAIToolkit.utils.TextUtil;
+import java.util.BitSet;
 
 /**
  * 
@@ -47,7 +48,8 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 
 	/** Manager of resumption_token records */
 	private static ResumptionTokensMgr tokenMgr = new ResumptionTokensMgr();
-	
+
+
 	private String queryString;
 	private Query  query;
 	private Hits   hits;
@@ -56,6 +58,9 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 	private long   getIdTime      = 0;
 	private long   doc2RecordTime = 0;
 	private long   getDocTime     = 0;
+    private BitSet bits;
+    private BitSet range;
+    private BitSet ids;
 	//private HitIterator hitIterator;
 	
 	public String getEarliestDatestamp() {
@@ -92,14 +97,17 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 	
 	public void selectRecords() {
 		lastRecord = offset + recordLimit;
-		if(lastRecord > hits.length()) {
-			lastRecord = hits.length();
+		if(lastRecord > ids.cardinality()) {
+			lastRecord = ids.cardinality();
 		}
 		//hitIterator    = (HitIterator) hits.iterator();
 		currentRecord  = offset;
 		getIdTime      = 0;
 		doc2RecordTime = 0;
 		getDocTime     = 0;
+
+        //bits = ApplInfo.luceneSearcher.getBits();
+        //range = bits.get(currentRecord, lastRecord);
 	}
 	
 	public boolean hasNextRecord() {
@@ -115,12 +123,24 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 		long t2 = 0;
 		long t3 = 0;
 		try {
+
+            //Document doc = ApplInfo.luceneSearcher.getDoc(currentRecord);
+            //id =
 			//id = hits.id(currentRecord);
+            //ids.get(currentRecord);
 			t2 = System.currentTimeMillis();
 			getIdTime += (t2-t1);
 			//Document doc = hit.getDocument();
+
+            id = ids.nextSetBit(currentRecord);
+            prglog.info("Inserted Record ID: " +id);
+            Document doc = ApplInfo.luceneSearcher.getDoc(id);
+            //currentRecord = id;
+
+
+            /*
 			Document doc = hits.doc(currentRecord);
-			id = hits.id(currentRecord);
+			id = hits.id(currentRecord); */
 
 			/*
 			prglog.info(id + ", " + doc.get("external_id") + ", " + doc.get("record_type") + ", " 
@@ -134,10 +154,10 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 			recordDTO = doc2RecordDTO(doc, id);
 			//prglog.info(recordDTO.getRecordId() + ", " + recordDTO.getExternalId() + ", " + recordDTO.getRecordType());
 			doc2RecordTime += (System.currentTimeMillis()-t3);
-		} catch(IOException e) {
+		} catch(Exception e) {
 			prglog.error("[PRG] " + e);
 		}
-		currentRecord++;
+        currentRecord++;
 		return recordDTO;
 	}
 
@@ -154,6 +174,7 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 		Object[] pair = docs.get(0);
 		prglog.info("[PRG] docId: " + pair[0]);
 		Document doc = (Document)pair[1];
+        //Document doc = docs.get(0);
 		prglog.info("[PRG] doc: " + doc);
 		List<DataTransferObject> sets = new ArrayList<DataTransferObject>();
 		sets.add(doc2SetToRecordDTO(doc, recordId));
@@ -164,7 +185,7 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 		return ApplInfo.luceneSearcher.getXmlOfRecord(recordId, recordType);
 	}
 	
-	public void prepair() {
+	public void prepareQuery() {
 		if(null != tokenId) {
 			ResumptionTokenDTO tokenDTO = getSQLsFromResumptionToken(tokenId);
 			if(tokenDTO == null){
@@ -182,13 +203,24 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 		}
 	}
 
-	public int getTotalRecordCount() {
+    /*public void runQuery() {
+
+        Sort sort = null;
+        bits = ApplInfo.luceneSearcher
+
+    } */
+
+   	public int getTotalRecordCount() {
 		//Sort sort = Sort.INDEXORDER;
 		//Sort sort = new Sort("modification_date");
-		Sort sort = null;
+		//Sort sort = null;
 
-		hits = ApplInfo.luceneSearcher.search(query, sort);
-		return hits.length();
+        Sort sort = null;
+        ids = ApplInfo.luceneSearcher.searchForBits(query, sort);
+        return ids.cardinality();
+
+		//hits = ApplInfo.luceneSearcher.search(query, sort);
+		//return hits.length();
 	}
 	
 	public String getMetadataPrefix() {

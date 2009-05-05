@@ -23,8 +23,9 @@ public interface FacadeDataProvider {
 			String until, String set, String metadataPrefix, 
 			int offset);
 	
-	public void prepair();
-	
+	public void prepareQuery();
+
+    
 	/** get the total number of records */
 	public int getTotalRecordCount();
 
