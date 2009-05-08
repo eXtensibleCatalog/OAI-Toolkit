@@ -283,7 +283,7 @@
 				<attribute name="CLASS-PATH" value="
 					. 
 					commons-cli-1.1.jar 
-					commons-configuration-1.1.jar 
+					commons-configuration-1.6.jar
 					commons-lang-2.3.jar
 					commons-collections-3.1.jar 
 					commons-logging.jar 
@@ -354,7 +354,7 @@
 			<zipfileset dir="${lib.dir}"
 				includes="
 					commons-cli-1.1.jar 
-					commons-configuration-1.1.jar
+					commons-configuration-1.6.jar
 					commons-lang-2.3.jar
 					commons-collections-3.1.jar
 					commons-logging.jar
@@ -415,7 +415,7 @@
 			<zipfileset dir="${lib.dir}"
 				includes="
 					commons-cli-1.1.jar 
-					commons-configuration-1.1.jar
+					commons-configuration-1.6.jar
 					commons-lang-2.3.jar
 					commons-collections-3.1.jar
 					commons-logging.jar

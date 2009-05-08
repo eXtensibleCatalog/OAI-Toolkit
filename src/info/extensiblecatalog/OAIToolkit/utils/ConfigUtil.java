@@ -38,6 +38,8 @@ public class ConfigUtil {
 			configFile = new URL("file", "", f.getAbsolutePath());
 		}
 		prglog.info("config file: " + configFile.getPath());
+        System.out.println("The config file is " + configFile);
+        System.out.println("The config file is " + configFileName);
 
 		if (!(new File(configFile.getPath()).exists())) {
 			prglog.error("[PRG] Inexistent configuration file: " + configFileName);
@@ -46,7 +48,8 @@ public class ConfigUtil {
 		}
 
 		try {
-			PropertiesConfiguration prop = new PropertiesConfiguration(configFile);
+
+			PropertiesConfiguration prop = new PropertiesConfiguration(configFile, System.getProperty("file.separator"));
 			prglog.info("[PRG] successful ConfigUtil::load");
 			return prop;
 		} catch (ConfigurationException e) {

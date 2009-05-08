@@ -559,9 +559,8 @@ public class Facade {
 					"Missing identifier parameter"));
 			return;
 		}
-		
 
-		try {
+        try {
 			setupTransformator(metadataPrefix);
 		} catch(Exception e) {
 			form.setXml(e.getMessage());
@@ -623,6 +622,7 @@ public class Facade {
 		}
 
 		form.setXml(XMLUtil.xmlTag("GetRecord", xml.toString()));
+        
 	}
 
 	/**
@@ -936,7 +936,11 @@ public class Facade {
 		
 		return "";
 	}
-	
+
+    /**
+     * Parses the resumption token and returns a boolean value of true if it was a success.
+     * @return
+     */
 	private boolean parseResumptionToken() {
         boolean var = true;
         try {

@@ -24,6 +24,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.BasicConfigurator;
 import org.marc4j.MarcException;
 import org.marc4j.MarcReader;
 import org.marc4j.MarcXmlReader;
@@ -807,6 +808,10 @@ public class Importer {
 		recordImporter.setErrorXmlDir(configuration.getErrorXmlDir());
 	}
 
+    /**
+     * Initialisation function if the lucene statistics is being invoked from the command line
+     * @throws java.lang.Exception
+     */
     private void statsinit() throws Exception {
         String statsLuceneDir = null;
         String root = new File(".").getAbsoluteFile().getParent();
@@ -819,6 +824,10 @@ public class Importer {
 	}
     }
 
+    /**
+     *Execute function called when the lucene statistics is been invoked from command line.
+     * 
+     **/
     private void statsexecute() {
         LuceneSearcher ls = new LuceneSearcher(configuration.getStatsLuceneDir());
 
@@ -858,6 +867,7 @@ public class Importer {
             CommandLineParser parser = new GnuParser();
             Options options = CLIProcessor.getCommandLineOptions();
             CommandLine line = parser.parse(options, args);
+            BasicConfigurator.configure();
 
             if (line.hasOption("lucene_statistics")) {
 				importer.configuration.setLuceneStatistics(true);
@@ -869,7 +879,7 @@ public class Importer {
 				"stats_lucene_dir"));
 			}
 
-            System.out.println("[PRG] Lucene Statistics Value is:" + importer.configuration.isLuceneStatistics());
+            System.out.println("Lucene Statistics Value is:" + importer.configuration.isLuceneStatistics());
             if (importer.configuration.isLuceneStatistics()) {
                 importer.statsinit();
                 importer.statsexecute();

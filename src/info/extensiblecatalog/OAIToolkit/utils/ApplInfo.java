@@ -138,6 +138,7 @@ public class ApplInfo {
 
         PropertiesConfiguration applConf = ConfigUtil
 					.load(basePropertiesFileName);
+
         String statsLuceneDir = applConf.getString("luceneDir");
         System.out.println("ApplInfo::StatsLuceneDir: " + statsLuceneDir);
         ImporterConfiguration imconfig = new ImporterConfiguration();
@@ -214,15 +215,14 @@ public class ApplInfo {
 		ClassLoader cloader = ApplInfo.class.getClassLoader();
 		InputStream logProps = cloader.getResourceAsStream(propertyFileName);
 		if(null == logProps) {
-			prglog.info("[PRG] log4j property file is null");
 			File propertyFile = new File(rootDir, propertyFileName);
 			if(propertyFile.exists()) {
 				try {
-					prglog.info("[PRG] log4j property file: " 
+					System.out.println(" log4j property file: "
 							+ propertyFile.getAbsoluteFile());
 					logProps = new FileInputStream(propertyFile);
 				} catch(FileNotFoundException e) {
-					prglog.error("[PRG] " + e);
+					System.out.println("Exception" + e);
 					throw e;
 				}
 			}
@@ -252,16 +252,21 @@ public class ApplInfo {
 
 			System.out.println("basePropertiesFileName: " + basePropertiesFileName);
 			System.out.println("oaiConfigFile: " + oaiConfigFile);
+
 			PropertiesConfiguration applConf = ConfigUtil
 					.load(basePropertiesFileName);
-			
-			logDir = applConf.getString("logDir");
+
+            logDir = applConf.getString("logDir");
+            logDir = logDir.replaceAll("\\\\+","/");
 			System.out.println("ApplInfo::logDir: " + logDir);
 			resourceDir = applConf.getString("resourceDir");
-			System.out.println("ApplInfo::resourceDir: " + resourceDir);
+            resourceDir = resourceDir.replaceAll("\\\\+", "/");
+            System.out.println("ApplInfo::resourceDir: " + resourceDir);
 			String luceneDir = applConf.getString("luceneDir");
+            luceneDir = luceneDir.replaceAll("\\\\+", "/");
 			System.out.println("ApplInfo::luceneDir: " + luceneDir);
 			String cacheDir = applConf.getString("cacheDir");
+            cacheDir = cacheDir.replaceAll("\\\\+", "/");
 			System.out.println("ApplInfo::cacheDir: " + cacheDir);
 			if(cacheDir == null) {
 				errorMessages.add("There is no 'cacheDir' defined in " 

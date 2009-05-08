@@ -58,8 +58,7 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 	private long   getIdTime      = 0;
 	private long   doc2RecordTime = 0;
 	private long   getDocTime     = 0;
-    private BitSet bits;
-    private BitSet range;
+    //private BitSet range;
     private BitSet ids;
 	//private HitIterator hitIterator;
 	
@@ -133,7 +132,7 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 			//Document doc = hit.getDocument();
 
             id = ids.nextSetBit(currentRecord);
-            prglog.info("Inserted Record ID: " +id);
+            //prglog.info("Inserted Record ID: " +id);
             Document doc = ApplInfo.luceneSearcher.getDoc(id);
             //currentRecord = id;
 
@@ -203,14 +202,7 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 		}
 	}
 
-    /*public void runQuery() {
-
-        Sort sort = null;
-        bits = ApplInfo.luceneSearcher
-
-    } */
-
-   	public int getTotalRecordCount() {
+    public int getTotalRecordCount() {
 		//Sort sort = Sort.INDEXORDER;
 		//Sort sort = new Sort("modification_date");
 		//Sort sort = null;

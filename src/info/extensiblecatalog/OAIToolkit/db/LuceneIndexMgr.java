@@ -192,6 +192,10 @@ public class LuceneIndexMgr {
 		}
 	}
 
+    /**
+     * Delete a document from the index, given the id
+     * @param id
+     */
 	public void delDoc(int id) {
 		try {
 			if(IndexReader.isLocked(indexDir)) {

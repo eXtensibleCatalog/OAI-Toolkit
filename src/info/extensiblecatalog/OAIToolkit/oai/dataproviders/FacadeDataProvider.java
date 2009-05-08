@@ -24,7 +24,6 @@ public interface FacadeDataProvider {
 			int offset);
 	
 	public void prepareQuery();
-
     
 	/** get the total number of records */
 	public int getTotalRecordCount();

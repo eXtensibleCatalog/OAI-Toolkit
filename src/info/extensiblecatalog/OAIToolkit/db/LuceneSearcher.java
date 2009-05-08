@@ -38,6 +38,11 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
+/**
+ * Class where all the search methods are defined to interact and
+ * search from the Lucene index
+ * @author shreyanshv
+ */
 public class LuceneSearcher {
 	
         private static String programmer_log = "programmer";
@@ -90,7 +95,14 @@ public class LuceneSearcher {
 		};
 
 	}
-	
+
+    /**
+     * Get the XML of the records, given its id and recordType
+     * @param recordId
+     * @param recordType
+     * @return content (String)
+     */
+
 	public String getXmlOfRecord(Integer recordId, Integer recordType) {
 		String content = null;
 		try {
@@ -124,6 +136,11 @@ public class LuceneSearcher {
 		return content;
 	}
 
+    /**
+     * Get the record from the ID passed to it
+     * @param recordId
+     * @return Document
+     */
 	public Document getRecordByID(Integer recordId) {
 		Document doc = null;
 		try {
@@ -140,6 +157,12 @@ public class LuceneSearcher {
 		return doc;
 	}
 
+    /**
+     * Getting the record by querying the Lucene having the ID and the recordtype passed to it
+     * @param recordId
+     * @param recordType
+     * @return list of objects
+     */
 	public List<Object[]> getRecordByIDAndRecordType(Integer id,
 			Integer recordType) {
 		List<Object[]> list = new ArrayList<Object[]>();
@@ -162,8 +185,7 @@ public class LuceneSearcher {
              for (int i=0; i< ids.size(); i++) {
                  list.add(indexReader.document(ids.get(i)));
              }
-
-*/
+            */
            
 			Hits hits = searcher.search(query);
 			prglog.info("[PRG] " + query + ", found: " + hits.length());
@@ -178,13 +200,23 @@ public class LuceneSearcher {
 		}
 		return list;
 	}
-	
+
+    /**
+     * Gets the Hit count of the query string passed.
+     * @param queryString
+     */
 	public int getHitCount(String queryString) {
 		prglog.info("[PRG] " + queryString);
 		Query query = parseQuery(queryString);
 		return getHitCount(query);
 	}
 
+    /**
+     * Given the query, this is a HitCollector implementation, where it
+     * returns the vector of bits which got a hit by the query.
+     * @param query
+     * @param sort
+     */
     public BitSet searchForBits(Query query, Sort sort) {
         try {
             //indexReader = IndexReader.open(indexDir);
@@ -203,12 +235,7 @@ public class LuceneSearcher {
         }
         
     }
-
-    /*public BitSet getBits() {
-        return bits;
-    } */
-
-    
+       
 	public int getHitCount(Query query) {
 		int count = 0;
 		try {
