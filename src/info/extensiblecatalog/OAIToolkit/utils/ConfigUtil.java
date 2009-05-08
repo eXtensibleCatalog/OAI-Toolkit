@@ -16,6 +16,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
 
+
 /**
  * Helper class to find and load properties
  * @author Peter Kiraly
@@ -49,7 +50,7 @@ public class ConfigUtil {
 
 		try {
 
-			PropertiesConfiguration prop = new PropertiesConfiguration(configFile, System.getProperty("file.separator"));
+			PropertiesConfiguration prop = new PropertiesConfiguration(configFile);
 			prglog.info("[PRG] successful ConfigUtil::load");
 			return prop;
 		} catch (ConfigurationException e) {

@@ -23,7 +23,7 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 
 import info.extensiblecatalog.OAIToolkit.utils.ConfigUtil;
 import info.extensiblecatalog.OAIToolkit.utils.Logging;
-import info.extensiblecatalog.OAIToolkit.utils.PropertiesConfiguration;
+
 
 /**
  * Utility class for setup database connection
