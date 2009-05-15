@@ -9,7 +9,11 @@
 
 package info.extensiblecatalog.OAIToolkit.utils;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.net.URL;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -39,8 +43,8 @@ public class ConfigUtil {
 			configFile = new URL("file", "", f.getAbsolutePath());
 		}
 		prglog.info("config file: " + configFile.getPath());
-        System.out.println("The config file is " + configFile);
-        System.out.println("The config file is " + configFileName);
+        //System.out.println("The config file is " + configFile);
+        //System.out.println("The config file name is " + configFileName);
 
 		if (!(new File(configFile.getPath()).exists())) {
 			prglog.error("[PRG] Inexistent configuration file: " + configFileName);
@@ -48,10 +52,53 @@ public class ConfigUtil {
 					+ configFileName );
 		}
 
-		try {
+        BufferedReader re = new BufferedReader(new FileReader(configFile.getPath()));
+        String tmpfile = "tmpfile.txt";
+        // Create new file
+        File temp = new File(tmpfile);
 
-			PropertiesConfiguration prop = new PropertiesConfiguration(configFile);
+        boolean success = temp.createNewFile();
+        if (success) {
+             System.out.println("Its success");
+            //File did not exist and was created
+        } else {
+             System.out.println("File already exists");
+             //File already exists
+        }
+
+
+         if (!temp.exists())
+            throw new IllegalArgumentException("no such file or directory: " + temp);
+
+        if (!temp.canWrite())
+            throw new IllegalArgumentException("Write protected: " + temp);
+
+        System.out.println("Temporary file created. File is " + temp);
+        //System.out.println("Temporary file created. Path is " + temp.getPath());
+
+        BufferedWriter out = new BufferedWriter(new FileWriter(temp));
+        while(true)
+        {
+            String s = re.readLine();
+            //System.out.println(s);
+            if(s!=null) {
+                s = s.replaceAll("\\\\", "/");
+                //System.out.println(s);
+                out.write(s + System.getProperty("line.separator"));
+                out.flush();
+            }
+            else
+                break;
+        }
+        out.close();
+
+		try {
+			PropertiesConfiguration prop = new PropertiesConfiguration(temp);
 			prglog.info("[PRG] successful ConfigUtil::load");
+            //temp.deleteOnExit();
+            boolean dsuccess = temp.delete();
+            if (!dsuccess)
+                throw new IllegalArgumentException("Delete: deletion failed");
 			return prop;
 		} catch (ConfigurationException e) {
 			prglog.error("[PRG] Unable to load properties from configuration file: "
