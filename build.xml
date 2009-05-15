@@ -8,7 +8,7 @@
 	<echo>Current time is ${timestamp.isoformat}</echo>
 
 	<property name="project.name" value="${ant.project.name}" />
-	<property name="project.version" value="0.5alpha" />
+	<property name="project.version" value="0.6alpha" />
 	<property name="project.name-ver" 
 		value="${project.name}-${project.version}" />
 	<property name="jar.file" value="${project.name-ver}.jar" />
@@ -388,6 +388,10 @@
 				includes="convert.bat
 						convertload.bat
 						load.bat
+                        convertload_as_deleted.bat
+                        load_as_deleted.bat
+                        extract_error_recordno.bat
+                        lucene_dbStatistics.bat
 						create_db.bat
 						create_user.bat
 						OAIToolkit.db.properties
@@ -449,6 +453,10 @@
 				includes="convert.sh
 						convertload.sh
 						load.sh
+                        convertload_as_deleted.sh
+                        load_as_deleted.sh
+                        extract_error_recordno.sh
+                        lucene_dbStatistics.sh
 						create_db.sh
 						create_user.sh
 						OAIToolkit.db.properties

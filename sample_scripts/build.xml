@@ -8,7 +8,7 @@
 	<echo>Current time is ${timestamp.isoformat}</echo>
 
 	<property name="project.name" value="${ant.project.name}" />
-	<property name="project.version" value="0.5alpha" />
+	<property name="project.version" value="0.6alpha" />
 	<property name="project.name-ver" 
 		value="${project.name}-${project.version}" />
 	<property name="jar.file" value="${project.name-ver}.jar" />
@@ -283,7 +283,7 @@
 				<attribute name="CLASS-PATH" value="
 					. 
 					commons-cli-1.1.jar 
-					commons-configuration-1.1.jar 
+					commons-configuration-1.6.jar
 					commons-lang-2.3.jar
 					commons-collections-3.1.jar 
 					commons-logging.jar 
@@ -354,7 +354,7 @@
 			<zipfileset dir="${lib.dir}"
 				includes="
 					commons-cli-1.1.jar 
-					commons-configuration-1.1.jar
+					commons-configuration-1.6.jar
 					commons-lang-2.3.jar
 					commons-collections-3.1.jar
 					commons-logging.jar
@@ -388,6 +388,9 @@
 				includes="convert.bat
 						convertload.bat
 						load.bat
+                        convertload_as_deleted.bat
+                        load_as_deleted.bat
+                        extract_error_recordno.bat
 						create_db.bat
 						create_user.bat
 						OAIToolkit.db.properties
@@ -415,7 +418,7 @@
 			<zipfileset dir="${lib.dir}"
 				includes="
 					commons-cli-1.1.jar 
-					commons-configuration-1.1.jar
+					commons-configuration-1.6.jar
 					commons-lang-2.3.jar
 					commons-collections-3.1.jar
 					commons-logging.jar
@@ -449,6 +452,9 @@
 				includes="convert.sh
 						convertload.sh
 						load.sh
+                        convertload_as_deleted.sh
+                        load_as_deleted.sh
+                        extract_error_recordno.sh
 						create_db.sh
 						create_user.sh
 						OAIToolkit.db.properties
