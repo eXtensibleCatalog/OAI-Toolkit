@@ -1,6 +1,6 @@
 @echo off
 rem ==============================================
-rem Convert the MARC files to MARCXML
+rem Modify the MARCXML files
 rem ==============================================
 rem ATTENTION: this is a sample script, modify the 
 rem parameters according to your needs. Read the 

@@ -1,6 +1,6 @@
 #!/bin/sh
 # ==============================================
-# Import the MARCXML files to MySQL
+# Import the MARCXML files to Lucene Database
 # ==============================================
 # ATTENTION: this is a sample script, modify the 
 # parameters according to your needs. Read the 

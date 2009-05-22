@@ -1,6 +1,6 @@
 #!/bin/sh
 # ==============================================
-# Convert the MARC files to MARCXML
+# Modify the MARCXML files
 # ==============================================
 # ATTENTION: this is a sample script, modify the 
 # parameters according to your needs. Read the 

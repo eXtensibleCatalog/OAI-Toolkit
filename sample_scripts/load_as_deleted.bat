@@ -1,6 +1,6 @@
 @echo off
 rem ==============================================
-rem Import the MARCXML files to MySQL
+rem Import the MARCXML files as deleted to Lucene
 rem ==============================================
 rem ATTENTION: this is a sample script, modify the 
 rem parameters according to your needs. Read the 

@@ -1,6 +1,6 @@
 #!/bin/sh
 # ==============================================
-# convert the MARC files to MARCXML and import to MySQL
+# convert the MARC files to MARCXML as deleted and import to MySQL
 # ==============================================
 # ATTENTION: this is a sample script, modify the 
 # parameters according to your needs. Read the 

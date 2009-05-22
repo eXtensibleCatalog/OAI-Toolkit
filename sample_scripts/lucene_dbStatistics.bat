@@ -1,11 +1,12 @@
 @echo off
-rem ==============================================
-rem convert the MARC files to MARCXML and import to MySQL
-rem ==============================================
+rem ====================================================
+rem Script for getting the record count with their types
+rem and the deleted count of the Lucene Database
+rem ====================================================
 rem ATTENTION: this is a sample script, modify the 
 rem parameters according to your needs. Read the 
 rem OAIToolkit Manual for the details.
-rem ==============================================
+rem ====================================================
 
 java -Xmx1024m -jar lib\OAIToolkit-0.6alpha.jar -lucene_statistics
 
