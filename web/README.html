@@ -1,0 +1,769 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>OAIToolkit Readme</title>
+	<link rel="stylesheet" href="documentation.css" type="text/css" />
+</head>
+<body>
+
+<h1>OAIToolkit Manual</h1>
+
+<hr />
+
+<p>OAIToolkit is a tool</p>
+<ul style="list-style-type: square; margin-left: 20px; padding-left: 20px;">
+	<li>to convert MARC file to MARCXML</li>
+	<li>to import MARCXML records to make them harvestable</li>
+	<li>and an OAI server</li>
+</ul>
+<p>OAIToolkit is created as a part of the 
+<a href="http://extensiblecatalog.info">eXtensible Catalog</a> project</p>
+
+<h2>Table of contents</h2>
+<ol id="toc">
+	<li><a href="#download">Downloading, preparation</a></li>
+	<li>
+		<a href="#conversion">Conversion to MARCXML and loading into OAI Repository</a>
+		<ol>
+			<li>
+				<a href="#db_setup">Database setup</a>
+				<ol>
+					<li><a href="#download_mysql">Download and install MySQL 5.0 Community Server</a></li>
+					<li><a href="#create_db">Create database</a></li>
+					<li><a href="#create_user">Create a new MySQL user</a></li>
+				</ol>
+			</li>
+			<li>
+				<a href="#properties">Properties files</a>
+				<ol>
+					<li><a href="#db_settings">DB settings</a></li>
+					<li><a href="#logging">Logging</a></li>
+					<li><a href="#ant_properties">Ant properties</a></li>
+				</ol>
+			</li>
+			<li>
+				<a href="#running">Running the application</a>
+				<ol>
+					<li><a href="#intro">Introduction</a></li>
+					<li><a href="#convert_and_load">Option A. Convert and Load in one step</a></li>
+					<li><a href="#convert_and_load_separate">Option B. Convert and Load in separate steps</a></li>
+				</ol>
+			</li>
+			<li><a href="#running_from_ant">Running from Ant</a></li>
+			<li><a href="#error_handling">Error handling</a></li>
+		</ol>
+	</li>
+	<li>
+		<a href="#oai_server">OAI server</a>
+		<ol>
+			<li>
+				<a href="#oai_server_setup">OAI server setup</a>
+				<ol>
+					<li>
+						<a href="#tomcat_bin">tomcat/bin</a>
+						<ol>
+							<li><a href="#OAIToolkit_properties">OAIToolkit.properties</a></li>
+						</ol>
+					</li>
+					<li><a href="#tomcat_webapps">tomcat/webapps</a></li>
+					<li><a href="#resources">Resources directory</a></li>
+				</ol>
+			</li>
+			<li>
+				<a href="#run_tomcat">Running Tomcat</a>
+				<ol>
+					<li><a href="#run_as_service">Run as service (windows)</a></li>
+					<li><a href="#run_from_cli">Run from command line</a></li>
+					<li><a href="#browsing">Browsing OAI server</a></li>
+				</ol>
+			</li>
+		</ol>
+	</li>
+	<li><a href="#notes">Notes</a></li>
+</ol>
+
+<h2 id="download">Downloading, preparation</h2>
+
+<p>The OAIToolkit can be download from the SVN server:
+<code>https://urcode.lib.rochester.edu/svn/ILSToolkit/ILSToolkit</code>.
+You can ask for access to the OAIToolkit from David Lihndal, the principal
+investigator of the eXtensible Catalog (<code>dlindahl@library.rochester.edu</code>).
+The internal structure of the project:</p>
+
+<pre>
+ILSToolkit
+  |- dist                    // final distributable jar and war files
+  |- doc                     // JavaDoc
+  |- lib                     // jars, which from the project is dependent
+  |- sample_scripts          // sample scripts and properties files with default values
+  |- sql                     // SQL scripts
+  |- src                     // the source files
+  |- test                    // source files for tests
+  |- web                     // source files for the web application
+  |- xsd                     // the localized XML schema file for MARCXML
+  |- xsl                     // the XSL and XML files need for transformation of MARCXML
+  |- build.properties        // properties file for Ant build script
+  |- build.xml               // Ant build script
+  o- README.html             // this help file
+</pre>
+
+<p>What you need to run the conversion and importing process, is the
+<code>OAIToolkit-&lt;version>.jar</code> (currently <code>OAIToolkit-0.2alpha.jar</code>).
+Since the jar file is depends fron the other jars exist in the <code>lib</code>
+directory, you should copy them in the same directory. Let's suppose, that the user
+download the project into <code>c:\workspace\OAIToolkit</code>. Copy
+<code>dist\OAIToolkit-&lt;version>.jar</code> to <code>lib</code></p>
+
+<p>Let's create a distinct place for the process of conversion, for example
+<code>c:\OAIPlayground</code>. This will be the working directory. Create
+a directory called <code>marc</code> inside OAIPlayground. This will be
+the place of the importable MARC files.</p>
+
+<p>In the course of this tutorial I will live with the assumption, that
+the user set up this directory, but the OAIToolkit don't depends on any
+concrete directory structure, except, that the OAIToolkit.jar and the
+other jars must be exist in the same directory.</p>
+
+<h2 id="conversion">Conversion to MARCXML and loading into OAI Repository</h2>
+
+<h3 id="db_setup">1) Database setup</h3>
+<h4 id="download_mysql">i) Download and install MySQL 5.0 Community Server.</h4>
+
+<p>The download page is <a href="http://dev.mysql.com/downloads/mysql/5.0.html">http://dev.mysql.com/downloads/mysql/5.0.html</a>.</p>
+
+<p>The documentation sections about installation are available here:
+<a href="http://dev.mysql.com/doc/refman/5.0/en/installing.html">http://dev.mysql.com/doc/refman/5.0/en/installing.html</a>.</p>
+
+<p>The detailed MySQL 5.0 Reference Manual with user comments is available here:
+<a href="http://dev.mysql.com/doc/refman/5.0/en/index.html">http://dev.mysql.com/doc/refman/5.0/en/index.html</a>.
+</p>
+
+<p>It is advised to install MySQL as service, and add the
+<code>c:\path\to\MySQL\bin</code> directory to the %PATH% environment variable.
+</p>
+
+<h4 id="create_db">ii) Create database</h4>
+
+<p>This script creates the 'extensiblecatalog' database. You must have a database
+administrator right to create new database, new user and grant privileges. In
+the default MySQL installation it is the "root" user, who has this rights.
+The simplest way to run the script from the <a href="#faq_cl">command line</a>:</p>
+
+<pre>
+DOS prompt&gt; mysql --user=&lt;user&gt; --password=&lt;password&gt; &lt; &lt;path&gt;oai.sql
+</pre>
+
+<p>where </p>
+<dl>
+<dt>&lt;user&gt;</dt>
+<dd>is the MySQL user, who have privilege to create a new database (like 'root' user)</dd>
+<dt>&lt;password&gt;</dt>
+<dd>is the MySQL password for that user</dd>
+<dt>&lt;path&gt;</dt>
+<dd>is the path to the SQL script</dd>
+</dl>
+
+<blockquote>Note: if the MySQL bin directory isn't included in the %PATH%
+environment variable the mysql command isn't recognized by the Windows, so
+you should use the <code>c:\full\path\to\mysql.exe</code>
+syntax instead of <code>mysql</code></blockquote>
+
+<p>There is a sample BAT file in the sample_scripts directory called
+<code>create_db.bat</code>. Before running, you should insert the user and the
+password variables.</p>
+
+<h4 id="create_user">iii) Create a new MySQL user</h4>
+<p>The new user will be responsible for the importing and the OAI processes. This
+user has privileges to select, create, delete and modify records only inside the
+extensiblecatalog database, but don't have right to read/write any other database
+or create new ones. Go to MySQL client, and enter this two command:</p>
+
+<pre>
+mysql&gt; CREATE USER &lt;username&gt;@localhost IDENTIFIED BY '&lt;password&gt;';
+mysql&gt; GRANT all privileges ON extensiblecatalog.* TO &lt;username&gt;@localhost;
+</pre>
+
+<h3 id="properties">2) Properties files</h3>
+<p>There are 3 property files: for the database setting, for
+the logging, and for Ant tasks. The first two are needed for running
+the application, the third just for compiling, testing and deploying.
+A property file is a plain text file, where the information are stored
+as <code>&lt;key&gt;=&lt;value&gt;</code>.</p>
+
+<h4 id="db_settings">i) DB settings (db.properties)</h4>
+<p>The possible and mandatory key are:</p>
+
+<dl>
+	<dt>db.host</dt>
+	<dd>the host's name or IP address, the location of the database (default: "localhost")</dd>
+	<dt>db.port</dt>
+	<dd>the port of the MySQL (default: 3306, but it can be changed)</dd>
+	<dt>db.database</dt>
+	<dd>the name of the database (default: "extensiblecatalog")</dd>
+	<dt>db.user</dt>
+	<dd>the user, who has privileges to access and modify the DB (see
+	<a href="#create_user">Create a new MySQL user</a> section)</dd>
+	<dt>db.password</dt>
+	<dd>the password of that user (see <a href="#create_user">Create a
+	new MySQL user</a> section)</dd>
+</dl>
+
+<blockquote>Note: if you don't know which port the MySQL use, see
+the <code>[client]</code> section's <code>port</code> entry in
+<code>my.ini</code> file. This can be found usually in the root directory of
+the MySQL.</blockquote>
+
+<h4 id="logging">ii) Logging (log4j.properties)</h4>
+<p>The logging of the application is based on the popular log4j logging system.
+The log4j.properties file defines what to log (loggers - properties starting with
+"log4j.logger"), and how to log (appenders - properties starting with
+"log4j.appender"). The most important line is:</p>
+
+<pre>
+log4j.logger.info.extensiblecatalog = INFO, console, toolkit
+</pre>
+
+<p>This is the definition of a logger, which catches logging events in the
+info.extensiblecatalog namespace (which is the namespece of the OAIToolkit).
+The "INFO" means, that all messages are printed which level are "INFO" or greater.
+Loggers may be assigned levels. The levels have a priority order:
+<code>FATAL</code>, <code>ERROR</code>, <code>WARN</code>, <code>INFO</code>,
+<code>DEBUG</code> from highest to lowest. This mean, that
+if we change the level from <code>INFO</code> to <code>ERROR</code>, only
+the <code>FATAL</code> and <code>ERROR</code> messages
+will be printed out. In the development state it is suggested to set a low
+level, and change to a higher value in the production environment.
+The "console" and the "toolkit" means, that the messages are printed
+out be two appender: the console and the toolkit. The console is a
+<code>ConsoleAppender</code>, and writes out to the standard output, the toolkit
+is a <code>DailyRollingFileAppender</code>, and writes out to a daily log file (every
+day it will automatically open a new log file). In the <code>ConversionPattern</code>
+one can add a special print format. This can be built from a lot of patters
+(similar to sprintf patterns): </p>
+<ul>
+	<li><code>%d</code> - date</li>
+	<li><code>%t</code> - thread</li>
+	<li><code>%F</code> - file</li>
+	<li><code>%L</code> - line in the source</li>
+	<li><code>%-5p</code> - depth</li>
+	<li><code>%c</code> - class</li>
+	<li><code>%m</code> - message</li>
+	<li><code>%n</code> - new line</li>
+</ul>
+
+<p>More information can be found in the "Short introduction to the Log4j":
+<a href="http://logging.apache.org/log4j/1.2/manual.html">http://logging.apache.org/log4j/1.2/manual.html</a>.</p>
+
+<p>The <code>db.properties</code> and the <code>log4j.properties</code>
+should be available when you run the application. The easyest way is to
+copy them to the working directory, or put them to the Java classpath.</p>
+
+<!--*
+    * Ant properties
+    *========================================================= -->
+<h4 id="ant_properties">iii) Ant properties (build.properties)</h4>
+
+<p>Apache Ant is a Java-based build tool. This tool helps to build up the project.
+For more information about Ant including installation and running Ant scripts see
+<a href="http://ant.apache.org/">http://ant.apache.org/</a> and/or
+Loughran, Steve - Hatcher, Erik: Ant in Action (Manning, 2007).</p>
+
+<p>Now only one important Ant property exists:</p>
+<p><code>&lt;data.dir&gt;</code> the location of the working directory.
+This is where subdirectories of the MARC files, the log, the errors etc. exist.</p>
+
+<p>If you run Ant from the working directory directory, copy the <code>build.properties</code>
+and <code>build.xml</code> from <code>c:\workspace\OAIToolkit</code> to
+<code>c:\OAIPlayground</code>. The content of <code>build.properties</code>
+can be</p>
+
+<pre>data.dir=.</pre>
+
+<!--*
+    * Running the application
+    *========================================================= -->
+<h2 id="running">3) Running the application</h2>
+<h3 id="intro">a) Introduction</h3>
+<p>There are two basic actions in the application: converting raw raw MARC into
+MARCXML, and load MARCXML into the repository. The command line interface is
+defined here:</p>
+
+<pre>
+c:\OAIPlayground&gt; java -jar c:\workspace\OAIToolkit\lib\OAIToolkit-0.2alpha.jar
+	[-convert]
+	[-load]
+	-source &lt;source directory&gt;
+	-destination &lt;destination directory&gt;
+	[-destination_xml &lt;xml destination directory&gt;]
+	[-error &lt;error directory&gt;]
+	[-error_xml &lt;xml error directory&gt;]
+	[-log &lt;logfile path&gt;]
+	[-log_detail]
+	[-marc_schema &lt;marc schema file&gt;]
+	[-marc_encoding &lt;marc encoding&gt;]
+	[-char_conversion &lt;character conversion method&gt;]
+	[-split_size &lt;maximal number of records in a MARCXML file&gt;]
+</pre>
+
+<blockquote>Note: this, and the following examples show a single line command in
+multiple lines for the easier understanding, but in real
+life the whole command should be writen in one line.</blockquote>
+
+<p>Argument descriptions:</p>
+<dl>
+<dt>convert</dt>
+		<dd>Flag to convert file(s) with raw MARC records into MARCXML</dd>
+<dt>load</dt>
+		<dd>Flag to load file(s) into the OAI repository</dd>
+<dt>source: (required field) </dt>
+		<dd>The directory where the toolkit looks for files to process</dd>
+<dt>destination: (required field) </dt>
+		<dd>The directory that the toolkit moves the source files into as it
+		successfully completes the processing of each file.</dd>
+<dt>destination_xml: </dt>
+		<dd>The directory that the toolkit places MARCXML versions of the source
+		data</dd>
+<dt>error: </dt>
+		<dd>The directory that the toolkit moves files into when there is a processing
+		error for that file.</dd>
+<dt>error_xml: </dt>
+		<dd>The directory that the toolkit places MARCXML versions of the source
+		data, if that MARCXML file was unable to be loaded into the OAI repository
+		due to an error condition.</dd>
+<dt>log: </dt>
+		<dd>The directory of log files for warnings and errors</dd>
+<dt>log_detail: </dt>
+		<dd>flag to offer more detailed processing log information</dd>
+<dt>marc_schema: </dt>
+		<dd>a schema file (.xsd) to validate the MARCXML file (optional).
+		The default schema is
+		http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd.</dd>
+<dt>marc_encoding: </dt>
+		<dd>The encoding of the MARC file</dd>
+<dt>char_conversion: </dt>
+		<dd>The character conversion method. Possible values: MARC8 (Ansel), ISO5426,
+		ISO6937, none</dd>
+<dt>split_size: </dt>
+		<dd>The maximal number of records an XML file can contain. If this optional argument
+		is set, the Toolkit creates multiple MARCXML files from a single MARC file, and
+		the split_size governs the maximal number of record in each files.</dd>
+</dl>
+
+<p>There are two options for this step described below as OPTION A and OPTION B.
+Option A converts and loads in one step. Option B converts and loads in separate
+steps for more flexibility.</p>
+
+<!--*
+    * Convert and Load in one step
+    *========================================================= -->
+<h3 id="convert_and_load">Option A. Convert and Load in one step</h3>
+<p>The shell script could hand the file(s) containing raw MARC off to the OAI Toolkit
+at this point, and be finished. This assumes that the OAI Toolkit first uses MARC4J
+to process the conversion to MARCXML, handles any errors, and then continues by
+loading the data into the OAI Repository. The potential disadvantage here is that
+the shell script does not have an opportunity to perform any local cleanup on the
+data after the raw-MARC to MARCXML step, but before the data is loaded in the OAI
+Repository. The advantage is that the institution does as little work as possible.</p>
+
+<p>For this option, the shell script must tell the OAI Toolkit to both convert and
+load the data.</p>
+
+<p>Preconditions:</p>
+<ul>
+<li>The files have already been moved to the same server that the OAI Toolkit is
+	installed on. They are stored in a directory called "sourcedir"</li>
+</ul>
+
+<p>Call to OAIToolkit to convert and load the data:</p>
+
+<pre>
+c:\OAIPlayground&gt; java -jar c:\workspace\OAIToolkit\lib\OAIToolkit-0.2alpha.jar
+	-convert -load -source "sourcedir" -destination "destdir"
+	-destination_xml "destxmldir" -error "errordir"
+	-error_xml "errorxmldir" -log "logdir" -log_detail
+</pre>
+
+<p>This command would cause the Toolkit to begin by retrieving a directory listing of
+the contents of "sourcedir" and then iterating through the listing to process all
+the files. Each time a file is processed, it is removed from "sourcedir" and placed,
+unchanged, into the "destdir". A file containing MARCXML versions of each input
+file is placed in the "destxmldir." The purpose of the initial directory listing
+is to deal with the possibility that additional files will be moved into the
+sourcedir before the OAIToolkit is finished processing the first set. Any files
+added will be ignored until the next time the command is called.</p>
+
+<p>Postconditions:</p>
+<ul>
+<li>If all the files that were placed in "sourcedir" have been moved into the
+	"destdir," and the MARCXML versions appear in "destxml" then all the data
+	has all been successfully converted to MARCXML and loaded into the OAI
+	Repository. When this is true, the data is immediately available for harvesting
+	by the metadata hub.</li>
+<li>If some files appear in "errordir", then the conversion to MARCXML failed
+	for those files, and the log file will offer more information.</li>
+<li>If some files appear in "errorxmldir", then the loading of MARCXML into the
+	OAI Repository failed for those files, and the log will offer more information.</li>
+</ul>
+
+<!--*
+    * Convert and Load in separate steps
+    *========================================================= -->
+<h3 id="convert_and_load_separate">Option B. Convert and Load in separate steps</h3>
+<p>With this option, the script would first use the command line interface to convert
+raw MARC file(s) into MARCXML. Then, if necessary, it could perform any additional
+changes to the MARCXML produced.  Finally, it would use the command line interface
+to load the MARCXML file(s) into the OAI Repository. There may be a requirement to
+cleanup records in cases where that was not possible prior to MARC4J conversion.
+Note: Most data cleanup should be done in the Metadata Services Hub, the goal of
+this step is valid MARCXML. The purpose of option B is to allow the institution to
+have the opportunity to make changes after the conversion from raw MARC to MARCXML,
+but before the loading of the data into the OAI Repository. The script could do
+anything to the data including using MARC4J to do additional cleanup, calling a
+custom application such as a PERL script to automatically perform cleanup, or to
+have a person perform manual cleanup (unlikely).</p>
+
+<p>For this option, the shell script must tell the OAI Toolkit to process the data,
+then perform local processing then tell the OAI Toolkit to load the data.</p>
+
+<p>Preconditions: </p>
+<ul>
+	<li>
+		The files have already been moved to the same server that the OAI Toolkit is
+		installed on. They are stored in a directory called "sourcedir"
+	</li>
+</ul>
+
+<p>Call to OAIToolkit to convert the data from raw MARC into MARCXML:</p>
+
+<pre>
+c:\OAIPlayground&gt; java -jar c:\workspace\OAIToolkit\lib\OAIToolkit-0.2alpha.jar
+	-convert -source "sourcedir" -destination "destdir" -destination_xml "destxmldir"
+	-error "errordir" -error_xml "errorxmldir" -log_detail
+</pre>
+
+<p>This command would cause the Toolkit to begin by retrieving a directory listing of
+the contents of "sourcedir" and then iterating through the listing to process all
+the files. Each time a file is processed, it is removed from "sourcedir" and
+placed, unchanged, into the "destdir".  A file containing MARCXML versions of
+each input file is placed in the "destxmldir".  The purpose of the initial
+directory listing is to deal with the possibility that additional files will be
+moved into the sourcedir before the OAIToolkit is finished processing the first
+set. Any files added will be ignored until the next time the command is called.</p>
+
+<p>Postconditions:</p>
+<ul>
+<li>If all the files that were placed in "sourcedir" have been moved into the
+	"destdir", and the MARCXML versions appear in "destxml" then all the data has
+	all been successfully converted to MARCXML. Because we left off the –load flag,
+	the data has not yet been loaded into the repository.</li>
+<li>If some files appear in "errordir", then the conversion to MARCXML failed for
+	those files, and the log file will offer more information.</li>
+</ul>
+
+<p>Local Processing:</p>
+<p>The next step in Option B is to perform any additional changes to the MARCXML
+produced. This may be done by calling a custom program to operate on the files
+in the "destxmldir".</p>
+
+<p>The final step is to call OAIToolkit again as follows.</p>
+
+<p>Preconditions:</p>
+<ul>
+<li>The results of this processing are stored in a directory named "xml2dir".</li>
+</ul>
+
+<p>Call to OAIToolkit to load the data into the OAI Repository:</p>
+
+<pre>
+c:\OAIPlayground&gt; java -jar c:\workspace\OAIToolkit\lib\OAIToolkit-0.2alpha.jar
+	-load -source "xml2dir" -destination_xml "destxmldir" -error_xml "errorxmldir"
+	-log_detail -marc_schema "XML schema file"
+</pre>
+
+<p>Postconditions:</p>
+<ul>
+  <li>If all the files that were placed in "sourcedir" have been moved into the
+	"destxml" directory then all the data has all been successfully loaded into the
+	OAI Repository.  When this is true, the data is immediately available for
+	harvesting by the metadata hub.</li>
+  <li>If some files appear in "errorxmldir", then the loading of MARCXML into the
+	OAI Repository failed for those files, and the log will offer more information.</li>
+</ul>
+
+<!--*
+    * Running from Ant
+    *========================================================= -->
+<h3 id="running_from_ant">b) Running from Ant</h3>
+<p>In the Ant build.xml there are several targets. Target is a simple or complex
+runnable action. The list of targets can be available by running this from the
+command line:</p>
+
+<pre>
+c:\OAIPlayground&gt; ant -p
+</pre>
+
+<p>this will print the following list:</p>
+
+<pre>
+Main targets:
+
+ OAIToolkit.convert         Convert MARC files to XML
+ OAIToolkit.convertAndLoad  Convert and load
+ OAIToolkit.help            Show help screen
+ OAIToolkit.load            Load XML to DB
+ ...
+</pre>
+
+<blockquote>Note: The rest of the targets are silently ignored in this manual,
+as they are for developers.</blockquote>
+
+<p>The <code>OAIToolkit.convert</code>, <code>OAIToolkit.load</code> and
+<code>OAIToolkit.convertAndLoad</code> targets do the thing described in
+the previous sections. The "help" show help screen about the command line
+arguents of the application (not about the Ant file).</p>
+
+<p>To run a target simply type:</p>
+
+<pre>
+c:\OAIPlayground&gt;ant OAIToolkit.convert
+</pre>
+
+<p>Just for illustration purpose here we copy the main part of an OAIToolkit.convert task</p>
+
+<pre>
+&lt;java ...>
+	&lt;arg value="-convert" />
+	&lt;arg value="-source" />
+	&lt;arg value="${data.dir}/marc" />
+	&lt;arg value="-destination" />
+	&lt;arg value="${data.dir}/marc_dest" />
+	&lt;arg value="-destination_xml" />
+	&lt;arg value="${data.dir}/xml" />
+	&lt;arg value="-error" />
+	&lt;arg value="${data.dir}/error" />
+	&lt;arg value="-error_xml" />
+	&lt;arg value="${data.dir}/error_xml" />
+	&lt;arg value="-log" />
+	&lt;arg value="${data.dir}/log" />
+	&lt;arg value="-log_detail" />
+&lt;/java>
+</pre>
+
+<p>Here you can see, that the &lt;java> tag get the same arguments as the command
+line, and if the user want to change parameters, this is the same process as
+in the command line.</p>
+
+
+<h3 id="error_handling">c) Error handling</h3>
+<p>There are two kind of error records. One kind, when the entire file is bad.
+This can be possible in the case of XML files (validation error). Such files
+are moved to the correspondent error dir (defined by -error and error_xml
+arguments). The other kind of error happens when not the whole files, only
+some records are bad. This caused by some internal MARC problem (mainly in
+legacy MARC records), invalid characters, or that the MARCXML record doesn't
+valid according to the schema file. These records are stored in a file named
+as bad_records_in_<name of source file> (eg. bad_records_in_marc1.mrc or
+bad_records_in_marc23.xml). The location of these files are defined by
+the -error and error_xml arguments. In these files all records are bad
+somehow. The information about the nature and the location of the error
+are in the log file. The bad records are not imported into the database, and
+cannot be harvested by OAI harvester.</p>
+
+<p>Some typical log entries and comments of them:<p>
+
+
+<!-- invalid character -->
+<p><i>invalid character</i></p>
+<pre>The MARC record #240904 is corrupted. Cause: invalid character  ('\u001F') at position 321.</pre>
+
+<blockquote>The record, which has a call number 240904 is corrupt, because in the position 321 (inside the record, not inside the whole file) there is an invalid character, of which the Unicode presentation is '\u001F'.</blockquote>
+
+<!-- invalid leader -->
+<p><i>invalid Leader</i></p>
+<pre>The MARC record #26215 isn't well formed. Please correct the errors and load again. Error description:
+cvc-pattern-valid: Value '00722c m a2200253 a 45 A' is not facet-valid with respect to pattern
+'[\d ]{5}[\dA-Za-z ]{1}[\dA-Za-z]{1}[\dA-Za-z ]{3}(2| )(2| )[\d ]{5}[\dA-Za-z ]{3}(4500|    |45[\dA-Za-z�\? ]{2})'
+for type 'leaderDataType'. The error is at line #3 char #46.
+Source:
+    &lt;leader>00722c m a2200253 a 45 A&lt;/leader>
+--------------------------------------------^</pre>
+
+<blockquote>The record, which has a call number 26215 is not valid according to the
+MARCXML schema, because the Leader is different than the allowable values (which is
+described as a regular expression). The error is catched at the 3th line's 46th character
+position of the record (not of the file).</blockquote>
+
+
+<!-- invalid subfield code -->
+<p><i>invalid subfield code</i></p>
+<pre>The MARC record #47113 isn't well formed. Please correct the errors and load again. Error description:
+cvc-pattern-valid: Value ' ' is not facet-valid with respect to pattern '[\da-z!"#$%&'()*+,-./:;<=>?{}_^`~\[\]\\]{1}'
+for type 'subfieldcodeDataType'. The error is at line #87 char #26.
+Source:
+      &lt;subfield code=" ">4prf&lt;/subfield>
+------------------------^</pre>
+
+<blockquote>The record, which has a call number 47113 is not valid according to the
+MARCXML schema, because the subfield's code attibute is different than the allowable
+values (which is described as a regular expression). In this case the code's value is
+a space character, which is invalid. The error is catched at the 87th line's
+26th character position of the record (not of the file).</blockquote>
+
+
+<!-- malformed indicator -->
+<p><i>invalid indicator</i></p>
+<pre>The MARC record #1757639 isn't well formed. Please correct the errors and load again. Error description:
+cvc-pattern-valid: Value '|' is not facet-valid with respect to pattern '[\da-z ]{1}' for type 'indicatorDataType'.
+The error is at line #20 char #44.
+Source:
+    &lt;datafield tag="050" ind1="|" ind2=" ">
+------------------------------------------^</pre>
+
+<blockquote>The record, which has a call number 1757639 is not valid according to the
+MARCXML schema, because the indicator attibute is different than the allowable
+values (which is described as a regular expression). The valid values are: any number between
+0 and 9, any lower case ascii character or a space. In this case ind1 is "|" (pipeline character)
+which is not allowed. The error is catched at the 20th line's
+44th character position of the record (not of the file).</blockquote>
+
+
+<!-- malformed timestamp -->
+<p><i>malformed timestamp</i></p>
+<pre>The MARC record #26244 has malformed timestamp: '19900716085408.0 '. Converted to '19900716085408.0'</pre>
+
+<blockquote>The record, which has a call number 26244 has a bad date representation value (see
+the space at the end), but it is corrected by the application, thus the record will be imported
+into the database and became harvestable.</blockquote>
+
+
+<h2 id="oai_server">OAI server</h2>
+
+<h3 id="oai_server_setup">OAI server setup</h3>
+
+<p>First you should install the Apache Tomcat 6.0 server. The OAI server contains
+two part: files inside the Tomcat, and separate directories for some
+configuration files and logs, like this:</p>
+
+<pre>
+c:\web_projects
+   o- OAIToolkit
+      |- Tomcat 6.0
+      |     |- bin
+      |     |- webapps
+      |     o- [other directories]
+      |- resources
+      o- logs
+</pre>
+
+<h4 id="tomcat_bin">tomcat/bin</h4>
+
+<p>At the Tomcat/bin we should set up 4 properties files:</p>
+
+<ul>
+	<li><code>OAIToolkit.properties</code> - basic parameters</li>
+	<li>
+		<code>OAIToolkit.configuration.properties</code> - base parameters for
+		the OAI responses (mainly for the Identifier verb and the size
+		of the lists)
+	</li>
+	<li>
+		<code>OAIToolkit.log4j.properties</code> - logging properties (what and
+		how to log)
+	</li>
+	<li>
+		<code>OAIToolkit.db.properties</code> - database properties (password, etc.)
+	</li>
+</ul>
+
+<p>All these files can be found in the <code>SVN/sample_scripts</code> with a
+default properties. Configure these files as you need it and and copy them
+into Tomcat/bin.</p>
+
+<blockquote>NOTE: the <code>OAIToolkit.configuration.properties</code> file are editable
+from the web interface. Modification by the web interface, overwrites the
+file content. The usage of the <code>OAIToolkit.log4j.properties</code> and
+<code>OAIToolkit.db.properties</code> are the same as in the OAIToolkit.</blockquote>
+
+<h5 id="OAIToolkit_properties">OAIToolkit.properties</h5>
+
+<pre>
+# the directory to write logs
+logDir=E:/web_projects/OAIToolkit/log
+
+# the directory containing the XSL files
+resourceDir=E:/web_projects/OAIToolkit/resources
+</pre>
+
+<h4 id="tomcat_webapps">tomcat/webapps</h4>
+
+<p>Copy the <code>SVN\dist\OAIToolkit.war</code> to <code>c:\web_projects\OAIToolkit\tomcat\webapps</code>.</p>
+
+<h4 id="resources">Resources directory</h4>
+<p>Copy the content of <code>SVN\xsl</code> to <code>c:\web_projects\OAIToolkit\resources</code> dir. This
+directory contains the XSLT and XML files which helps creating the metadata
+transformation.</p>
+
+<p>By this, the <code>metadataFormats.xml</code> are editable: the
+users (not the end users of course, but the administrators of the
+OAI server) can add or remove new metadata formats.
+Currently we add <code>oai_dc</code>, <code>oai_marc</code>, <code>marc21</code> (this is the native format
+a sysnonym of MarcXML), <code>mods</code> and <code>html</code> metadata formats.</p>
+
+<h3 id="run_tomcat">Running Tomcat</h3>
+<h4 id="run_as_service">Run as service (windows)</h4>
+<h4 id="run_from_cli">Run from command line</h4>
+
+<p>Start Tomcat:</p>
+<pre>
+c:\web_projects\OAIToolkit> tomcat\bin\startup
+</pre>
+
+<p>Stop Tomcat:</p>
+<pre>
+c:\web_projects\OAIToolkit> tomcat\bin\shutdown
+</pre>
+
+<p>If the Tomcat said, that neither the java_home nor the jre_home environmental
+variable is defnied, than you should add the following line to the
+<code>catalina.bat</code> and the <code>service.bat</code>:</p>
+
+<pre>
+set JAVA_HOME=c:\Program Files\Java\jdk1.6.0_03
+</pre>
+
+<blockquote>Note: if the Java 6 JDK is available elsewhere use that path.</blockquote>
+
+
+<h4 id="browsing">Browsing OAI server</h4>
+
+<p>The user can access OAI server at <code>http://localhost:8080/OAIToolkit</code>. At
+<code>http://localhost:8080/OAIToolkit/configuration.do</code> there is a configuration
+form. The common OAI server URL is <code>http://128.151.244.134:8090/ILSToolkit/oai-request.do</code>,
+this URL can be parameterized according to OAI specification.</p>
+
+<p>The project's self OAI server is running at <a href="http://128.151.244.134:8090/ILSToolkit/">http://128.151.244.134:8090/ILSToolkit/</a> (this can change in th near future.)</p>
+
+
+<h2 id="notes">Notes</h2>
+<dl>
+	<dt><a name="faq_cl"></a>command line</dt>
+	<dd>
+		To open the command line: Start &gt; run... &gt; type: <code>cmd</code> or <code>command</code>. In this
+		documentation we use the following notation to denote that the command should enter in the command line:
+		<code>DOS prompt&gt;</code>. The actual value is generally the directory path of the working directory, like
+		<code>c:\&gt;</code> or <code>c:\Program Files\Tomcat 6.0\bin&gt;</code>
+	</dd>
+
+	<dt>online XML validators</dt>
+	<dd>
+		<ul>
+			<li><a href="http://msdn.microsoft.com/archive/default.asp?url=/archive/en-us/samples/internet/xml/xml_validator/default.asp">XML Validator at MSDN</a></li>
+			<li><a href="http://www.validome.org/xml/">Validome XML validator</a></li>
+			<li><a href="http://www.validome.org/grammar/">Validome DTD / Schema validator</a></li>
+		</ul>
+	</dd>
+</dl>
+</body>
+</html>

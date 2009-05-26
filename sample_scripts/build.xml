@@ -1,0 +1,761 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="OAIToolkit" default="compile" basedir=".">
+	
+	<tstamp>
+		<format property="timestamp.isoformat" 
+			pattern="yyyy-MM-dd HH:mm:ss" />
+	</tstamp>
+	<echo>Current time is ${timestamp.isoformat}</echo>
+
+	<property name="project.name" value="${ant.project.name}" />
+	<property name="project.version" value="0.6alpha" />
+	<property name="project.name-ver" 
+		value="${project.name}-${project.version}" />
+	<property name="jar.file" value="${project.name-ver}.jar" />
+	<property name="war.file" value="${project.name}.war" />
+	
+	<!--
+	Properties need to set in build.properties
+	
+	tomcat.home			The directory in which you have installed a binary 
+						distribution of Tomcat 6.  This will be used by the 
+						"deploy" target.
+	
+	manager.password	The login password of a user that is assigned the
+						"manager" role (so that he or she can execute
+						commands via the "/manager" web application)
+
+	manager.url			The URL of the "/manager" web application on the
+						Tomcat installation to which we will deploy web
+						applications and web services.
+
+	manager.username	The login username of a user that is assigned the
+						"manager" role (so that he or she can execute
+						commands via the "/manager" web application)
+						
+	data.dir			The location of the working directory of the OAIToolkit
+						command line application. This is where the 
+						subdirectories of the MARC files, the log, the errors 
+						etc. exist.
+	-->
+	<property file="build.properties" />
+
+	<!-- directories 
+
+		lib.dir		jar files
+
+		src.dir		java source files
+
+		web.dir		web application files (Static HTML, JSP, image files etc.), 
+					including the WEB-INF subdirectory and its configuration 
+					file contents.
+
+		build.dir	The directory into which the "prepare" and "compile" 
+					targets will generate their output. Defaults to "build".
+					
+		build.classes.dir
+		
+		dist.dir	The name of the base directory in which distribution files 
+					are created. Defaults to "dist".
+					
+		javadoc.dir	Static documentation files to be copied to the "docs" 
+					subdirectory of your distribution.
+					
+		built.by	The notation of the creators of the application. Used in 
+					JavaDoc.
+
+	-->
+	<property name="app.path" value="/${project.name}"/>
+	<property name="lib.dir" value="${basedir}/lib" />
+	<property name="src.dir" value="${basedir}/src" />
+	<property name="web.dir" value="${basedir}/web" />
+	<property name="build.dir" value="${basedir}/build" />
+	<property name="build.classes.dir" value="${basedir}/build/classes" />
+	<property name="dist.dir" value="${basedir}/dist" />
+	<property name="javadoc.dir" value="${basedir}/docs" />
+	<!-- property name="tomcat.lib.dir" value="${tomcat.home}/common/lib" / -->
+	<property name="tomcat.lib.dir" value="${tomcat.home}/lib" />
+	<property name="tomcat.bin.dir" value="${tomcat.home}/bin" />
+	<property name="built.by" value="eXtensible Catalog Developement Team" />
+	<property name="main.class" 
+		value="info.extensiblecatalog.OAIToolkit.api.Importer" />
+	<property name="toolkit.windows.zip" 
+		location="${dist.dir}/${project.name-ver}-importer-windows.zip" />
+	<property name="toolkit.linux.zip" 
+		location="${dist.dir}/${project.name-ver}-importer-linux.zip" />
+	<property name="toolkit.server.zip" 
+		location="${dist.dir}/${project.name-ver}-server.zip" />
+	<property name="src.zip" 
+		location="${dist.dir}/${project.name-ver}-src.zip" />
+	<property name="test.suite.api" 
+		value="test.extensiblecatalog.OAIToolkit.api.AllTests" />
+	<property name="test.suite.configuration" 
+		value="test.extensiblecatalog.OAIToolkit.configuration.AllTests" />
+	<property name="test.suite.db" 
+		value="test.extensiblecatalog.OAIToolkit.db.AllTests" />
+	<property name="test.suite.DTOs" 
+		value="test.extensiblecatalog.OAIToolkit.DTOs.AllTests" />
+	<property name="test.suite.oai" 
+		value="test.extensiblecatalog.OAIToolkit.oai.AllTests" />
+	<property name="test.suite.importer" 
+		value="test.extensiblecatalog.OAIToolkit.importer.AllTests" />
+	<property name="test.suite.utils" 
+		value="test.extensiblecatalog.OAIToolkit.utils.AllTests" />
+	<property name="test.suite.server" 
+		value="test.extensiblecatalog.OAIToolkit.OAIServerTestCase" />
+	<property name="cobertura.dir" value="${lib.dir}/cobertura" />
+	
+	<property name="test.dir" location="${build.dir}/test" />
+	<property name="test.classes.dir" location="${test.dir}/classes" />
+	<property name="test.data.dir" location="${test.dir}/data" />
+	<property name="test.reports.dir" location="${test.dir}/reports" />
+	
+	<property name="instrumented.dir" value="${build.dir}/instrumented-classes" />
+	<property name="coveragereport.dir" value="${build.dir}/reports/cobertura" />
+		
+	<!-- ==================== Compilation Classpath =========================== -->
+	<!--
+	  Rather than relying on the CLASSPATH environment variable, Ant includes
+	  features that makes it easy to dynamically construct the classpath you
+	  need for each compilation.  The example below constructs the compile
+	  classpath to include the servlet.jar file, as well as the other components
+	  that Tomcat makes available to web applications automatically, plus anything
+	  that you explicitly added.
+	-->
+	<path id="compile.classpath">
+		<fileset dir="${lib.dir}">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="${lib.dir}/junit">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="${lib.dir}/servlet">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="${lib.dir}/marc4j24">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="${basedir}/web/WEB-INF/lib">
+			<include name="*.jar"/>
+		</fileset>
+		<!--
+		<fileset dir=".">
+			<include name="db.properties"/>
+			<include name="log4j.properties"/>
+		</fileset>
+		<fileset dir="${tomcat.lib.dir}">
+			<include name="*.jar"/>
+		</fileset>
+		<fileset dir="${tomcat.bin.dir}">
+			<include name="*.jar"/>
+		</fileset>
+		-->
+	</path>
+	
+	<path id="test.compile.classpath">
+		<path refid="compile.classpath"/>
+		<pathelement location="${build.classes.dir}"/>
+	</path>
+	
+	<path id="test.classpath">
+		<path refid="test.compile.classpath"/>
+		<pathelement location="${test.classes.dir}"/>
+	</path>
+	<!-- ============ Classpath for Cobertura ===================== -->
+	<path id="cobertura.classpath">
+	    <fileset dir="${cobertura.dir}">
+	        <include name="cobertura.jar" />
+	        <include name="lib/**/*.jar" />
+	    </fileset>
+	</path>
+
+	<!-- ================== Custom Ant Task Definitions ======================= -->
+	<!--
+	  These properties define custom tasks for the Ant build tool that interact
+	  with the "/manager" web application installed with Tomcat 6.  Before they
+	  can be successfully utilized, you must perform the following steps:
+
+	  - Copy the file "lib/catalina-ant.jar" from your Tomcat 6
+	    installation into the "lib" directory of your Ant installation.
+
+	  - Create a "build.properties" file in your application's top-level
+	    source directory (or your user login home directory) that defines
+	    appropriate values for the "manager.password", "manager.url", and
+	    "manager.username" properties described above.
+
+	  For more information about the Manager web application, and the functionality
+	  of these tasks, see <http://localhost:8080/tomcat-docs/manager-howto.html>.
+	-->
+	<taskdef resource="org/apache/catalina/ant/catalina.tasks"
+		classpathref="compile.classpath" />
+	
+	<!-- cobertura task -->
+	<!-- taskdef classpathref="cobertura.classpath" resource="tasks.properties" / -->
+
+	<!--  ==================== Compilation Control Options ==================== -->
+	<!--
+	  These properties control option settings on the Javac compiler when it
+	  is invoked using the <javac> task.
+
+	  compile.debug        Should compilation include the debug option?
+
+	  compile.deprecation  Should compilation include the deprecation option?
+
+	  compile.optimize     Should compilation include the optimize option?
+	-->
+	<property name="compile.debug"       value="true"/>
+	<property name="compile.deprecation" value="false"/>
+	<property name="compile.optimize"    value="true"/>
+	
+	<!-- ==================== All Target ====================================== -->
+	<!--
+	  The "all" target is a shortcut for running the "clean" target followed
+	  by the "compile" target, to force a complete recompile.
+	-->
+	<target name="all" depends="clean,compile"
+	   description="Clean build and dist directories, then compile"/>
+
+
+	<!-- ==================== Clean Target ==================================== -->
+	<!--
+	  The "clean" target deletes any previous "build" and "dist" directory,
+	  so that you can be ensured the application can be built from scratch.
+	-->
+	<target name="clean">
+		<delete dir="${build.dir}" />
+		<!--
+		<delete dir="${dist.dir}" />
+		<delete dir="${javadoc.dir}" />
+		-->
+	</target>
+
+	<!-- ==================== Prepare Target ================================== -->
+	<!--
+	  The "prepare" target is used to create the "build" destination directory,
+	  the build/classes dir, the dist dir and the javadoc dir.
+
+	  Normally, this task is executed indirectly when needed.
+	-->
+	<target name="prepare" depends="clean">
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${build.classes.dir}" />
+		<mkdir dir="${dist.dir}" />
+		<mkdir dir="${javadoc.dir}"/>
+		<!-- mkdir dir="${test.classes.dir}" /-->
+		<!-- mkdir dir="${report.dir}" /-->
+	</target>
+
+	<!-- ==================== Compile Target ================================== -->
+	<!--
+	  The "compile" target transforms source files (from your "src" directory)
+	  into object files in the appropriate location in the build directory.
+	  This example assumes that you will be including your classes in an
+	  unpacked directory hierarchy under "/WEB-INF/classes".
+	-->
+	<target name="compile" depends="prepare" description="Compile Java sources">
+		<echo>j2ee.lib.dir: ${j2ee.lib.dir}</echo>
+		<javac 
+			srcdir		= "${src.dir}" 
+			destdir		= "${build.classes.dir}"
+			debug		= "${compile.debug}" 
+			debuglevel  = "lines,source"
+			deprecation	= "${compile.deprecation}" 
+			optimize	= "${compile.optimize}" 
+			failonerror	= "false" 
+			compiler	= "modern">
+			<classpath refid="compile.classpath" />
+			<compilerarg value="-Xlint:unchecked"/>
+		</javac>
+		<copy todir="${build.classes.dir}">
+			<fileset dir="${src.dir}" excludes="**/*.java"/>
+		</copy>
+	</target>
+	
+	<target name="jar" depends="compile" description="Make jar file">
+		<jar destfile="${dist.dir}/${jar.file}" 
+				duplicate="preserve" 
+				compress="false">
+			<fileset dir="${build.classes.dir}" />
+			<manifest>
+				<attribute name="Built-By" value="${user.name}" />
+				<attribute name="Main-Class" value="${main.class}"/>
+				<attribute name="Built-On" value="${timestamp.isoformat}"/>
+				<attribute name="CLASS-PATH" value="
+					. 
+					commons-cli-1.1.jar 
+					commons-configuration-1.6.jar
+					commons-lang-2.3.jar
+					commons-collections-3.1.jar 
+					commons-logging.jar 
+					jdom.jar
+					log4j-1.2.15.jar
+					lucene-core-2.3.2.jar
+					marc4j-2.4.jar
+					mysql-connector-java-5.1.5-bin.jar 
+					normalizer.jar
+					" />
+			</manifest>
+		</jar>
+		
+		<copy file="${lib.dir}/jdom.jar" todir="${dist.dir}" />
+		<copy file="${lib.dir}/log4j-1.2.15.jar" todir="${dist.dir}" />
+		<copy file="${lib.dir}/lucene-core-2.3.2.jar" todir="${dist.dir}" />
+		<copy file="${lib.dir}/marc4j24/marc4j-2.4.jar" todir="${dist.dir}" />
+		<copy file="${lib.dir}/mysql-connector-java-5.1.5-bin.jar" todir="${dist.dir}" />
+		<copy file="${lib.dir}/normalizer.jar" todir="${dist.dir}" />
+		<copy todir="${dist.dir}">
+			<fileset dir="${lib.dir}" includes="commons-*.jar"></fileset>
+		</copy>
+		<echo>Current time is ${timestamp.isoformat}</echo>
+	</target>
+
+	<target name="javadocs" depends="compile" description="make the java docs" >
+		<javadoc
+			access="private"
+			sourcepath="${src.dir}"
+			destdir="${javadoc.dir}"
+			packagenames="info.*,com.interface21.*"
+			stylesheetfile="javadoc_stylesheet.css"
+			use="true"
+			version="true"
+			windowtitle="${ant.project.name}"
+			failonerror="true">
+			<classpath refid="compile.classpath"/>
+			<bottom><![CDATA[<p align="right">Manufactured in 2008 by <a href="http://extensiblecatalog.info" target="_top">eXtensible Catalog</a> 
+				Development Team</p>]]></bottom>
+		</javadoc>
+	</target>
+	
+	<!-- ==================== War Target ================================== -->
+	<!--
+	  The "war" target creates the war file into the dist directory
+	-->
+	<target name="war" depends="compile" description="Create war file">
+		<war destfile="${dist.dir}/${war.file}" webxml="web/WEB-INF/web.xml">
+			<fileset dir="${web.dir}" excludes="**/web.xml" />
+			<lib dir="${lib.dir}" includes="*.jar" />
+			<classes dir ="${build.classes.dir}" />
+                        
+			<!-- add JavaDoc -->
+			<zipfileset dir="${javadoc.dir}" includes="**/*" prefix="javadoc"/>
+		</war>
+		<echo>Current time is ${timestamp.isoformat}</echo>
+	</target>
+	
+	<!-- ==================== OAIToolkitInstallPackage-windows Target ================================== -->
+	<!--
+	  The "OAIToolkitInstallPackage-windows" target creates a zip file 
+	  contains everything, the enduser need
+	-->
+	<target name="OAIToolkitInstallPackage-windows" description="Create a windows package" depends="jar,javadocs">
+		<zip destFile="${toolkit.windows.zip}" duplicate="preserve">
+			<zipfileset file="${dist.dir}/${jar.file}" 
+				prefix="${project.name}/lib" />
+			<zipfileset dir="${lib.dir}"
+				includes="
+					commons-cli-1.1.jar 
+					commons-configuration-1.6.jar
+					commons-lang-2.3.jar
+					commons-collections-3.1.jar
+					commons-logging.jar
+					jdom.jar
+					log4j-1.2.15.jar
+					lucene-core-2.3.2.jar
+					mysql-connector-java-5.1.5-bin.jar
+					normalizer.jar
+				"
+				prefix="${project.name}/lib" />
+			<zipfileset file="./lib/marc4j24/marc4j-2.4.jar"
+				prefix="${project.name}/lib" />
+			<zipfileset dir="xsl" 
+				excludes="*"
+				prefix="${project.name}/marc"></zipfileset>
+			<zipfileset dir="xslts" 
+				includes="*"
+				prefix="${project.name}/xslts"></zipfileset>
+			<zipfileset dir="${javadoc.dir}"
+				includes="**/*"
+				prefix="${project.name}/docs/api" />
+			<!-- zipfileset file="./documentation.css"
+				prefix="${project.name}/docs" />
+			<zipfileset file="README.html"
+				prefix="${project.name}/docs" /-->
+			<zipfileset file="OAIToolkitReleaseNotes.docx"
+				prefix="${project.name}/docs" />
+			<zipfileset file="OAIToolkitReleaseNotes.pdf"
+				prefix="${project.name}/docs" />
+			<zipfileset dir="sample_scripts"
+				includes="convert.bat
+						convertload.bat
+						load.bat
+                        convertload_as_deleted.bat
+                        load_as_deleted.bat
+                        extract_error_recordno.bat
+						create_db.bat
+						create_user.bat
+						OAIToolkit.db.properties
+						OAIToolkit.log4j.properties
+				"
+				prefix="${project.name}/" />
+			<zipfileset file="xsd/MARC21slim_rochester.xsd"
+				prefix="${project.name}/schema" />
+			<zipfileset file="sql/oai.sql"
+				prefix="${project.name}/sql" />
+		</zip>
+	</target>
+	
+	<!-- ==================== OAIToolkitInstallPackage-linux Target ================================== -->
+	<!--
+	  The "InstallKit" target creates a zip file contains everything, the enduser
+	  need
+	  
+	  depends="jar,javadocs"
+	-->
+	<target name="OAIToolkitInstallPackage-linux" description="Create a linux package" depends="jar,javadocs">
+		<zip destFile="${toolkit.linux.zip}" duplicate="preserve">
+			<zipfileset file="${dist.dir}/${jar.file}" 
+				prefix="${project.name}/lib" />
+			<zipfileset dir="${lib.dir}"
+				includes="
+					commons-cli-1.1.jar 
+					commons-configuration-1.6.jar
+					commons-lang-2.3.jar
+					commons-collections-3.1.jar
+					commons-logging.jar
+					jdom.jar
+					log4j-1.2.15.jar
+					lucene-core-2.3.2.jar
+					mysql-connector-java-5.1.5-bin.jar
+					normalizer.jar
+				"
+				prefix="${project.name}/lib" />
+			<zipfileset file="./lib/marc4j24/marc4j-2.4.jar"
+				prefix="${project.name}/lib" />
+			<zipfileset dir="xsl" 
+				excludes="*"
+				prefix="${project.name}/marc"></zipfileset>
+			<zipfileset dir="xslts" 
+				includes="*"
+				prefix="${project.name}/xslts"></zipfileset>
+			<zipfileset dir="${javadoc.dir}"
+				includes="**/*"
+				prefix="${project.name}/docs/api" />
+			<!--zipfileset file="./documentation.css"
+				prefix="${project.name}/docs" />
+			<zipfileset file="README.html"
+				prefix="${project.name}/docs" /-->
+			<zipfileset file="OAIToolkitReleaseNotes.docx"
+				prefix="${project.name}/docs" />
+			<zipfileset file="OAIToolkitReleaseNotes.pdf"
+				prefix="${project.name}/docs" />
+			<zipfileset dir="sample_scripts"
+				includes="convert.sh
+						convertload.sh
+						load.sh
+                        convertload_as_deleted.sh
+                        load_as_deleted.sh
+                        extract_error_recordno.sh
+						create_db.sh
+						create_user.sh
+						OAIToolkit.db.properties
+						OAIToolkit.log4j.properties"
+				prefix="${project.name}/" />
+			<zipfileset file="xsd/MARC21slim_rochester.xsd"
+				prefix="${project.name}/schema" />
+			<zipfileset file="sql/oai.sql"
+				prefix="${project.name}/sql" />
+		</zip>
+	</target>
+
+	<!-- ==================== OAIServerInstallPackage Target ================================== -->
+	<!--
+	  The "InstallKit" target creates a zip file contains everything, the enduser
+	  need
+	-->
+	<target name="OAIToolkitInstallPackage-server" depends="war" description="Create the server package">
+		<zip destFile="${toolkit.server.zip}" duplicate="preserve">
+			<zipfileset dir="xsl"
+				prefix="${project.name}/resources" />
+			<zipfileset dir="xsl"
+				excludes="*"
+				prefix="${project.name}/server_logs" />
+                        <zipfileset dir="xsl"
+				excludes="*"
+				prefix="${project.name}/cache" />
+			<zipfileset dir="sample_scripts"
+				includes="
+					OAIToolkit.directory.properties
+					OAIToolkit.server.properties
+					OAIToolkit.db.properties
+					OAIToolkit.log4j.properties
+				"
+				prefix="${project.name}/tomcat/bin" />
+			<zipfileset file="OAIToolkitReleaseNotes.docx"
+				prefix="${project.name}/docs" />
+			<zipfileset file="OAIToolkitReleaseNotes.pdf"
+				prefix="${project.name}/docs" />
+			<zipfileset file="${dist.dir}/${war.file}"
+				prefix="${project.name}/tomcat/webapps" />
+		</zip>
+	
+	</target>
+
+	<!-- ==================== OAIToolkit.convert ========================== -->
+	<!--
+	  Run the OAIToolkit with the convert parameter. It convert MARCXML files
+	  from the MARC files.
+	-->
+	<target name="OAIToolkit.convert" description="Convert MARC files to XML"  depends="compile">
+		<echo message="== Convert MARC files to XML ==" />
+		<echo message="${ant.library.dir}" />
+		<java classname="info.extensiblecatalog.OAIToolkit.api.Importer" 
+			classpath="${build.dir}/classes">
+			<classpath refid="compile.classpath" />
+			<arg value="-convert" />
+			<arg value="-source" />
+			<arg value="${data.dir}/marc" />
+			<arg value="-destination" />
+			<arg value="${data.dir}/marc_dest" />
+			<arg value="-destination_xml" />
+			<arg value="${data.dir}/xml" />
+			<arg value="-error" />
+			<arg value="${data.dir}/error" />
+			<arg value="-error_xml" />
+			<arg value="${data.dir}/error_xml" />
+			<arg value="-log" />
+			<arg value="${data.dir}/log" />
+			<arg value="-log_detail" />
+		</java>
+	</target>
+
+	<!-- ==================== OAIToolkit.load ========================== -->
+	<!--
+	  Run the OAIToolkit with the load parameter. It loads the MARCXML files
+	  into the database.
+	-->
+	<target name="OAIToolkit.load" description="Load XML to DB"  depends="compile">
+		<echo message="== Load MARCXML files to DB ==" />
+		<java classname="info.extensiblecatalog.OAIToolkit.api.Importer" 
+			classpath="${build.dir}/classes">
+			<classpath refid="compile.classpath" />
+			<arg value="-load" />
+			<arg value="-source" />
+			<arg value="${data.dir}/marc" />
+			<arg value="-destination" />
+			<arg value="${data.dir}/marc_dest" />
+			<arg value="-destination_xml" />
+			<arg value="${data.dir}/xml" />
+			<arg value="-error" />
+			<arg value="${data.dir}/error" />
+			<arg value="-error_xml" />
+			<arg value="${data.dir}/error_xml" />
+			<arg value="-log" />
+			<arg value="${data.dir}/log" />
+			<arg value="-log_detail" />
+			<arg value="-marc_schema" />
+			<arg value="${data.dir}/MARC21slim_rochester.xsd" />
+		</java>
+	</target>
+
+	<!-- ==================== OAIToolkit.convertAndLoad ========================== -->
+	<!--
+	  Run the OAIToolkit with both convert and load parameters. It converts the
+	  MARC files to MARCXML, and load these into the database.
+	-->
+	<target name="OAIToolkit.convertAndLoad" description="Convert and load"  depends="compile">
+		<echo message="== Convert and load MARC files ==" />
+		<java classname="info.extensiblecatalog.OAIToolkit.api.Importer" 
+			classpath="${build.dir}/classes">
+			<classpath refid="compile.classpath" />
+			<arg value="-convert" />
+			<arg value="-load" />
+			<arg value="-source" />
+			<arg value="${data.dir}/marc" />
+		</java>
+	</target>
+
+	<!-- ==================== OAIToolkit.help ========================== -->
+	<!--
+	  Run the OAIToolkit without convert and load parameters. It simply
+	  prints the help screen.
+	-->
+	<target name="OAIToolkit.help" description="Show help screen"  depends="compile">
+		<echo message="== Convert and load MARC files ==" />
+		<java classname="info.extensiblecatalog.OAIToolkit.api.Importer" 
+			classpath="${build.dir}/classes">
+			<classpath refid="compile.classpath" />
+		</java>
+	</target>
+
+	<!-- ==================== Install Target ================================== -->
+	<!--
+	  The "install" target tells the specified Tomcat 6 installation to dynamically
+	  install this web application and make it available for execution. It does
+	  *not* cause the existence of this web application to be remembered across
+	  Tomcat restarts; if you restart the server, you will need to re-install all
+	  this web application.
+
+	  If you have already installed this application, and simply want Tomcat to
+	  recognize that you have updated Java classes (or the web.xml file), use the
+	  "reload" target instead.
+
+	  NOTE:  This target will only succeed if it is run from the same server that
+	  Tomcat is running on.
+
+	  NOTE:  This is the logical opposite of the "remove" target.
+	-->
+	<target name="tomcat.install" depends="compile,war" 
+		description="Install application to servlet container">
+		
+		<deploy url="${manager.url}"
+			username="${manager.username}"
+			password="${manager.password}"
+			path="${app.path}"
+			localWar="file://${dist.dir}/${project.name}.war"/>
+	</target>
+	
+	<!-- ====================== List Target =================================== -->
+	<!--
+	  The "list" target asks the specified Tomcat 6 installation to list the
+	  currently running web applications, either loaded at startup time or
+	  installed dynamically.  It is useful to determine whether or not the
+	  application you are currently developing has been installed.
+	-->
+	<target name="tomcat.list"
+		description="List installed applications on servlet container">
+		<list    
+			url		 = "${manager.url}"
+			username = "${manager.username}"
+			password = "${manager.password}"/>
+	</target>
+	
+	<!-- ==================== Reload Target =================================== -->
+	<!--
+	  The "reload" signals the specified application Tomcat 6 to shut itself down
+	  and reload. This can be useful when the web application context is not
+	  reloadable and you have updated classes or property files in the
+	  /WEB-INF/classes directory or when you have added or updated jar files in the
+	  /WEB-INF/lib directory.
+
+	  NOTE: The /WEB-INF/web.xml web application configuration file is not reread
+	  on a reload. If you have made changes to your web.xml file you must stop
+	  then start the web application. 
+	-->
+	<target name="tomcat.reload" depends="compile"
+		description="Reload application on servlet container">
+		<reload 
+			url		 = "${manager.url}"
+			username = "${manager.username}"
+			password = "${manager.password}"
+			path	 = "${app.path}"/>
+	</target>
+	
+	<!-- ==================== Remove Target =================================== -->
+	<!--
+	  The "remove" target tells the specified Tomcat 6 installation to dynamically
+	  remove this web application from service.
+
+	  NOTE:  This is the logical opposite of the "install" target.
+	-->
+	<target name="tomcat.remove"
+		description="Remove application on servlet container">
+		<undeploy 
+			url		 = "${manager.url}"
+			username = "${manager.username}"
+			password = "${manager.password}"
+			path	 = "${app.path}"/>
+	</target>
+	
+	<target name="test-init">
+		<mkdir dir="${test.classes.dir}"/>
+		<delete dir="${test.data.dir}"/>
+		<delete dir="${test.reports.dir}"/>
+		<mkdir dir="${test.data.dir}"/>
+		<mkdir dir="${test.reports.dir}"/>
+	</target>
+	
+	<target name="test-compile" depends="compile,test-init">
+		<javac destdir="${test.classes.dir}"
+			debug="true"
+			includeAntRuntime="true"
+			srcdir="${src.dir}/test">
+			<classpath refid="test.compile.classpath"/>
+		</javac>
+	</target>
+	
+	<target name="AllTests" description="Run all tests" depends="test-compile">
+		<junit printsummary="false" haltonfailure="false">
+			<classpath refid="test.classpath"/>
+			<formatter type="brief" usefile="false"/>
+			<formatter type="xml"/>
+			<batchtest todir="${test.data.dir}">
+				<fileset dir="${test.classes.dir}"
+					includes="**/*Tests.class"/>
+			</batchtest>
+			<!--
+			<test name="${test.suite.api}"/>
+			<test name="${test.suite.configuration}"/>
+			<test name="${test.suite.db}"/>
+			<test name="${test.suite.DTOs}"/>
+			<test name="${test.suite.oai}"/>
+			<test name="${test.suite.utils}"/>
+			<test name="${test.suite.importer}"/>
+			<test name="${test.suite.server}"/>
+			-->
+		</junit>
+		<junitreport todir="${test.data.dir}">
+			<fileset dir="${test.data.dir}">
+				<include name="TEST-*.xml"/>
+			</fileset>
+			<report format="frames" todir="${test.reports.dir}"/>
+		</junitreport>
+	</target>
+	
+	<target name="instrument" depends="compile">
+		<mkdir dir="${instrumented.dir}"/>
+		<delete file="${basedir}/cobertura.ser" />
+		<cobertura-instrument todir="${instrumented.dir}" 
+				datafile="${basedir}/cobertura.ser">
+			<fileset dir="${build.classes.dir}">
+				<include name="**/*.class" />
+				<!-- exclude name="**/*TestCase.class" / -->
+			</fileset>
+		</cobertura-instrument>
+	</target>
+	
+	<target name="test.coverage" depends="instrument, test-compile">
+		<echo>test coverage</echo>
+		<junit printsummary="true" showoutput="true" fork="false" 
+				haltonerror="false">
+			<sysproperty key="net.sourceforge.cobertura.datafile"
+	                 file="${basedir}/cobertura.ser" />
+			<classpath location="${instrumented.dir}" />
+			<classpath refid="test.classpath"/>
+			<classpath refid="cobertura.classpath" />
+			<batchtest todir="${test.reports.dir}" >
+				<fileset dir="${instrumented.dir}" 
+					includes="**/*TestCase.class" />
+			</batchtest>
+		</junit>
+	</target>
+	
+	<target name="cobertura.report" depends="instrument, test.coverage">
+		<mkdir dir="${coveragereport.dir}"/>
+		<cobertura-report format="html" 
+				destdir="${coveragereport.dir}" 
+				srcdir="src" 
+				datafile="${basedir}/cobertura.ser" />
+	</target>
+
+
+	<target name="test.report">
+	    <junitreport todir="${out.test}/reports">
+	      <fileset dir="${out.test}/reports">
+	        <include name="TEST-*.xml"/>
+	      </fileset>
+	      <report todir="${out.test}/reports"/>
+	    </junitreport>
+	  </target>
+
+
+</project>
