@@ -67,7 +67,10 @@ public class ApplInfo {
 	/** The directory, where the (mainly xsl) files are stored outside of
 	 * the web application */
 	private static String resourceDir;
-	
+
+    /** The Web Application version name running */
+	private static String applVer;
+
 	/** The directory, where the (mainly xsl) files are stored outside of
 	 * the web application */
 	public static LuceneSearcher luceneSearcher;
@@ -164,9 +167,11 @@ public class ApplInfo {
 	}
 
 	/** initialize the OAI server */
-	public static void init(File binDir) throws Exception {
+	public static void init(File binDir, String webAppName) throws Exception {
 		System.out.println("ApplInfo::init(" + binDir + ")");
 		tomcatBinDir = binDir;
+        System.out.println("ApplInfo::init(" + webAppName + ")");
+        applVer = webAppName;
 		initApplication();
 		initLogging(tomcatBinDir.getAbsolutePath(), 
 				logDir, OAI_LOG4J_CNF_FILE);
@@ -256,19 +261,44 @@ public class ApplInfo {
 			PropertiesConfiguration applConf = ConfigUtil
 					.load(basePropertiesFileName);
 
-            logDir = applConf.getString("logDir");
-            logDir = logDir.replaceAll("\\\\+","/");
-			System.out.println("ApplInfo::logDir: " + logDir);
-			resourceDir = applConf.getString("resourceDir");
-            resourceDir = resourceDir.replaceAll("\\\\+", "/");
-            System.out.println("ApplInfo::resourceDir: " + resourceDir);
-			String luceneDir = applConf.getString("luceneDir");
-            luceneDir = luceneDir.replaceAll("\\\\+", "/");
-			System.out.println("ApplInfo::luceneDir: " + luceneDir);
-			String cacheDir = applConf.getString("cacheDir");
-            cacheDir = cacheDir.replaceAll("\\\\+", "/");
-			System.out.println("ApplInfo::cacheDir: " + cacheDir);
-			if(cacheDir == null) {
+            String luceneDir = null;
+            String cacheDir = null;
+
+            if(applVer.equals("OAIToolkit")) {
+                logDir = applConf.getString("logDir");
+                logDir = logDir.replaceAll("\\\\+","/");
+                System.out.println("ApplInfo::logDir: " + logDir);
+                resourceDir = applConf.getString("resourceDir");
+                resourceDir = resourceDir.replaceAll("\\\\+", "/");
+                System.out.println("ApplInfo::resourceDir: " + resourceDir);
+                luceneDir = applConf.getString("luceneDir");
+                luceneDir = luceneDir.replaceAll("\\\\+", "/");
+                System.out.println("ApplInfo::luceneDir: " + luceneDir);
+                cacheDir = applConf.getString("cacheDir");
+                cacheDir = cacheDir.replaceAll("\\\\+", "/");
+                System.out.println("ApplInfo::cacheDir: " + cacheDir);
+            }
+            else {
+                String versionedLogDir = applVer + "." + "logDir";
+                logDir = applConf.getString(versionedLogDir);
+                logDir = logDir.replaceAll("\\\\+","/");
+                System.out.println("ApplInfo::logDir: " + logDir);
+                String versionedResourceDir = applVer + "." + "resourceDir";
+                resourceDir = applConf.getString(versionedResourceDir);
+                resourceDir = resourceDir.replaceAll("\\\\+", "/");
+                System.out.println("ApplInfo::resourceDir: " + resourceDir);
+                String versionedLuceneDir = applVer + "." + "luceneDir";
+                luceneDir = applConf.getString(versionedLuceneDir);
+                luceneDir = luceneDir.replaceAll("\\\\+", "/");
+                System.out.println("ApplInfo::luceneDir: " + luceneDir);
+                String versionedCacheDir = applVer + "." + "cacheDir";
+                cacheDir = applConf.getString(versionedCacheDir);
+                cacheDir = cacheDir.replaceAll("\\\\+", "/");
+                System.out.println("ApplInfo::cacheDir: " + cacheDir);
+            }
+
+
+            if(cacheDir == null) {
 				errorMessages.add("There is no 'cacheDir' defined in " 
 						+ basePropertiesFileName);
 			} else {

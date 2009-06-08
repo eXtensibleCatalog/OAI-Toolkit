@@ -78,9 +78,17 @@ public class InitializerServlet extends HttpServlet {
 		super.init(cfg);
 		
 		File binDir = null;
+        File webAppDir = null;
+        String webAppName = null;
 		try {
 			binDir = new File(cfg.getServletContext().getRealPath("../../bin"))
 				.getCanonicalFile();
+            webAppDir = new File(cfg.getServletContext().getRealPath("."))
+				.getCanonicalFile();
+            webAppName = webAppDir.getName();
+            log(" The Name for webapp Dir is "+ webAppName);
+            log("The new Tomcat/bin directory is " + webAppDir.getCanonicalPath());
+
 			log("The Tomcat/bin directory is " + binDir.getCanonicalPath());
 			if(!binDir.exists()) {
 				log("ERROR: The computed Tomcat/bin directory doesn't exist.");
@@ -93,7 +101,7 @@ public class InitializerServlet extends HttpServlet {
 
 		log("Initializer Servlet loaded, initializing ...");
 		try {
-			ApplInfo.init(binDir);
+			ApplInfo.init(binDir, webAppName);
 		} catch (Exception e) {
 			log("Configuration error occured:" + e.getMessage());
 		}
