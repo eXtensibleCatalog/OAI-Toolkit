@@ -1,0 +1,66 @@
+<!--
+  The main build file for patron load scripts
+-->
+
+  <project name="Aleph_OAI_Toolkit" default="dist" basedir=".">
+
+    <!-- IMPORTANT VARIABLE HERE -->
+  	<target name="init">
+  	  	<property name="project_name"   value="Aleph_OAI_Toolkit"/>
+  	  	<property name="config.dir" value="${basedir}/config"/>
+  		<property name="build.dir" value="${basedir}/build"/>
+  		<property name="src.dir" value="${basedir}/src"/>
+  		<property name="sql.dir" value="${basedir}/sql"/>
+  		<property name="dist.dir" value="${basedir}/dist"/>
+  		<property name="csh.dir" value="${basedir}/csh"/>
+  		<property name="build.OAIToolkit.config.dir" value="${build.dir}/src/xc/OAIToolkit"/>
+  		<property name="oai.toolkit.zip" value="${basedir}/OAIToolkit-0.6alpha-importer-linux.zip"/>
+  	    <tstamp/>
+  	</target>
+
+  	<target name="create-dir" depends="init">
+  	    <mkdir dir="${build.dir}"/>
+  		<mkdir dir="${build.dir}/bin"/>
+  		<mkdir dir="${build.dir}/sql"/>
+  		<mkdir dir="${build.dir}/log"/>
+  	  	<mkdir dir="${dist.dir}"/>
+  	</target>
+  	
+  	<target name="dist" depends="tar"/>
+  	
+  	<!--build scripts-->
+  	<target name="build" depends="create-dir">
+  		<copy todir="${build.dir}" file="README"/>
+  		<!--<unzip src="${oai.toolkit.zip}" dest="${build.dir}/src/xc"/>-->
+  		<copy todir="${build.dir}" file="deploy.pl"/>
+  		<!--<copy todir="${build.OAIToolkit.config.dir}">
+  			<fileset dir="${config.dir}"/>
+  		</copy>-->	
+  		<copy todir="${build.dir}/bin">	
+  			<fileset dir="${src.dir}">
+  				<include name="*.pl"/>
+  			</fileset>
+  		</copy>
+  		<copy todir="${build.dir}/bin">	
+  		  	<fileset dir="${csh.dir}">
+  		  		<include name="*.csh"/>
+  		  	</fileset>
+  		</copy>
+  		<copy todir="${build.dir}/sql">	
+  		  	<fileset dir="${sql.dir}">
+  		  		<include name="*.sql"/>
+  		  	</fileset>
+  		</copy>
+  	</target>
+  	
+  	<!--tar SMC and Bethel scripts-->
+  	<target name="tar" depends="build">
+  		<tar destfile="${dist.dir}/xc_oai_export_${DSTAMP}.tar" basedir="${build.dir}"/>
+  	</target>
+
+  <!-- CLEAN TARGET -->
+  <target name="clean" depends="init">
+  	<delete verbose="true" dir="${build.dir}"/>
+  	<delete verbose="true" dir="${dist.dir}"/>
+  </target>
+</project>

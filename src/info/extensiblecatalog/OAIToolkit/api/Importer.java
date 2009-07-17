@@ -247,7 +247,7 @@ public class Importer {
 		for(File marcFile : files) {
 			File xmlFile = new File(configuration.getDestinationXmlDir(),
 					marcFile.getName().replaceAll(".mrc$", ".xml"));
-			try {
+            try {
 				// setting the XML file
 				if(configuration.isNeedLogDetail()){
 					prglog.info("[PRG] Converting " + marcFile.getName()
@@ -400,6 +400,7 @@ public class Importer {
                 prglog.info("[LIB] Start modifying of MARCXML files from " + dirNameGiver
 				.getModifySource() + " to " + dirNameGiver
 				.getModifyTarget());
+                
 		File[] files = dirNameGiver.getModifySource().listFiles(
 				new XMLFileNameFilter());
 		if(0 == files.length) {
@@ -428,8 +429,8 @@ public class Importer {
 				marcReader = new MarcXmlReader(in);
 				out = new FileOutputStream(new File(
 						dirNameGiver.getModifyTarget(), xmlFile.getName()));
-				out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n".getBytes());
-				out.write("<collection xmlns=\"http://www.loc.gov/MARC21/slim\">\n".getBytes());
+				out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n".getBytes("UTF-8"));
+				out.write("<collection xmlns=\"http://www.loc.gov/MARC21/slim\">\n".getBytes("UTF-8"));
 
 				if(configuration.isNeedLogDetail()) {
 					prglog.info("[PRG] Modifying records...");
@@ -440,7 +441,7 @@ public class Importer {
 				int percent;
 				while (marcReader.hasNext()) {
 					String xml = modifier.modifyRecord(marcReader.next(), configuration.isFileOfDeletedRecords());
-					out.write(xml.getBytes());
+					out.write(xml.getBytes("UTF-8"));
 					fileStatistics.addTransformed();
 
 					counter++;
@@ -485,7 +486,7 @@ public class Importer {
 					}
 					*/
 				}
-				out.write("</collection>\n".getBytes());
+				out.write("</collection>\n".getBytes("UTF-8"));
 				out.close();
 
 				if(configuration.isNeedLogDetail()) {
@@ -738,10 +739,11 @@ public class Importer {
 			//boolean isValid = XMLUtil.validate(xmlFile, schemaFile, configuration.isNeedLogDetail());
 			boolean isWellFormed = XMLUtil.isWellFormed2(xmlFile);
 			if(!isWellFormed) {
+                prglog.info("[PRG] The file" + xmlFile.getName() + " is an invalid MARCXML file");
 				return false;
 			}
 			if(configuration.isNeedLogDetail()) {
-				prglog.info("[PRG] This is a valid MARCXML file.");
+				prglog.info("[PRG] This file " + xmlFile.getName() + "is a valid MARCXML file.");
 			}
 			return true;
 		} catch(Exception e){

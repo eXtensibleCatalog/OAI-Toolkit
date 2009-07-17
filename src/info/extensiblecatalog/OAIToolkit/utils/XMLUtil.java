@@ -185,7 +185,9 @@ public class XMLUtil {
 		try {
 			saxParser.parse(file, dh); // SAXException, IOException
 		} catch(SAXException e) {
-			throw e;
+			prglog.error("There was an error in the parsing of the xml file, and the message given is as follows:" + e);
+            isWellFormed = false;
+            return isWellFormed;
 			/*
 			if(e.getMessage().indexOf("is an invalid XML character") > -1) {
 				//
