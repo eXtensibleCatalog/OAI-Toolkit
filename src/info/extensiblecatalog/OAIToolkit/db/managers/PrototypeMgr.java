@@ -82,8 +82,10 @@ public class PrototypeMgr {
 	 */
 	private void checkConnection() throws Exception {
 		try {
+            //prglog.info("The conn value in check connection before the if loop for resetting: " + conn);
 			if(conn == null || conn.isClosed()) {
 				conn = DButil.getConnection();
+                //prglog.info("The conn value in check connection after resetting if needed is: " + conn);
 			}
 		} catch(SQLException e) {
 			throw e;
@@ -196,13 +198,19 @@ public class PrototypeMgr {
 		List<Integer> insertedIds = new ArrayList<Integer>();
 		PreparedStatement stmt = null;
 		ResultSet rs           = null;
+        int execrs = -1;
 		try {
-			stmt = conn.prepareStatement(sql);
+
+            stmt = conn.prepareStatement(sql);
 			placeholder.replacePlaceholders(stmt);
 			prglog.debug("[PRG] insertion SQL: " + stmt.toString());
 			lastSQL = stmt.toString();
+            execrs = executeUpdate(stmt);
+            prglog.info("Value of the result of execute Update " + execrs);
+            if (execrs == -1) {
+                stmt.executeUpdate();
+            }
 
-			stmt.executeUpdate();
 			rs = stmt.getGeneratedKeys();
 			ResultSetMetaData rsMetaData;
 			int columnCount;
@@ -583,8 +591,66 @@ public class PrototypeMgr {
 				+ "errorCode=" + sqlex.getErrorCode() + " and "
 				+ "message=" + sqlex.getMessage() + "; sql was '" + sql + "'");
 	}
-	
+
+    /**
+	 * Attempts to reset the connection to the database
+	 *
+	 * @throws SQLException If the connection could not be re-established
+	 */
+	private void resetConnection() throws SQLException
+	{
+		// Expire the database connection
+		try
+		{
+			if(!conn.isClosed()) {
+               prglog.info("Connection if loop where it checks the open databse connection");
+                conn.close();
+            }
+		}
+		catch(SQLException e)
+		{
+			prglog.error("Error trying to close the database connection." );
+		}
+		finally
+		{
+			// Reopen the connection
+            try {
+                prglog.info("In the finally loop of reset connection, before getting the new connection");
+                conn = DButil.getConnection();
+            }
+			catch (Exception ne){
+                prglog.error("[PRG] Exception " + ne);
+            }
+		}
+	}
+
+
 	public String getLastSQL() {
 		return lastSQL;
 	}
+
+    /**
+	 * Runs a query against the database.  If it fails, attempts to reconnect to
+	 * the database.
+	 *
+	 * @param query The query to run
+	 * @return The result of running the query
+	 * @throws SQLException If the query failed twice
+	 */
+	public int executeUpdate(PreparedStatement query) throws SQLException
+	{
+		try
+		{
+            prglog.info("In the executeUpdate try loop before return statement");
+			return query.executeUpdate();
+   		}
+		catch(SQLException e)
+		{
+            prglog.info("In the executeUpdate loop catch before resetting the connection");
+			resetConnection();
+            prglog.info("In the executeUpdate loop catch after resetting the connection and before return -1");
+            return -1;
+		}
+	}
+
 }

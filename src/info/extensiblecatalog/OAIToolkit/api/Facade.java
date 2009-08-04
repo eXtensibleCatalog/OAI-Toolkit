@@ -182,7 +182,7 @@ public class Facade {
 		}
 
         boolean res = parseResumptionToken();
-        prglog.info("Value of boolean returned from resumptionToken is " + res);
+        //prglog.info("Value of boolean returned from resumptionToken is " + res);
         if (res == true){
         dataProvider.setParams(tokenId, from, until, set, metadataPrefix,
 				offset);
@@ -956,9 +956,9 @@ public class Facade {
             form.setXml((ErrorCodes.badResumptionTokenError(
 						"The resumption token entered does not exist. Please enter the correct resumption token.")).toString());
             var = false;
-            prglog.info("[PRG] Variable value in Exception " + var);
+            //prglog.info("[PRG] Variable value in Exception " + var);
         }
-        prglog.info("[PRG] Variable value in Exception " + var);
+        //prglog.info("[PRG] Variable value in Exception " + var);
         return var;
 	}
 

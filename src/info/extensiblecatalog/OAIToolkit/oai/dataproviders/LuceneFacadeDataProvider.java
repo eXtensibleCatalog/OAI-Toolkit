@@ -9,7 +9,7 @@
 
 package info.extensiblecatalog.OAIToolkit.oai.dataproviders;
 
-import java.io.IOException;
+import com.mysql.jdbc.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -55,12 +55,14 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 	private Hits   hits;
 	private int    currentRecord;
 	private int    lastRecord;
+    private int    tempIndex;
 	private long   getIdTime      = 0;
 	private long   doc2RecordTime = 0;
 	private long   getDocTime     = 0;
     //private BitSet range;
     private BitSet ids;
 	//private HitIterator hitIterator;
+    
 	
 	public String getEarliestDatestamp() {
 		try {
@@ -96,6 +98,9 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 	
 	public void selectRecords() {
 		lastRecord = offset + recordLimit;
+        //prglog.info("In select Records offset: " + offset );
+        //prglog.info("In select Records recordLimit: " + recordLimit );
+
 		if(lastRecord > ids.cardinality()) {
 			lastRecord = ids.cardinality();
 		}
@@ -104,12 +109,15 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 		getIdTime      = 0;
 		doc2RecordTime = 0;
 		getDocTime     = 0;
+        tempIndex = currentRecord;
 
         //bits = ApplInfo.luceneSearcher.getBits();
         //range = bits.get(currentRecord, lastRecord);
 	}
 	
 	public boolean hasNextRecord() {
+        //prglog.info("In HasNextRecord Current Record: " + currentRecord);
+        //prglog.info("In HasNextRecord Last Record: " + lastRecord);
 		return currentRecord < lastRecord;
 	}
 
@@ -118,7 +126,7 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 		//DataTransferObject recordDTO = null;
 		RecordDTO recordDTO = null;
 		int id;
-		long t1 = System.currentTimeMillis();
+        long t1 = System.currentTimeMillis();
 		long t2 = 0;
 		long t3 = 0;
 		try {
@@ -131,11 +139,10 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 			getIdTime += (t2-t1);
 			//Document doc = hit.getDocument();
 
-            id = ids.nextSetBit(currentRecord);
+            id = ids.nextSetBit(tempIndex);
             //prglog.info("Inserted Record ID: " +id);
             Document doc = ApplInfo.luceneSearcher.getDoc(id);
             //currentRecord = id;
-
 
             /*
 			Document doc = hits.doc(currentRecord);
@@ -149,6 +156,9 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 				//ApplInfo.luceneSearcher.getAllFieldSelector());
 			t3 = System.currentTimeMillis();
 			getDocTime += (t3-t2);
+            //prglog.info("In Next Record current Record "+ currentRecord);
+            //prglog.info("The id of the record in the List of the records is " + id);
+            tempIndex = id + 1;
 			//id = currentRecord;
 			recordDTO = doc2RecordDTO(doc, id);
 			//prglog.info(recordDTO.getRecordId() + ", " + recordDTO.getExternalId() + ", " + recordDTO.getRecordType());
@@ -294,9 +304,12 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 		tokenDTO.setQueryForCount("");
 		tokenDTO.setMetadataPrefix(metadataPrefix);
 		tokenDTO.setCreationDate(new Timestamp(new Date().getTime()));
-		try {
-			List<Integer> ids = tokenMgr.insert(tokenDTO);
-			String resumptionToken = String.valueOf(ids.get(0));
+
+        try {
+            List<Integer> intids = tokenMgr.insert(tokenDTO);
+            prglog.info("intids.get(0)" + intids.get(0));
+			String resumptionToken = String.valueOf(intids.get(0));
+            prglog.info("Resumption Token" + resumptionToken);
 			return resumptionToken;
 		} catch(SQLException e) {
 			e.printStackTrace();
