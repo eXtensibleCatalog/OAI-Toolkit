@@ -8,7 +8,7 @@
 	<echo>Current time is ${timestamp.isoformat}</echo>
 
 	<property name="project.name" value="${ant.project.name}" />
-	<property name="project.version" value="0.6alpha" />
+	<property name="project.version" value="0.6.1alpha" />
 	<property name="project.name-ver" 
 		value="${project.name}-${project.version}" />
 	<property name="jar.file" value="${project.name-ver}.jar" />
