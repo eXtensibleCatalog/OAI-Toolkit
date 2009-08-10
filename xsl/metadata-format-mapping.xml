@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!DOCTYPE mapping PUBLIC "-//EXOLAB/Castor Mapping DTD Version 1.0//EN"
+                         "http://castor.org/mapping.dtd">
+
+<mapping>
+	<!-- All your mappings go here -->
+	<class name="info.extensiblecatalog.OAIToolkit.oai.MetadataFormats">
+		<map-to xml="metadata-formats" />
+
+		<field name="MetadataFormats" type="info.extensiblecatalog.OAIToolkit.oai.MetadataFormat" collection="vector">
+			<bind-xml name="metadata-format" />
+		</field>
+	</class>
+
+	<class name="info.extensiblecatalog.OAIToolkit.oai.MetadataFormat">
+
+		<field name="MetadataPrefix" type="java.lang.String">
+			<bind-xml name="metadata-prefix" node="element" />
+		</field>
+
+		<field name="Schema" type="java.lang.String">
+			<bind-xml name="schema" node="element" />
+		</field>
+
+		<field name="MetadataNamespace" type="java.lang.String">
+			<bind-xml name="metadata-namespace" node="element" />
+		</field>
+
+		<field name="XsltFileName" type="java.lang.String">
+			<bind-xml name="xslt-file-name" node="element" />
+		</field>
+	</class>
+</mapping>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts-config PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 1.2//EN" "http://struts.apache.org/dtds/struts-config_1_2.dtd">
+
+<struts-config>
+	<data-sources />
+	<form-beans>
+		<form-bean name="configurationForm"
+			type="info.extensiblecatalog.OAIToolkit.struts.form.ConfigurationForm" />
+		<form-bean name="oaiRequestForm"
+			type="info.extensiblecatalog.OAIToolkit.struts.form.OaiRequestForm" />
+
+	</form-beans>
+
+	<global-exceptions />
+	<global-forwards />
+	<action-mappings>
+		<action attribute="configurationForm"
+			input="/form/configuration.jsp" name="configurationForm"
+			path="/configuration" scope="request"
+			type="info.extensiblecatalog.OAIToolkit.struts.action.ConfigurationAction" />
+
+		<action attribute="oaiRequestForm" input="/form/oaiRequest.jsp"
+			name="oaiRequestForm" path="/oai-request" scope="request"
+			type="info.extensiblecatalog.OAIToolkit.struts.action.OaiRequestAction">
+
+				<forward name="Identify" 
+						path="/form/Identify.jsp"/>
+				<forward name="ListMetadataFormats" 
+						path="/form/ListMetadataFormats.jsp"/>
+				<forward name="ListSets" 
+						path="/form/ListSets.jsp"/>
+				<forward name="ListIdentifiers" 
+						path="/form/ListIdentifiers.jsp"/>
+				<forward name="ListRecords" 
+						path="/form/ListRecords.jsp"/>
+				<forward name="GetRecord" 
+						path="/form/GetRecord.jsp"/>
+		</action>
+
+	</action-mappings>
+
+	<message-resources
+		parameter="info.extensiblecatalog.OAIToolkit.struts.ApplicationResources" />
+</struts-config>
+
