@@ -35,7 +35,11 @@ public class BasicFacadeDataProvider {
 		this.recordLimit = recordLimit;
 	}
 
-	public boolean hasBadResumptionTokenError() {
+    public void setOffset(int offset) {
+        this.offset = offset;
+    }
+
+    public boolean hasBadResumptionTokenError() {
 		return badResumptionTokenError;
 	}
 

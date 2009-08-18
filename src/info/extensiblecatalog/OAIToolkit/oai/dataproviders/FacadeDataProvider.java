@@ -52,8 +52,9 @@ public interface FacadeDataProvider {
 	
 	public boolean hasBadResumptionTokenError();
 
-	public String storeResumptionToken();
-	
+    public String storeResumptionToken();
+    public void setOffset(int offset);
+    	
 	public void setRecordLimit(int recordLimit);
 	
 	public long getIdTime();

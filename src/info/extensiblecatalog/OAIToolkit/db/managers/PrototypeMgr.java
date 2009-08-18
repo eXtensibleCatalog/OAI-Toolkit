@@ -200,14 +200,17 @@ public class PrototypeMgr {
 		ResultSet rs           = null;
         int execrs = -1;
 		try {
-
             stmt = conn.prepareStatement(sql);
 			placeholder.replacePlaceholders(stmt);
 			prglog.debug("[PRG] insertion SQL: " + stmt.toString());
 			lastSQL = stmt.toString();
             execrs = executeUpdate(stmt);
-            prglog.info("Value of the result of execute Update " + execrs);
+            //prglog.info("Value of the result of execute Update " + execrs);
             if (execrs == -1) {
+                //prglog.debug("Inside the if loop again doing the execute update");
+                stmt = conn.prepareStatement(sql);
+                placeholder.replacePlaceholders(stmt);
+                prglog.debug("[PRG] After resetting connection, insertion SQL: " + stmt.toString());
                 stmt.executeUpdate();
             }
 
@@ -641,7 +644,7 @@ public class PrototypeMgr {
 	{
 		try
 		{
-            prglog.info("In the executeUpdate try loop before return statement");
+            //prglog.info("In the executeUpdate try loop before return statement");
 			return query.executeUpdate();
    		}
 		catch(SQLException e)

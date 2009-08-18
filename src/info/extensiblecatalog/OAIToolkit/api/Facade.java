@@ -401,7 +401,7 @@ public class Facade {
                 parseResumptionToken();
 				//RecordListResult result_resumption_token = parseResumptionToken();
                 //form.setXml(result_resumption_token.getContent());
-				prglog.info("[PRG] actual resumption token: " + resumptionToken 
+				prglog.info("[PRG] actual next resumption token: " + resumptionToken
 						+ ", second phase: " + (System.currentTimeMillis()-t0));
 			} else {
 				hasMoreResult = false;
@@ -699,7 +699,7 @@ public class Facade {
 		if(totalRecordNr > (offset + recordLimit)) {
 			if(null == tokenId) {
 				prglog.info("[PRG] ->storeResumptionToken");
-				tokenId = dataProvider.storeResumptionToken();
+                tokenId = dataProvider.storeResumptionToken();
 				//sql, counterSQL, metadataPrefix);
 			}
 			hasMore = true;
@@ -707,6 +707,7 @@ public class Facade {
 		
 		//List<DataTransferObject> records;
 		try {
+            //prglog.info("Value of the offset before select records" + offset);
 			dataProvider.selectRecords();
 			StringBuffer xml = new StringBuffer();
 			if(0 == totalRecordNr){
@@ -947,7 +948,9 @@ public class Facade {
          if (resumptionToken != null) {
 			String[] tokens = resumptionToken.split("\\|");
 			tokenId = tokens[0];
-			offset  = Integer.parseInt(tokens[1]);          
+			offset  = Integer.parseInt(tokens[1]);
+            dataProvider.setOffset(offset);
+            //prglog.info("Value of the offset in parseResumptionToken is" + offset);
             }
 
         } catch (Exception e) {

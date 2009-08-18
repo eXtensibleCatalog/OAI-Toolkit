@@ -104,8 +104,7 @@ public class DButil {
 				conn = DriverManager.getConnection(
 						"jdbc:mysql://" + host + ":" + port + "/" + database
 						+ "?zeroDateTimeBehavior=convertToNull"
-                                                + "&autoReconnect=true"
-						+ "&useUnicode=true" 
+                        + "&useUnicode=true" 
 						+ "&characterEncoding=UTF8",
 						user, password);
 			} else if(ConnectionType.equals(ConnectionTypes.DATASOURCE)) {

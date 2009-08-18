@@ -97,7 +97,7 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 	}
 	
 	public void selectRecords() {
-		lastRecord = offset + recordLimit;
+        lastRecord = offset + recordLimit;
         //prglog.info("In select Records offset: " + offset );
         //prglog.info("In select Records recordLimit: " + recordLimit );
 
@@ -303,14 +303,14 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 		tokenDTO.setQuery(queryString);
 		tokenDTO.setQueryForCount("");
 		tokenDTO.setMetadataPrefix(metadataPrefix);
-		tokenDTO.setCreationDate(new Timestamp(new Date().getTime()));
+        tokenDTO.setCreationDate(new Timestamp(new Date().getTime()));
 
         try {
             List<Integer> intids = tokenMgr.insert(tokenDTO);
             prglog.info("intids.get(0)" + intids.get(0));
 			String resumptionToken = String.valueOf(intids.get(0));
             prglog.info("Resumption Token" + resumptionToken);
-			return resumptionToken;
+            return resumptionToken;
 		} catch(SQLException e) {
 			e.printStackTrace();
 		} catch(Exception e) {
