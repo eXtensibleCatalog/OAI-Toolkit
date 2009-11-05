@@ -745,8 +745,8 @@ public class Importer {
 			// Check for well formedness of the document
 			boolean isWellFormed = XMLUtil.isWellFormed2(xmlFile);
 			if(!isWellFormed) {
-                prglog.error("[PRG] The file" + xmlFile.getName() + " is an invalid XML file");
-                libloadlog.error("[LIB] The file" + xmlFile.getName() + " is an invalid XML file");
+                prglog.error("[PRG] The file " + xmlFile.getName() + " is an invalid XML file");
+                libloadlog.error("[LIB] The file " + xmlFile.getName() + " is an invalid XML file");
 				return false;
 			}
 
@@ -754,8 +754,8 @@ public class Importer {
 			List<SAXParseException> errors = XMLUtil.validate(xmlFile, configuration.getMarcSchema());
 			// If errors are found, log them
 			if(errors.size()!=0) {
-				prglog.error("[PRG] The file" + xmlFile.getName() + " is an invalid MARCXML file");
-				libloadlog.error("[LIB] The file" + xmlFile.getName() + " is an invalid MARCXML file");
+				prglog.error("[PRG] The file " + xmlFile.getName() + " is an invalid MARCXML file");
+				libloadlog.error("[LIB] The file " + xmlFile.getName() + " is an invalid MARCXML file");
 				libloadlog.error("[LIB] The following errors were encountered during validation.");
                 for (SAXParseException parseException : errors) {
                 	libloadlog.error("[LIB] Location: "+parseException.getLineNumber()+":"+parseException.getColumnNumber());
