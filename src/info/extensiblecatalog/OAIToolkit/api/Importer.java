@@ -662,31 +662,36 @@ public class Importer {
 				}
 				recordImporter.commit();
 
-			} catch(IOException e) {
+			} 
+			catch(IOException e) {
 				e.printStackTrace();
 				prglog.error("[PRG] [IOException] " + e.getMessage()
 						+ " " + xmlFile.getName()
 						+ " lastRecordToImport: "
 						+ recordImporter.getLastRecordToImport());
-                        } catch(MarcException e) {
+                        } 
+			catch(MarcException e) {
                                 e.printStackTrace();
 				prglog.error("[PRG] [MarcException] " + e.getMessage()
 						+ " " + xmlFile.getName()
 						+ " lastRecordToImport: "
 						+ recordImporter.getLastRecordToImport());
-                        } catch(RuntimeException e) {
+                        } 
+			catch(RuntimeException e) {
 				e.printStackTrace();
 				prglog.error("[PRG] [RuntimeException] " + e.getMessage()
 						+ " " + xmlFile.getName()
 						+ " lastRecordToImport: "
 						+ recordImporter.getLastRecordToImport());
-                        } catch(Exception e) {
+                        } 
+			catch(Exception e) {
                                 e.printStackTrace();
 				prglog.error("[PRG] " + e.getMessage()
 						+ " " + xmlFile.getName()
 						+ " lastRecordToImport: "
 						+ recordImporter.getLastRecordToImport());
-                        } finally {
+                        } 
+            finally {
 				if(null != badRecordWriter) {
 					try {
 						badRecordWriter.close();
@@ -736,17 +741,35 @@ public class Importer {
 
 	private boolean checkXml(File xmlFile) {
 		try {
-			//boolean isValid = XMLUtil.validate(xmlFile, schemaFile, configuration.isNeedLogDetail());
+
+			// Check for well formedness of the document
 			boolean isWellFormed = XMLUtil.isWellFormed2(xmlFile);
 			if(!isWellFormed) {
                 prglog.info("[PRG] The file" + xmlFile.getName() + " is an invalid MARCXML file");
+                libloadlog.info("[LIB] The file" + xmlFile.getName() + " is an invalid MARCXML file");
 				return false;
 			}
+
+			// Check if the file complies to the MARC schema
+			List<SAXParseException> errors = XMLUtil.validate(xmlFile, configuration.getMarcSchema());
+			// If errors are found, log them
+			if(errors.size()!=0) {
+				prglog.info("[PRG] The file" + xmlFile.getName() + " is an invalid MARCXML file");
+				libloadlog.info("[LIB] The file" + xmlFile.getName() + " is an invalid MARCXML file");
+				libloadlog.info("[LIB] The following errors were encountered during validation.");
+                for (SAXParseException parseException : errors) {
+                	libloadlog.info("[LIB] Location: "+parseException.getLineNumber()+":"+parseException.getColumnNumber());
+                	libloadlog.info("[LIB] Error: "+parseException.getMessage());
+				}
+				return false;
+			}
+			
+			//boolean isValid = XMLUtil.validate(xmlFile, schemaFile, configuration.isNeedLogDetail());
 			if(configuration.isNeedLogDetail()) {
 				prglog.info("[PRG] This file " + xmlFile.getName() + "is a valid MARCXML file.");
 			}
 			return true;
-		} catch(Exception e){
+		} catch(Exception e) {
 			String error = "The XML file (" + xmlFile.getName() + ") "
 				+ "isn't well formed. Please correct the errors and "
 				+ "load again. Error description: " + e.getMessage();
