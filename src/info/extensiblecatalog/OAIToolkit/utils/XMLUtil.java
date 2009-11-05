@@ -11,7 +11,10 @@ package info.extensiblecatalog.OAIToolkit.utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -32,8 +35,11 @@ import org.jdom.Namespace;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 import org.w3c.dom.Document;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 /** 
@@ -119,6 +125,7 @@ public class XMLUtil {
 			throws ParserConfigurationException, IOException, SAXException {
 		return isValid(xmlContent, schemaFileName, true);
 	}
+	
 	public static boolean isValid(String xmlContent, String schemaFileName, 
 			boolean needLogDetail)
 			throws ParserConfigurationException, IOException, SAXException {
@@ -308,4 +315,44 @@ public class XMLUtil {
 		}
 		return el;
 	}
+	
+	public static List<SAXParseException> validate(File xmlFile, String schemaFileName ) throws SAXException, ParserConfigurationException, IOException{
+
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			factory.setValidating(false);
+			factory.setNamespaceAware(true);
+		
+			SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
+			factory.setSchema(schemaFactory.newSchema(new Source[] {new StreamSource(new File(schemaFileName))}));
+
+			SAXParser parser = factory.newSAXParser();
+			XMLReader reader = parser.getXMLReader();
+			XCErrorHandler handler = new XCErrorHandler();
+			reader.setErrorHandler(handler);
+			reader.parse(new InputSource(new FileInputStream( xmlFile)));
+		
+		return handler.getErrors();
+	}
+
 }
+class XCErrorHandler implements ErrorHandler {
+    
+	private List<SAXParseException> errors = new ArrayList<SAXParseException>();
+	
+	public List<SAXParseException> getErrors() {
+		return errors;
+	}
+
+	public void warning(SAXParseException e) throws SAXException {
+        
+    }
+
+    public void error(SAXParseException e) throws SAXException {
+      errors.add(e);
+    }
+
+    public void fatalError(SAXParseException e) throws SAXException {
+        
+    }
+}
+
