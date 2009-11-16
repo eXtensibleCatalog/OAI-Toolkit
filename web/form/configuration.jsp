@@ -43,19 +43,21 @@
 					</td>
 				</tr>
 				<tr>
+					<td><bean:message key="configuration.oai-identifier.domainName" /></td>
+					<td>
+						<html:text property="oaiIdentifierDomainName" />
+						<html:errors property="oaiIdentifierDomainName" />
+					</td>
+				</tr>
+
+                <tr>
 					<td><bean:message key="configuration.oai-identifier.repositoryIdentifier" /></td>
 					<td>
 						<html:text property="oaiIdentifierRepositoryIdentifier" />
 						<html:errors property="oaiIdentifierRepositoryIdentifier" />
 					</td>
 				</tr>
-				<tr>
-					<td><bean:message key="configuration.oai-identifier.delimiter" /></td>
-					<td>
-						<html:text property="oaiIdentifierDelimiter" />
-						<html:errors property="oaiIdentifierDelimiter" />
-					</td>
-				</tr>
+
 				<tr>
 					<td><bean:message key="configuration.oai-identifier.sampleIdentifier" /></td>
 					<td>
@@ -63,7 +65,7 @@
 						<html:errors property="oaiIdentifierSampleIdentifier" />
 					</td>
 				</tr>
-				
+
 				<tr>
 					<td><bean:message key="configuration.baseUrl" /></td>
 					<td>

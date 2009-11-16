@@ -38,11 +38,11 @@ public class ConfigurationForm extends ActionForm {
 	/** description/oai-identifier/scheme */
 	private String oaiIdentifierScheme;
 
+    /** description/oai-identifier/domainName */
+	private String oaiIdentifierDomainName;
+
 	/** description/oai-identifier/repositoryIdentifier */
 	private String oaiIdentifierRepositoryIdentifier;
-	
-	/** description/oai-identifier/delimiter */
-	private String oaiIdentifierDelimiter;
 	
 	/** description/oai-identifier/sampleIdentifier */
 	private String oaiIdentifierSampleIdentifier;
@@ -382,12 +382,12 @@ public class ConfigurationForm extends ActionForm {
 		this.submitButton = submitButton;
 	}
 
-	public String getOaiIdentifierDelimiter() {
-		return oaiIdentifierDelimiter;
-	}
+	public String getOaiIdentifierDomainName() {
+		return oaiIdentifierDomainName;
+    }
 
-	public void setOaiIdentifierDelimiter(String oaiIdentifierDelimiter) {
-		this.oaiIdentifierDelimiter = oaiIdentifierDelimiter;
+	public void setOaiIdentifierDomainName(String oaiIdentifierDomainName) {
+		this.oaiIdentifierDomainName = oaiIdentifierDomainName;
 	}
 
 	public String getOaiIdentifierRepositoryIdentifier() {

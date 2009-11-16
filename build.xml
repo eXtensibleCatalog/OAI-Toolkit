@@ -8,7 +8,7 @@
 	<echo>Current time is ${timestamp.isoformat}</echo>
 
 	<property name="project.name" value="${ant.project.name}" />
-	<property name="project.version" value="0.6.2alpha" />
+	<property name="project.version" value="0.6.3alpha" />
 	<property name="project.name-ver" 
 		value="${project.name}-${project.version}" />
 	<property name="jar.file" value="${project.name-ver}.jar" />
@@ -373,6 +373,9 @@
 			<zipfileset dir="xslts" 
 				includes="*"
 				prefix="${project.name}/xslts"></zipfileset>
+            <zipfileset dir="sample_marcdata"
+				includes="*"
+				prefix="${project.name}/sample_marcdata"></zipfileset>
 			<zipfileset dir="${javadoc.dir}"
 				includes="**/*"
 				prefix="${project.name}/docs/api" />
@@ -388,6 +391,8 @@
 				includes="convert.bat
 						convertload.bat
 						load.bat
+                        modify.bat
+                        convertmodifyloadproduction.bat
                         convertload_as_deleted.bat
                         load_as_deleted.bat
                         extract_error_recordno.bat
@@ -438,6 +443,9 @@
 			<zipfileset dir="xslts" 
 				includes="*"
 				prefix="${project.name}/xslts"></zipfileset>
+            <zipfileset dir="sample_marcdata"
+				includes="*"
+				prefix="${project.name}/sample_marcdata"></zipfileset>
 			<zipfileset dir="${javadoc.dir}"
 				includes="**/*"
 				prefix="${project.name}/docs/api" />
@@ -453,6 +461,8 @@
 				includes="convert.sh
 						convertload.sh
 						load.sh
+                        modify.sh
+                        convertmodifyloadproduction.sh
                         convertload_as_deleted.sh
                         load_as_deleted.sh
                         extract_error_recordno.sh

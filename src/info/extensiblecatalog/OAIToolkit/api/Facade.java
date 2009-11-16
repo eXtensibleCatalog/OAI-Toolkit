@@ -20,9 +20,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map.Entry;
-
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
+
 
 import org.apache.log4j.Logger;
 //import org.jdom.Document;
@@ -123,7 +123,16 @@ public class Facade {
 	
 	/** The OAI until parameter */
 	private String until;
-	
+
+    /** The colon_delimter parameter */
+	private static final String colon_delimiter = ":";
+    
+    /** The slash_delimiter parameter */
+	private static final String slash_delimiter = "/";
+
+    /** The slash_delimiter parameter */
+	private static final String underscore_delimiter = "_";
+
 	/** The OAI metadataPrefix parameter */
 	private String metadataPrefix;
 	
@@ -145,9 +154,11 @@ public class Facade {
 	/** The OAI identifier's prefix */
 	private static final String idPrefix = 
 		ApplInfo.oaiConf.getOaiIdentifierScheme() 
-		+ ApplInfo.oaiConf.getOaiIdentifierDelimiter()
-		+ ApplInfo.oaiConf.getOaiIdentifierRepositoryIdentifier()
-		+ ApplInfo.oaiConf.getOaiIdentifierDelimiter();
+		+ colon_delimiter
+		+ ApplInfo.oaiConf.getOaiIdentifierDomainName()
+		+ colon_delimiter
+        + ApplInfo.oaiConf.getOaiIdentifierRepositoryIdentifier()
+        + slash_delimiter;
 	
 	/** time to build and manipulate DOM tree */
 	private long domBuildTime = 0;
@@ -567,10 +578,23 @@ public class Facade {
 			return;
 		}
 
-		String[] identifierParts = identifier.split(
-				ApplInfo.oaiConf.getOaiIdentifierDelimiter());
-		String recordTypeParam = identifierParts[identifierParts.length-2];
-		String idParam = identifierParts[identifierParts.length-1];
+        char[] crs = identifier.toCharArray();
+        int index = 0;
+        for (int i = 0; i < crs.length; i++) {
+           if (Character.isDigit(crs[i])) {
+                prglog.debug("[PRG]first index = " + i);
+                index = i;
+                break;
+            }
+        }
+
+        String recordTypeParam = identifier.substring(0,index);
+        String idParam = identifier.substring(index);
+
+		//String[] identifierParts = identifier.split(
+		//		underscore_delimiter);
+		//String recordTypeParam = identifierParts[identifierParts.length-2];
+		//String idParam = identifierParts[identifierParts.length-1];
 		prglog.info("[PRG] recordTypeParam: " + recordTypeParam);
 		prglog.info("[PRG] idParam: " + idParam);
 
@@ -850,8 +874,7 @@ public class Facade {
 		sb.append(XMLUtil.xmlTag("identifier", 
 			idPrefix 
 			+ ApplInfo.setNamesById.get(record.getRecordType())
-			+ ApplInfo.oaiConf.getOaiIdentifierDelimiter()
-			+ record.getRecordId().toString()));
+            + record.getRecordId().toString()));
 
 		// add datestamp
 		sb.append(XMLUtil.xmlTag("datestamp", 

@@ -45,9 +45,9 @@ public class OAIConfigurationTestCase extends TestCase {
 			"</repositoryIdentifier>\r\n  <delimiter>:</delimiter>\r\n  " +
 			"<sampleIdentifier>oai:extensiblecatalog.info:99123</" +
 			"sampleIdentifier>\r\n</oai-identifier>\r\n";
-	private static final String oaiIdentifierDelimiter = ":";
 	private static final String adminEmail = "pkiraly@tesuji.eu";
 	private static final String oaiIdentifierRepositoryIdentifier = "extensiblecatalog.info";
+    private static final String oaiIdentifierDomainName = "Sample1";
 	private static final String storageType = "Lucene";
 	private static final String[] compression = {"gzip", "compress", "deflate"};
 	private static final int expirationDate = -1;
@@ -197,6 +197,23 @@ public class OAIConfigurationTestCase extends TestCase {
 		conf.setOaiIdentifierRepositoryIdentifier(newValue);
 		assertEquals("bad oaiIdentifierRepositoryIdentifier", newValue, 
 				conf.getOaiIdentifierRepositoryIdentifier());
+	}
+
+    public void testGetOaiIdentifierDomainName() {
+		conf = new OAIConfiguration(new File(configFile));
+		conf.load();
+		assertEquals("bad oaiIdentifierDomainName",
+				oaiIdentifierDomainName,
+				conf.getOaiIdentifierDomainName());
+	}
+
+	public void testSetOaiIdentifierDomainName() {
+		String newValue = oaiIdentifierDomainName + "_fake";
+		conf = new OAIConfiguration(new File(configFile));
+		conf.load();
+		conf.setOaiIdentifierDomainName(newValue);
+		assertEquals("bad oaiIdentifierDomainName", newValue,
+				conf.getOaiIdentifierDomainName());
 	}
 
 	public void testGetOaiIdentifierSampleIdentifier() {
@@ -445,7 +462,7 @@ public class OAIConfigurationTestCase extends TestCase {
 		expected.append(", " + description);
 		expected.append(", " + oaiIdentifierScheme);
 		expected.append(", " + oaiIdentifierRepositoryIdentifier);
-		expected.append(", " + oaiIdentifierDelimiter);
+		expected.append(", " + oaiIdentifierDomainName);
 		expected.append(", " + oaiIdentifierSampleIdentifier);
 		expected.append(", " + baseUrl);
 		expected.append(", " + adminEmail);

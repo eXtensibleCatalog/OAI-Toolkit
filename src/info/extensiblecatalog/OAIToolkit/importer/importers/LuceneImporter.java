@@ -71,7 +71,7 @@ public class LuceneImporter extends BasicRecordImporter
 	 */
 	public List<ImportType> importRecord(Record record, boolean doFileOfDeletedRecords) {
 		recordCounter++;
-
+        prglog.debug("Inside the importRecord of Lucene Importer");
 		List<ImportType> typeList = new ArrayList<ImportType>();
 
 		MARCRecordWrapper rec = new MARCRecordWrapper(record, currentFile, createXml11, doFileOfDeletedRecords);

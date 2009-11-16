@@ -63,11 +63,11 @@ public class OAIConfiguration {
 	/** description/oai-identifier/scheme */
 	private String oaiIdentifierScheme;
 
-	/** description/oai-identifier/repositoryIdentifier */
+	/** description/oai-identifier/domainName */
+	private String oaiIdentifierDomainName;
+
+    /** description/oai-identifier/repositoryIdentifier */
 	private String oaiIdentifierRepositoryIdentifier;
-	
-	/** description/oai-identifier/delimiter */
-	private String oaiIdentifierDelimiter;
 	
 	/** description/oai-identifier/sampleIdentifier */
 	private String oaiIdentifierSampleIdentifier;
@@ -167,10 +167,10 @@ public class OAIConfiguration {
 			description = (String)defaultProps.getProperty("description");
 			oaiIdentifierScheme = (String)defaultProps.getProperty(
 					"oaiIdentifierScheme");
-			oaiIdentifierRepositoryIdentifier = (String)defaultProps
+			oaiIdentifierDomainName = (String)defaultProps
+					.getProperty("oaiIdentifierDomainName");
+            oaiIdentifierRepositoryIdentifier = (String)defaultProps
 					.getProperty("oaiIdentifierRepositoryIdentifier");
-			oaiIdentifierDelimiter = (String)defaultProps.getProperty(
-					"oaiIdentifierDelimiter");
 			oaiIdentifierSampleIdentifier = (String)defaultProps.getProperty(
 					"oaiIdentifierSampleIdentifier");
 			baseUrl = (String)defaultProps.getProperty("baseUrl");
@@ -233,8 +233,8 @@ public class OAIConfiguration {
 			defaultProps.setProperty("repositoryName", repositoryName);
 			defaultProps.setProperty("description", description);
 			defaultProps.setProperty("oaiIdentifierScheme", oaiIdentifierScheme);
-			defaultProps.setProperty("oaiIdentifierRepositoryIdentifier", oaiIdentifierRepositoryIdentifier);
-			defaultProps.setProperty("oaiIdentifierDelimiter", oaiIdentifierDelimiter);
+			defaultProps.setProperty("oaiIdentifierDomainName", oaiIdentifierDomainName);
+            defaultProps.setProperty("oaiIdentifierDomainName", oaiIdentifierRepositoryIdentifier);
 			defaultProps.setProperty("oaiIdentifierSampleIdentifier", oaiIdentifierSampleIdentifier);
 			defaultProps.setProperty("baseUrl", baseUrl);
 			defaultProps.setProperty("adminEmail", adminEmail);
@@ -312,15 +312,16 @@ public class OAIConfiguration {
 		this.description = description;
 	}
 	
-	public String getOaiIdentifierDelimiter() {
-		return oaiIdentifierDelimiter;
+	public String getOaiIdentifierDomainName() {
+		return oaiIdentifierDomainName;
 	}
 
-	public void setOaiIdentifierDelimiter(String oaiIdentifierDelimiter) {
-		this.oaiIdentifierDelimiter = oaiIdentifierDelimiter;
+	public void setOaiIdentifierDomainName(
+			String oaiIdentifierDomainName) {
+		this.oaiIdentifierDomainName = oaiIdentifierDomainName;
 	}
 
-	public String getOaiIdentifierRepositoryIdentifier() {
+    public String getOaiIdentifierRepositoryIdentifier() {
 		return oaiIdentifierRepositoryIdentifier;
 	}
 
@@ -474,8 +475,8 @@ public class OAIConfiguration {
 		sb.append(repositoryName);
 		sb.append(", " + description);
 		sb.append(", " + oaiIdentifierScheme);
-		sb.append(", " + oaiIdentifierRepositoryIdentifier);
-		sb.append(", " + oaiIdentifierDelimiter);
+		sb.append(", " + oaiIdentifierDomainName);
+        sb.append(", " + oaiIdentifierRepositoryIdentifier);
 		sb.append(", " + oaiIdentifierSampleIdentifier);
 		sb.append(", " + baseUrl);
 		sb.append(", " + adminEmail);
@@ -511,9 +512,11 @@ public class OAIConfiguration {
 				+ " http://www.openarchives.org/OAI/2.0/oai-identifier.xsd", 
 				xsi);
 		root.addContent(XMLUtil.xmlEl("scheme", oaiIdentifierScheme));
-		root.addContent(XMLUtil.xmlEl("repositoryIdentifier", 
+		root.addContent(XMLUtil.xmlEl("domainName",
+				oaiIdentifierDomainName));
+        root.addContent(XMLUtil.xmlEl("repositoryIdentifier",
 				oaiIdentifierRepositoryIdentifier));
-		root.addContent(XMLUtil.xmlEl("delimiter", oaiIdentifierDelimiter));
+		//root.addContent(XMLUtil.xmlEl("delimiter", oaiIdentifierDomainName));
 		root.addContent(XMLUtil.xmlEl("sampleIdentifier", 
 				oaiIdentifierSampleIdentifier));
 		return root;
