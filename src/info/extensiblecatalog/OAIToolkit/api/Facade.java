@@ -872,9 +872,10 @@ public class Facade {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append(XMLUtil.xmlTag("identifier", 
-			idPrefix 
-			+ ApplInfo.setNamesById.get(record.getRecordType())
-            + record.getRecordId().toString()));
+			record.getXcOaiId().toString()));
+            //idPrefix
+			//+ ApplInfo.setNamesById.get(record.getRecordType())
+            //+ record.getRecordId().toString()));
 
 		// add datestamp
 		sb.append(XMLUtil.xmlTag("datestamp", 

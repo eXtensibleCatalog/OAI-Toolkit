@@ -142,6 +142,7 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
             id = ids.nextSetBit(tempIndex);
             //prglog.info("Inserted Record ID: " +id);
             Document doc = ApplInfo.luceneSearcher.getDoc(id);
+
             //currentRecord = id;
 
             /*
@@ -334,6 +335,7 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 			prglog.error("[PRG] " + e);
 		}
 		mainData.setExternalId(doc.get("external_id"));
+        mainData.setXcOaiId(doc.get("xc_oaiid"));
 		mainData.setIsDeleted(Boolean.valueOf(doc.get("is_deleted")));
 		mainData.setRecordType(Integer.parseInt(doc.get("record_type")));
 		return mainData;

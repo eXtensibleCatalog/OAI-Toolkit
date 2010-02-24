@@ -158,6 +158,29 @@ public class LuceneSearcher {
 	}
 
     /**
+     * Get the record from the Xc OAI ID passed to it
+     * @param recordId
+     * @return Document
+     */
+	public Document getRecordByXcOaiID(Integer xcOaiId) {
+		Document doc = null;
+		try {
+			if(xcOaiId >= 0 && xcOaiId <= searcher.getIndexReader().numDocs()) {
+				doc = searcher.doc(xcOaiId);
+			}
+			//Query query = new TermQuery(new Term("id", recordId.toString()));
+			//Hits hits = searcher.search(query);
+			//doc = hits.doc(0);
+		} catch(IOException e) {
+			prglog.error("[PRG] " + e);
+			e.printStackTrace();
+		}
+		return doc;
+	}
+
+
+
+    /**
      * Getting the record by querying the Lucene having the ID and the recordtype passed to it
      * @param recordId
      * @param recordType
@@ -295,7 +318,7 @@ public class LuceneSearcher {
 		return doc;
 	}
 
-	public int getMaxDoc() {
+    public int getMaxDoc() {
 		int maxDoc = 0;
 		try {
 			maxDoc = searcher.maxDoc();

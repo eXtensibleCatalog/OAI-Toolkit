@@ -22,9 +22,9 @@ import info.extensiblecatalog.OAIToolkit.DTOs.XmlDTO;
 import info.extensiblecatalog.OAIToolkit.db.LuceneIndexMgr;
 import info.extensiblecatalog.OAIToolkit.db.managers.RecordsMgr;
 import info.extensiblecatalog.OAIToolkit.db.managers.SetsToRecordsMgr;
-import info.extensiblecatalog.OAIToolkit.importer.ImporterConstants;
 import info.extensiblecatalog.OAIToolkit.importer.MARCRecordWrapper;
 import info.extensiblecatalog.OAIToolkit.importer.ImporterConstants.ImportType;
+import info.extensiblecatalog.OAIToolkit.utils.XcOaiIdConfigUtil;
 
 /**
  * Mixed importer, which stores the record's metadata in MySQL, and 
@@ -38,12 +38,27 @@ public class MixedImporter extends BasicRecordImporter
 	/** The handler of the records records CRUD operations */
 	private RecordsMgr recordsMgr = new RecordsMgr();
 
+    /**
+     * XC OAI ID Domain Name parameter
+     */
+    private String oaiIdDomainName;
+
+    /**
+     * XC Tracked OAI ID from the database parameter
+     */
+    private int trackedOaiIdValue;
+
+    /**
+     * XC OAI ID Repository Identifier parameter
+     */
+    private String oaiIdRepositoryIdentifier;
+
 	/** The handler of the sets_to_records records CRUD operations */
 	private SetsToRecordsMgr setsToRecordsMgr = new SetsToRecordsMgr();
 
 	private LuceneIndexMgr luceneMgr;
-	
-	public MixedImporter(String schemaFile, String luceneIndexDir) {
+
+    public MixedImporter(String schemaFile, String luceneIndexDir) {
 		super(schemaFile);
 		luceneMgr = new LuceneIndexMgr(luceneIndexDir);
 	}
@@ -56,7 +71,15 @@ public class MixedImporter extends BasicRecordImporter
 	 * @param record The marc record to insert
 	 */
 	public List<ImportType> importRecord(Record record, boolean doFileOfDeletedRecords) {
-		
+
+        String xcoaiid;
+        String recordType;
+
+        oaiIdDomainName = XcOaiIdConfigUtil.getOaiIdDomainName();
+        oaiIdRepositoryIdentifier = XcOaiIdConfigUtil.getOaiIdRepositoryIdentifier();
+
+        xcoaiid = "oai:" + oaiIdDomainName + ":" + oaiIdRepositoryIdentifier + "/";
+
 		List<ImportType> typeList = new ArrayList<ImportType>();
 
 		MARCRecordWrapper rec = new MARCRecordWrapper(record, currentFile, doFileOfDeletedRecords);
@@ -84,21 +107,28 @@ public class MixedImporter extends BasicRecordImporter
 		SetToRecordDTO setsToRecord = createSetToRecordDTO(rec);
 		RecordDTO searchData = createSearchData(data);
 
-		if(rec.isDeleted()) {
-			typeList.add(ImportType.DELETED);
-		}
+		//if(rec.isDeleted()) {
+			//typeList.add(ImportType.DELETED);
+		//}
 		typeList.add(rec.getRecordTypeAsImportType());
 
 		try {
 			List list = recordsMgr.getImportable(searchData);
 			if (list == null || list.size() == 0 || list.get(0) == null) {
-				List<Integer> insertedIds = recordsMgr.insert(data);
+				xcoaiid = xcoaiid + trackedOaiIdValue;
+                // Assign that new id. Insert it into the DB.
+                // It is inserted in the DB in the Facade.java file
+                //prglog.debug(" The value of the xcoai ID (created new) is:"+ xcoaiid);
+                trackedOaiIdValue++;
+                data.setXcOaiId(xcoaiid);
+                List<Integer> insertedIds = recordsMgr.insert(data);
 
 				setsToRecord.setRecordId(insertedIds.get(0));
 				setsToRecordsMgr.insert(setsToRecord);
 
 				Document doc = new Document();
 				doc.add(luceneMgr.keyword("id", insertedIds.get(0).toString()));
+                doc.add(luceneMgr.keyword("xc_oaiid", xcoaiid));
 				doc.add(luceneMgr.stored("xml", xml.getXml()));
 				luceneMgr.addDoc(doc);
 					
@@ -145,14 +175,21 @@ public class MixedImporter extends BasicRecordImporter
 					luceneMgr.delDoc("id", storedData.getRecordId().toString());
 					Document doc = new Document();
 					doc.add(luceneMgr.keyword("id", storedData.getRecordId().toString()));
+                    doc.add(luceneMgr.keyword("xc_oaiid", storedData.getXcOaiId().toString()));
 					doc.add(luceneMgr.stored("xml", xml.getXml()));
 					luceneMgr.addDoc(doc);
-					
+
+                    if(rec.isDeleted()) {
+                    typeList.add(ImportType.DELETED);
+                    }
+                    else
+                    typeList.add(ImportType.UPDATED);
+
 					data = null;
 					setsToRecord = null;
 					searchData = null;
 					rec = null;
-					typeList.add(ImportType.UPDATED);
+					//typeList.add(ImportType.UPDATED);
 					return typeList;
 				}
 			}
@@ -181,7 +218,15 @@ public class MixedImporter extends BasicRecordImporter
 	public void commit() {
 		// TODO: commit MySQL
 	}
-	
+
+    public int getTrackedOaiIdValue() {
+        return trackedOaiIdValue;
+    }
+
+    public void setTrackedOaiIdValue(int trackedOaiIdNumberValue) {
+        trackedOaiIdValue = trackedOaiIdNumberValue;
+	}
+
 	/**
 	 * Optimize the database.
 	 * Now it optimise only Lucene, and not MySQL.

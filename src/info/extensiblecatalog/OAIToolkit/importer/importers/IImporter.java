@@ -85,6 +85,17 @@ public interface IImporter {
 	 */
 	public long getCheckTime();
 
+    /**
+     * Get the Tracked value used for the XC OAI ID creation
+     * @return trackedOaiIdValue as Integer.
+     */
+    public int getTrackedOaiIdValue();
+
+    /**
+     * Set the Tracked value used for the XC OAI ID creation
+     */
+    public void setTrackedOaiIdValue(int trackedOaiIdNumberValue);
+
 	/**
 	 * Get the duration of inserting a record into the database
 	 * @return Time in milliseconds

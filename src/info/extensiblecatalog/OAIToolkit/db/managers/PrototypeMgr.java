@@ -309,6 +309,30 @@ public class PrototypeMgr {
 		return rowNumber; 
 	}
 
+    public int updateByTrackingId(DataTransferObject newRecord, int trackingId)
+			throws SQLException, Exception {
+		checkConnection();
+
+		//Connection conn = DButil.getConnection();
+		SQLPlaceholder placeholder = getValuesFromDTO(newRecord);
+		String sql = "UPDATE " + TABLE_NAME + " SET "
+				+ placeholder.createUpdate()
+				+ " WHERE tracking_id = '" + trackingId + "'";
+		PreparedStatement stmt = null;
+		int rowNumber;
+		try {
+			stmt = conn.prepareStatement(sql);
+			placeholder.replacePlaceholders(stmt);
+			prglog.debug("[PRG] " + stmt.toString());
+			lastSQL = stmt.toString();
+			rowNumber = execute(stmt);
+		} finally {
+			stmt.close();
+		}
+		//DButil.closeConnection(conn);
+		return rowNumber;
+	}
+
 	public List<DataTransferObject> get(DataTransferObject record)
 			throws SQLException, Exception {
 		checkConnection();

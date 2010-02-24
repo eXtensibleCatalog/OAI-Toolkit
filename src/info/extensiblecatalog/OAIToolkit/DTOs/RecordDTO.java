@@ -26,8 +26,12 @@ public class RecordDTO extends DataTransferObject {
 	/** The id of the MARC record (external_id in DB). 
 	 * Accessors: {@link #getExternalId}, {@link #setExternalId} */
 	private String externalId;
-	
-	/** The id of record type (which is equal the id of set created
+
+    /** The XC oai id of the MARC record (xc_oaiid in DB).
+	 * Accessors: {@link #getExternalId}, {@link #setExternalId} */
+	private String xcOaiId;
+
+    /** The id of record type (which is equal the id of set created
 	 * according to the record type) */
 	private Integer recordType;
 	
@@ -66,6 +70,9 @@ public class RecordDTO extends DataTransferObject {
 		}
 		if(map.containsKey("externalid")) {
 			externalId = (String) map.get("externalid");
+		}
+        if(map.containsKey("xc_oaiid")) {
+			xcOaiId = (String) map.get("xc_oaiid");
 		}
 		if(map.containsKey("record_type")) {
 			recordType = (Integer) map.get("record_type");
@@ -118,6 +125,20 @@ public class RecordDTO extends DataTransferObject {
 	 */
 	public void setExternalId(String externalId) {
 		this.externalId = externalId;
+	}
+
+    /**
+	 * @return {@link #xcOaiId}
+	 */
+	public String getXcOaiId() {
+		return xcOaiId;
+	}
+	/**
+	 * Set the {@link #xcOaiId}
+	 * @param externalId {@link #xcOaiId}
+	 */
+	public void setXcOaiId(String xcOaiId) {
+		this.xcOaiId = xcOaiId;
 	}
 	
 	/**
@@ -232,6 +253,7 @@ public class RecordDTO extends DataTransferObject {
 		StringBuilder sb = new StringBuilder();
 		sb.append("recordId: ").append(recordId);
 		sb.append(", externalId: ").append(externalId);
+        sb.append(", xcOaiId: ").append(xcOaiId);
 		sb.append(", recordType: ").append(recordType);
 		sb.append(", creationDate: ").append(creationDate);
 		sb.append(", modificationDate: ").append(modificationDate);
@@ -251,6 +273,7 @@ public class RecordDTO extends DataTransferObject {
 	public String toAbstract() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("externalId: ").append(externalId);
+        sb.append(", xcOaiId: ").append(xcOaiId);
 		sb.append(", recordType: ").append(recordType);
 		sb.append(", creationDate: ").append(creationDate);
 		sb.append(", modificationDate: ").append(modificationDate);

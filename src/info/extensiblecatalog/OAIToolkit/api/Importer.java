@@ -38,6 +38,8 @@ import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.Options;
 
 import info.extensiblecatalog.OAIToolkit.db.LuceneSearcher;
+import info.extensiblecatalog.OAIToolkit.DTOs.TrackingOaiIdNumberDTO;
+import info.extensiblecatalog.OAIToolkit.db.managers.TrackingOaiIdNumberMgr;
 
 import info.extensiblecatalog.OAIToolkit.importer.CLIProcessor;
 import info.extensiblecatalog.OAIToolkit.importer.Converter;
@@ -87,6 +89,9 @@ public class Importer {
         private static final Logger lucenestatslog = Logging.getLogger(lucene_dbStatistics_log);
 
 	public static final String VERSION = "0.5.1";
+
+    /** Manager of Tracking OAI ID Number */
+	private static TrackingOaiIdNumberMgr trackingOaiIdNumberMgr;
 
 	private IImporter recordImporter;
 
@@ -525,7 +530,8 @@ public class Importer {
 	} // modify
 
 	private void load(){
-		if(!configuration.checkSourceDir()
+
+        if(!configuration.checkSourceDir()
 			|| !configuration.checkDestinationXmlDir()
 			|| !configuration.errorXmlDir()) {
 			return;
@@ -556,9 +562,13 @@ public class Importer {
 		}
 
 		int counter = 0;
+        int invalidFiles = 0;
 		MarcXmlWriter badRecordWriter = null;
 		importStatistics = new LoadStatistics();
 		LoadStatistics fileStatistics = null;
+        
+        /** Manager of Tracking OAI ID Number */
+	    trackingOaiIdNumberMgr = new TrackingOaiIdNumberMgr();
 
 		for(File xmlFile : files) {
 
@@ -572,9 +582,22 @@ public class Importer {
 				}
 
 				if(!checkXml(xmlFile)) {
-					continue;
+                    File xmlErrorFile = new File(dirNameGiver.getLoadError(),
+					xmlFile.getName());
+                    if(xmlErrorFile.exists()) {
+                        boolean deleted = xmlErrorFile.delete();
+                        prglog.info("[PRG] Delete " + xmlErrorFile + " - " + deleted);
+                    }
+                    boolean remove = xmlFile.renameTo(xmlErrorFile);
+                    if(configuration.isNeedLogDetail()) {
+                        prglog.info("[PRG] Remove XML file (" + xmlFile.getName()
+						+ ") to error_xml directory: " + remove);
+                    }
+                    importStatistics.add(ImportType.INVALID_FILES);
+                    continue;
 				}
 
+                //importStatistics.setInvalidFiles(counter)
 				System.setProperty("file.encoding", "UTF-8");
 				long fileSize = xmlFile.length();
 				InputStream in = new FileInputStream(xmlFile);
@@ -588,7 +611,23 @@ public class Importer {
 				int prevPercent = 0;
 				Record record;
 
-				/** the percent of imported records in the size of file */
+                Integer trackedOaiIdNumberValue = 0;
+                Integer trackingId = 1;
+                TrackingOaiIdNumberDTO trackingOaiIdNumberDTO = new TrackingOaiIdNumberDTO();
+                trackingOaiIdNumberDTO.setTrackingId(trackingId);
+
+                // Get the last_inserted successful ID from the database.
+
+                List trackingOaiIdNumber = trackingOaiIdNumberMgr.get(trackingOaiIdNumberDTO);
+                if(trackingOaiIdNumber.size() != 0) {
+                    trackedOaiIdNumberValue = ((TrackingOaiIdNumberDTO)trackingOaiIdNumber.get(0)).getTrackedOaiidnumber();
+                    trackingId = ((TrackingOaiIdNumberDTO)trackingOaiIdNumber.get(0)).getTrackingId();
+                    prglog.debug("The Tracked OAI ID Number value is" + trackedOaiIdNumberValue);
+                    prglog.debug("The Tracking ID is" + trackingId);
+                }
+
+                recordImporter.setTrackedOaiIdValue(trackedOaiIdNumberValue);
+                /** the percent of imported records in the size of file */
 				int percent;
 				while (marcReader.hasNext()) {
 					record = marcReader.next();
@@ -661,7 +700,10 @@ public class Importer {
 					}
 				}
 				recordImporter.commit();
-
+                trackedOaiIdNumberValue = recordImporter.getTrackedOaiIdValue();
+                trackingOaiIdNumberDTO.setTrackedOaiidnumber(trackedOaiIdNumberValue);
+                trackingOaiIdNumberMgr.updateByTrackingId(trackingOaiIdNumberDTO, trackingId);
+                trackingOaiIdNumberDTO = null;
 			} 
 			catch(IOException e) {
 				e.printStackTrace();
@@ -692,7 +734,7 @@ public class Importer {
 						+ recordImporter.getLastRecordToImport());
                         } 
             finally {
-				if(null != badRecordWriter) {
+                if(null != badRecordWriter) {
 					try {
 						badRecordWriter.close();
 						badRecordWriter = null;
@@ -704,7 +746,11 @@ public class Importer {
 					}
 				}
 			}
+
 		}
+
+        //importStatistics.setInvalidFiles(invalidFiles);
+        //dirNameGiver.getLoadError().
 
 		if(configuration.isNeedLogDetail()) {
 			prglog.info("[PRG] Import statistics summary: " + importStatistics.toString());

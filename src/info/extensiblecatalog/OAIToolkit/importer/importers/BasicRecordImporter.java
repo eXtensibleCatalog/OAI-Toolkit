@@ -73,6 +73,11 @@ public class BasicRecordImporter {
 	 */
 	protected String errorXmlDir;
 
+    /**
+     * XC Tracked OAI ID from the database parameter
+     */
+    private int trackedOaiIdValue;
+
 	/**
 	 * The duration of checking whether the record is existent.
 	 */
@@ -156,7 +161,7 @@ public class BasicRecordImporter {
 	 */
 	protected RecordDTO createSearchData(RecordDTO data) {
 		RecordDTO searchData = new RecordDTO();
-		searchData.setExternalId(data.getExternalId());
+        searchData.setExternalId(data.getExternalId());
 		searchData.setRecordType(data.getRecordType());
 		return searchData;
 	}
@@ -219,7 +224,8 @@ public class BasicRecordImporter {
 		this.doIndentXml = doIndentXml;
 	}
 
-	/**
+    
+   /**
 	 * Get the current value of the {@link #createXml11}.
 	 * @return True means that the importer should create XML 1.1, false means
 	 * that the importer creates XML 1.0

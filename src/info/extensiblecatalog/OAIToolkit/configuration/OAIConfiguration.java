@@ -234,7 +234,7 @@ public class OAIConfiguration {
 			defaultProps.setProperty("description", description);
 			defaultProps.setProperty("oaiIdentifierScheme", oaiIdentifierScheme);
 			defaultProps.setProperty("oaiIdentifierDomainName", oaiIdentifierDomainName);
-            defaultProps.setProperty("oaiIdentifierDomainName", oaiIdentifierRepositoryIdentifier);
+            defaultProps.setProperty("oaiIdentifierRepositoryIdentifier", oaiIdentifierRepositoryIdentifier);
 			defaultProps.setProperty("oaiIdentifierSampleIdentifier", oaiIdentifierSampleIdentifier);
 			defaultProps.setProperty("baseUrl", baseUrl);
 			defaultProps.setProperty("adminEmail", adminEmail);

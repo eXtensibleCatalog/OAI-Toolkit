@@ -23,6 +23,7 @@ import info.extensiblecatalog.OAIToolkit.db.managers.SetsToRecordsMgr;
 import info.extensiblecatalog.OAIToolkit.db.managers.XmlsMgr;
 import info.extensiblecatalog.OAIToolkit.importer.MARCRecordWrapper;
 import info.extensiblecatalog.OAIToolkit.importer.ImporterConstants.ImportType;
+import info.extensiblecatalog.OAIToolkit.utils.XcOaiIdConfigUtil;
 
 /**
  * Importing into MySQL
@@ -36,6 +37,21 @@ public class MysqlImporter extends BasicRecordImporter
 
 	/** The handler of the sets_to_records records CRUD operations */
 	private SetsToRecordsMgr setsToRecordsMgr = new SetsToRecordsMgr();
+
+    /**
+     * XC OAI ID Domain Name parameter
+     */
+    private String oaiIdDomainName;
+
+    /**
+     * XC Tracked OAI ID from the database parameter
+     */
+    private int trackedOaiIdValue;
+
+    /**
+     * XC OAI ID Repository Identifier parameter
+     */
+    private String oaiIdRepositoryIdentifier;
 	
 	private static final String[] workflowCreated = {"recordsMgr.insert", 
 			"setsToRecordsMgr.insert", "xmlMgr.insert"};
@@ -47,7 +63,8 @@ public class MysqlImporter extends BasicRecordImporter
 
 	/** Handler of xml records CRUD operations */
 	private XmlsMgr xmlMgr = new XmlsMgr();
-	
+
+   	
 	public MysqlImporter(String schemaFile){
 		super(schemaFile);
 	}
@@ -59,7 +76,14 @@ public class MysqlImporter extends BasicRecordImporter
 	 * @param record The marc record to insert
 	 */
 	public List<ImportType> importRecord(Record record, boolean doFileOfDeletedRecords) {
-		
+
+        String xcoaiid;
+        String recordType;
+
+        oaiIdDomainName = XcOaiIdConfigUtil.getOaiIdDomainName();
+        oaiIdRepositoryIdentifier = XcOaiIdConfigUtil.getOaiIdRepositoryIdentifier();
+
+        xcoaiid = "oai:" + oaiIdDomainName + ":" + oaiIdRepositoryIdentifier + "/";
 		List<ImportType> typeList = new ArrayList<ImportType>();
 
 		MARCRecordWrapper rec = new MARCRecordWrapper(record, currentFile, createXml11, doFileOfDeletedRecords);
@@ -82,15 +106,17 @@ public class MysqlImporter extends BasicRecordImporter
 		} // /validation
 
 		// data preparation
+        recordType = rec.getRecordTypeAbbreviation();
 		RecordDTO data = createData(rec);
 		XmlDTO xml = new XmlDTO(rec.getXml());
 		SetToRecordDTO setsToRecord = createSetToRecordDTO(rec);
 		RecordDTO searchData = createSearchData(data);
 
-		if(rec.isDeleted()) {
-			typeList.add(ImportType.DELETED);
-		}
+		//if(rec.isDeleted()) {
+		//	typeList.add(ImportType.DELETED);
+		//}
 		typeList.add(rec.getRecordTypeAsImportType());
+        //xcoaiid = xcoaiid.concat(recordType);
 		String lastSuccessfullSQL = "";
 		
 		boolean isCreated = true;
@@ -104,6 +130,12 @@ public class MysqlImporter extends BasicRecordImporter
 			if(list == null || list.size() == 0 || list.get(0) == null) {
 				isCreated = true;
 				prglog.debug("[PRG] insert data");
+                xcoaiid = xcoaiid + trackedOaiIdValue;
+                // Assign that new id. Insert it into the DB.
+                // It is inserted in the DB in the Facade.java file
+                //prglog.debug(" The value of the xcoai ID (created new) is:"+ xcoaiid);
+                trackedOaiIdValue++;
+                data.setXcOaiId(xcoaiid);
 				List<Integer> insertedIds = recordsMgr.insert(data);
 				lastSuccessfullSQL = "recordsMgr.insert";
 				setsToRecord.setRecordId(insertedIds.get(0));
@@ -175,11 +207,17 @@ public class MysqlImporter extends BasicRecordImporter
 						xml = null;
 					}
 
+                    if(rec.isDeleted()) {
+                    typeList.add(ImportType.DELETED);
+                    }
+                    else
+                    typeList.add(ImportType.UPDATED);
+
 					data = null;
 					setsToRecord = null;
 					searchData = null;
 					rec = null;
-					typeList.add(ImportType.UPDATED);
+					//typeList.add(ImportType.UPDATED);
 					return typeList;
 				}
 			}
@@ -219,7 +257,15 @@ public class MysqlImporter extends BasicRecordImporter
 	public void optimize() {
 		//TODO
 	}
-	
+
+    public int getTrackedOaiIdValue() {
+        return trackedOaiIdValue;
+    }
+
+    public void setTrackedOaiIdValue(int trackedOaiIdNumberValue) {
+        trackedOaiIdValue = trackedOaiIdNumberValue;
+	}
+
 	/**
 	 * Get the last SQL command issued
 	 * @param lastSuccessfullSQL

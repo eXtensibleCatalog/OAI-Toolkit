@@ -31,6 +31,7 @@ import info.extensiblecatalog.OAIToolkit.db.managers.SetsMgr;
 import info.extensiblecatalog.OAIToolkit.oai.MetadataFormatUnmarshaler;
 import info.extensiblecatalog.OAIToolkit.oai.MetadataFormats;
 import info.extensiblecatalog.OAIToolkit.oai.StorageTypes;
+import info.extensiblecatalog.OAIToolkit.utils.XcOaiIdConfigUtil;
 
 /**
  * Basic informations about the application (directories, properties etc.)
@@ -60,6 +61,10 @@ public class ApplInfo {
 	/** Configuration file for directory */
 	private static final String OAI_DIRECTORY_CNF_FILE = 
 									"OAIToolkit.directory.properties";
+
+    /** Configuration file for XC OAI ID structure */
+    private static final String OAI_XCOAIID_CNF_FILE =
+									"OAIToolkit.xcoaiid.properties";
 
 	/** The log directory's name */
 	private static String logDir;
@@ -156,6 +161,7 @@ public class ApplInfo {
 		System.out.println("init(logDir): " + logDir);
 		initLogging(logDir);
 		initDB(logDir);
+        initXcOaiId(logDir);
 		initSets();
 	}
 
@@ -163,6 +169,7 @@ public class ApplInfo {
 		//initApplication();
 		initLogging(rootDir, logDir);
 		initDB(rootDir);
+        initXcOaiId(rootDir);
 		initSets();
 	}
 
@@ -196,6 +203,16 @@ public class ApplInfo {
 	public static void initDB(String dir) throws Exception {
 		DButil.init(new File(dir, OAI_DB_CNF_FILE).getAbsolutePath());
 	}
+
+    /**
+     * Initialize the OAIToolkit.oaiid.properties file
+     * @param dir
+     * @throws java.lang.Exception
+     */
+
+    public static void initXcOaiId(String dir) throws Exception {
+        XcOaiIdConfigUtil.init(new File(dir, OAI_XCOAIID_CNF_FILE).getAbsolutePath());
+    }
 
 	/**
 	 * start logging

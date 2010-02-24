@@ -72,8 +72,8 @@ public class LuceneIndexMgr {
 	
 	private void openSearcher() throws IOException {
 		reader   = IndexReader.open(indexDir);
-		searcher = new IndexSearcher(reader); //reader
-	}
+    	searcher = new IndexSearcher(reader); //reader
+      	}
 
 	private void closeSearcher() throws IOException {
 		reader.close();
@@ -105,11 +105,24 @@ public class LuceneIndexMgr {
 		return doesExist(getQuery(searchData));
 	}
 
+    public Document getDoc(RecordDTO searchData) throws IOException {
+		return getDoc(getQuery(searchData));
+	}
+
+    public Document getDoc(Query query) throws IOException {
+		Hits hits = searcher.search(query);
+		if(hits.length() == 1) {
+			return hits.doc(0);//Integer.parseInt(hits.doc(0).get("id"));
+		} else {
+			return null;
+		}
+	}
+
 	public String getId(RecordDTO searchData) throws IOException {
 		return getId(getQuery(searchData));
 	}
 
-	public Query getQuery(RecordDTO searchData) throws IOException {
+    public Query getQuery(RecordDTO searchData) throws IOException {
 		BooleanQuery query = new BooleanQuery();
 		query.add((Query)new TermQuery(new Term("external_id", 
 				searchData.getExternalId())), Occur.MUST);
@@ -131,6 +144,15 @@ public class LuceneIndexMgr {
 		Hits hits = searcher.search(query);
 		if(hits.length() == 1) {
 			return hits.doc(0).get("id");//Integer.parseInt(hits.doc(0).get("id"));
+		} else {
+			return "-1";
+		}
+	}
+
+    public String getXcOaiId(Query query) throws IOException {
+		Hits hits = searcher.search(query);
+		if(hits.length() == 1) {
+			return hits.doc(0).get("xc_oaiid");
 		} else {
 			return "-1";
 		}
