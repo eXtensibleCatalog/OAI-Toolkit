@@ -138,6 +138,18 @@ CREATE TABLE `bigxmls` (
   FOREIGN KEY (`record_id`) REFERENCES `records` (`record_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+
+-- Table for tracking OAI ID number
+DROP TABLE IF EXISTS `tracking_oaiidnumber`;
+CREATE TABLE `tracking_oaiidnumber` (
+  `tracking_id` int(11) NOT NULL auto_increment,
+  `tracked_oaiidnumber` int(11) NOT NULL,
+  PRIMARY KEY  (`tracking_id`)
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+insert into tracking_oaiidnumber values(1,0);
+
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
