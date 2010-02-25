@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.sun.org.apache.xml.internal.utils.FastStringBuffer;
+//import com.sun.org.apache.xml.internal.utils.FastStringBuffer;
 
 /**
  * Helper class for useful String maniulations. All methods are static here. 
@@ -49,7 +49,7 @@ public class TextUtil {
 	 */
 	public static String toCamelCase(String text) {
 		if (text.indexOf('_') >= 0) {
-            FastStringBuffer buff = new FastStringBuffer(text.length());
+            StringBuffer buff = new StringBuffer(text.length());
             boolean afterHyphen = false;
             for (int n = 0; n < text.length(); n++) {
                 char c = text.charAt(n);
