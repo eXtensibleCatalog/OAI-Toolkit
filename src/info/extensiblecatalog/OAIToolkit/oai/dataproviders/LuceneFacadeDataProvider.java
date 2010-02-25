@@ -9,7 +9,6 @@
 
 package info.extensiblecatalog.OAIToolkit.oai.dataproviders;
 
-import com.mysql.jdbc.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -31,7 +30,9 @@ import info.extensiblecatalog.OAIToolkit.db.ResumptionTokensMgr;
 import info.extensiblecatalog.OAIToolkit.utils.ApplInfo;
 import info.extensiblecatalog.OAIToolkit.utils.Logging;
 import info.extensiblecatalog.OAIToolkit.utils.TextUtil;
+import java.text.SimpleDateFormat;
 import java.util.BitSet;
+import java.util.TimeZone;
 
 /**
  * 
@@ -270,7 +271,11 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 				from = TextUtil.utcToMysqlTimestamp(from);
 			}
 			if(null == until) {
-				until = new Timestamp(new Date().getTime()).toString();
+				Date date = new Timestamp(new Date().getTime());
+                SimpleDateFormat df = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ssZ" );
+                TimeZone tz = TimeZone.getTimeZone( "UTC" );
+                df.setTimeZone( tz );
+                until = df.format(date);
 			} else {
 				until = TextUtil.utcToMysqlTimestamp(until);
 			}

@@ -8,7 +8,7 @@
 	<echo>Current time is ${timestamp.isoformat}</echo>
 
 	<property name="project.name" value="${ant.project.name}" />
-	<property name="project.version" value="0.6.3alpha" />
+	<property name="project.version" value="0.6.4alpha" />
 	<property name="project.name-ver" 
 		value="${project.name}-${project.version}" />
 	<property name="jar.file" value="${project.name-ver}.jar" />
@@ -401,6 +401,7 @@
 						create_user.bat
 						OAIToolkit.db.properties
 						OAIToolkit.log4j.properties
+                        OAIToolkit.xcoaiid.properties
 				"
 				prefix="${project.name}/" />
 			<zipfileset file="xsd/MARC21slim_rochester.xsd"
@@ -470,7 +471,8 @@
 						create_db.sh
 						create_user.sh
 						OAIToolkit.db.properties
-						OAIToolkit.log4j.properties"
+						OAIToolkit.log4j.properties
+                        OAIToolkit.xcoaiid.properties"
 				prefix="${project.name}/" />
 			<zipfileset file="xsd/MARC21slim_rochester.xsd"
 				prefix="${project.name}/schema" />
@@ -500,6 +502,7 @@
 					OAIToolkit.server.properties
 					OAIToolkit.db.properties
 					OAIToolkit.log4j.properties
+                    OAIToolkit.xcoaiid.properties
 				"
 				prefix="${project.name}/tomcat/bin" />
 			<zipfileset file="OAIToolkitReleaseNotes.docx"

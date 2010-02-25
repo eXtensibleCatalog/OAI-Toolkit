@@ -88,7 +88,7 @@ public class Importer {
         private static final Logger prglog = Logging.getLogger(programmer_log);
         private static final Logger lucenestatslog = Logging.getLogger(lucene_dbStatistics_log);
 
-	public static final String VERSION = "0.5.1";
+	public static final String VERSION = "0.6.4";
 
     /** Manager of Tracking OAI ID Number */
 	private static TrackingOaiIdNumberMgr trackingOaiIdNumberMgr;
