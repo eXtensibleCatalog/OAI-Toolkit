@@ -39,7 +39,7 @@
     
     <!-- process control number field (MARC 001) -->
     <xsl:template match="marc:controlfield">
-        <xsl:message>position: <xsl:value-of select="count(preceding-sibling::marc:controlfield)"/></xsl:message>
+        <!-- <xsl:message>position: <xsl:value-of select="count(preceding-sibling::marc:controlfield)"/></xsl:message> -->
         <xsl:if test="not(@tag = '003')">
             <xsl:copy>
                 <xsl:copy-of select="@*" />
