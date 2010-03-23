@@ -12,6 +12,8 @@ package info.extensiblecatalog.OAIToolkit.importer.importers;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.sql.Timestamp;
+import java.util.Date;
 
 import info.extensiblecatalog.OAIToolkit.DTOs.RecordDTO;
 import info.extensiblecatalog.OAIToolkit.DTOs.SetToRecordDTO;
@@ -131,10 +133,10 @@ public class BasicRecordImporter {
 		data.setIsDeleted((record.isDeleted()) ? true : false);
 		if (record.isNew()) {
 			data.setCreationDate(record.getLastTransactionDate());
-			data.setModificationDate(record.getLastTransactionDate());
-		} else {
-			data.setModificationDate(record.getLastTransactionDate());
 		}
+		// always set modification date to "now"
+		data.setModificationDate(new Timestamp(new Date().getTime()));
+
 		data.setRecordType(ApplInfo.setIdsByName.get(
 				record.getRecordTypeAbbreviation()));
 		return data;
