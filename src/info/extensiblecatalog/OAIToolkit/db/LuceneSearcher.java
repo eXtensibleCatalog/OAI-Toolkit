@@ -57,6 +57,48 @@ public class LuceneSearcher {
 	private FieldSelector allFieldSelector;
     //private BitSet bits;
 	
+	// Make sure that the searcher is using an up-to-date index reader.
+	// If it's not current, then we will miss out on recently committed changes
+	private IndexSearcher getSearcher() {
+		try {			
+			IndexReader ir = searcher.getIndexReader();
+	        if (! ir.isCurrent()) {
+	        	prglog.info("[PRG] " + "Lucene searcher's index reader is not current. Calling reopen().");
+	        	IndexReader newir = ir.reopen();
+	        	 if (newir != ir) {
+	        	   // reader was reopened
+	        	   prglog.info("[PRG] " + "Lucene searcher's index reader was successfully reopen()-ed.");
+	        	   ir.close(); 
+	        	   searcher = new IndexSearcher(newir);
+	        	 }
+	        }
+		} catch (Exception e) {
+			prglog.error("[ERROR] " + "Failed to retrieve Lucene searcher's index reader.  Continuing to use original reader.");
+		}
+		return searcher;
+	}
+
+	// Make sure we are using an up-to-date index reader.
+	// If it's not current, then we will miss out on recently committed changes
+	private IndexReader getIndexReader() {
+		try {			
+	        if (! indexReader.isCurrent()) {
+	        	prglog.info("[PRG] " + "Lucene index reader is not current. Calling reopen().");
+	        	IndexReader newir = indexReader.reopen();
+	        	 if (newir != indexReader) {
+	        	   // reader was reopened
+	        	   prglog.info("[PRG] " + "Lucene index reader was successfully reopen()-ed.");
+	        	   indexReader.close(); 
+	        	   indexReader = newir;
+	        	 }
+	        }
+		} catch (Exception e) {
+			prglog.error("[ERROR] " + "Failed to retrieve Lucene index reader.  Continuing to use original reader.");
+		}
+		return indexReader;
+	}
+
+	
 	public LuceneSearcher(String luceneDir) {
 		try {
 			File indexDir = new File(luceneDir);
@@ -106,7 +148,7 @@ public class LuceneSearcher {
 	public String getXmlOfRecord(Integer recordId, Integer recordType) {
 		String content = null;
 		try {
-			Document doc = searcher.doc(recordId);
+			Document doc = getSearcher().doc(recordId);
             if(doc != null) {
 				content = doc.get("xml");
 			} else {
@@ -118,11 +160,11 @@ public class LuceneSearcher {
 					Occur.MUST);
 			query.add(new TermQuery(new Term("record_type", 
 					recordType.toString())), Occur.MUST);
-			Hits hits = searcher.search(query);
+			Hits hits = getSearcher().search(query);
 			prglog.info("getXmlOfRecord: " + recordId + ", " + recordType + "->" + hits.length());
 			if(hits.length() == 1) {
 				prglog.info("hits.id(0): " + hits.id(0));
-				Document doc = indexReader.document(hits.id(0), xmlSelector);
+				Document doc = getIndexReader().document(hits.id(0), xmlSelector);
 				content = doc.get("xml");
 			} else if(hits.length() == 0){
 				prglog.error("There's no record with this ID: " + recordId);
@@ -144,11 +186,11 @@ public class LuceneSearcher {
 	public Document getRecordByID(Integer recordId) {
 		Document doc = null;
 		try {
-			if(recordId >= 0 && recordId <= searcher.getIndexReader().numDocs()) {
-				doc = searcher.doc(recordId);
+			if(recordId >= 0 && recordId <= getSearcher().getIndexReader().numDocs()) {
+				doc = getSearcher().doc(recordId);
 			}
 			//Query query = new TermQuery(new Term("id", recordId.toString()));
-			//Hits hits = searcher.search(query);
+			//Hits hits = getSearcher().search(query);
 			//doc = hits.doc(0);
 		} catch(IOException e) {
 			prglog.error("[PRG] " + e);
@@ -165,11 +207,11 @@ public class LuceneSearcher {
 	public Document getRecordByXcOaiID(Integer xcOaiId) {
 		Document doc = null;
 		try {
-			if(xcOaiId >= 0 && xcOaiId <= searcher.getIndexReader().numDocs()) {
-				doc = searcher.doc(xcOaiId);
+			if(xcOaiId >= 0 && xcOaiId <= getSearcher().getIndexReader().numDocs()) {
+				doc = getSearcher().doc(xcOaiId);
 			}
 			//Query query = new TermQuery(new Term("id", recordId.toString()));
-			//Hits hits = searcher.search(query);
+			//Hits hits = getSearcher().search(query);
 			//doc = hits.doc(0);
 		} catch(IOException e) {
 			prglog.error("[PRG] " + e);
@@ -198,7 +240,7 @@ public class LuceneSearcher {
 					recordType.toString())), Occur.MUST);
 
             /*
-            searcher.search(query, new HitCollector() {
+            getSearcher().search(query, new HitCollector() {
              public void collect(int doc, float score) {
                 bits.set(doc);
                 ids.add(doc);
@@ -206,17 +248,17 @@ public class LuceneSearcher {
              });
 
              for (int i=0; i< ids.size(); i++) {
-                 list.add(indexReader.document(ids.get(i)));
+                 list.add(getIndexReader().document(ids.get(i)));
              }
             */
            
-			Hits hits = searcher.search(query);
+			Hits hits = getSearcher().search(query);
 			prglog.info("[PRG] " + query + ", found: " + hits.length());
 			int docId;
 			for (int i = 0; i < hits.length(); i++) {
 				docId = hits.id(i);
 				list.add(new Object[]{docId, 
-						indexReader.document(docId, allFieldSelector)});
+						getIndexReader().document(docId, allFieldSelector)});
 			} 
 		} catch (IOException e) {
 			prglog.error("[PRG] " + e);
@@ -244,9 +286,9 @@ public class LuceneSearcher {
         try {
             //indexReader = IndexReader.open(indexDir);
 
-        final BitSet bits = new BitSet(indexReader.maxDoc());
-        
-            searcher.search(query, new HitCollector() {
+        final BitSet bits = new BitSet(getIndexReader().maxDoc());
+                
+            getSearcher().search(query, new HitCollector() {
                  public void collect(int doc, float score) {
                      bits.set(doc);
                  }
@@ -263,9 +305,9 @@ public class LuceneSearcher {
 		int count = 0;
 		try {
 			if(query == null) {
-				count = searcher.maxDoc();
+				count = getSearcher().maxDoc();
 			} else {
-				Hits hits = searcher.search(query);
+				Hits hits = getSearcher().search(query);
 				count = hits.length();
 			}
 		} catch(IOException e) {
@@ -290,7 +332,7 @@ public class LuceneSearcher {
 			if(query == null) {
 				query = parseQuery("id:*");
 			}
-			hits = searcher.search(query, sort);
+			hits = getSearcher().search(query, sort);
 		} catch(IOException e) {
 			prglog.error("[PRG] " + e);
 		}
@@ -300,8 +342,8 @@ public class LuceneSearcher {
 	public Document getDoc(int i) {
 		Document doc = null;
 		try {
-            //doc = indexReader.document(i);
-			doc = searcher.doc(i);
+            //doc = getIndexReader().document(i);
+			doc = getSearcher().doc(i);
 		} catch(IOException e) {
 			prglog.error("[PRG] " + e);
 		}
@@ -311,7 +353,7 @@ public class LuceneSearcher {
 	public Document getDoc(int i, FieldSelector fieldSelector) {
 		Document doc = null;
 		try {
-			doc = searcher.doc(i, fieldSelector);
+			doc = getSearcher().doc(i, fieldSelector);
 		} catch(IOException e) {
 			prglog.error("[PRG] " + e);
 		}
@@ -321,7 +363,7 @@ public class LuceneSearcher {
     public int getMaxDoc() {
 		int maxDoc = 0;
 		try {
-			maxDoc = searcher.maxDoc();
+			maxDoc = getSearcher().maxDoc();
 		} catch(IOException e){
 			prglog.error("[PRG] " + e);
 		}
@@ -352,7 +394,7 @@ public class LuceneSearcher {
 		String firstTerm = null;
 		try {
 			if(indexReader == null) {
-				indexReader = searcher.getIndexReader();
+				indexReader = getSearcher().getIndexReader();
 			}
 			TermEnum te = indexReader.terms(new Term(field, ""));
 			firstTerm = te.term().text();
