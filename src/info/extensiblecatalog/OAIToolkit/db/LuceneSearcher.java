@@ -52,6 +52,8 @@ public class LuceneSearcher {
 	private IndexSearcher searcher;
 	private IndexReader indexReader;
 	
+	private String luceneDir;
+	
 	private String earliestDatestamp;
 	//private FieldSelector xmlSelector;
 	private FieldSelector allFieldSelector;
@@ -60,7 +62,12 @@ public class LuceneSearcher {
 	// Make sure that the searcher is using an up-to-date index reader.
 	// If it's not current, then we will miss out on recently committed changes
 	private IndexSearcher getSearcher() {
-		try {			
+		try {		
+			if (searcher == null) {
+				File indexDir = new File(luceneDir);
+				Directory fsDir = FSDirectory.getDirectory(indexDir);
+				searcher = new IndexSearcher(fsDir);
+			}
 			IndexReader ir = searcher.getIndexReader();
 	        if (! ir.isCurrent()) {
 	        	prglog.info("[PRG] " + "Lucene searcher's index reader is not current. Calling reopen().");
@@ -81,7 +88,11 @@ public class LuceneSearcher {
 	// Make sure we are using an up-to-date index reader.
 	// If it's not current, then we will miss out on recently committed changes
 	private IndexReader getIndexReader() {
-		try {			
+		try {	
+			if (indexReader == null) {
+				File indexDir = new File(luceneDir);
+	            indexReader = IndexReader.open(indexDir);
+			}
 	        if (! indexReader.isCurrent()) {
 	        	prglog.info("[PRG] " + "Lucene index reader is not current. Calling reopen().");
 	        	IndexReader newir = indexReader.reopen();
@@ -100,16 +111,22 @@ public class LuceneSearcher {
 
 	
 	public LuceneSearcher(String luceneDir) {
+
+		this.luceneDir = luceneDir;
+
 		try {
 			File indexDir = new File(luceneDir);
 			Directory fsDir = FSDirectory.getDirectory(indexDir);
 			searcher = new IndexSearcher(fsDir);
             indexReader = IndexReader.open(indexDir);
             //bits = new BitSet(indexReader.maxDoc());
-            } catch(IOException e) {
-			prglog.error("[PRG] " + e);
-		}
-		
+         } catch(IOException e) {
+			System.out.println("[PRG] " + e);
+			searcher = null;
+			indexReader = null;
+         }
+            
+ 		
 		/*
 		xmlSelector = new FieldSelector() {
 			private static final long serialVersionUID = 1426724242925499003L;
