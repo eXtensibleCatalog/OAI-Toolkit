@@ -23,6 +23,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.document.FieldSelectorResult;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.queryParser.ParseException;
@@ -45,13 +46,13 @@ import org.apache.lucene.store.FSDirectory;
  */
 public class LuceneSearcher {
 	
-        private static String programmer_log = "programmer";
-        private static final Logger prglog = Logging.getLogger(programmer_log);
+    private static String programmer_log = "programmer";
+    private static final Logger prglog = Logging.getLogger(programmer_log);
 	//private static final Logger logger = Logging.getLogger();
 
 	private IndexSearcher searcher;
 	private IndexReader indexReader;
-	
+		
 	private String luceneDir;
 	
 	private String earliestDatestamp;
@@ -62,12 +63,10 @@ public class LuceneSearcher {
 	// Make sure that the searcher is using an up-to-date index reader.
 	// If it's not current, then we will miss out on recently committed changes
 	private IndexSearcher getSearcher() {
-		try {		
-			if (searcher == null) {
-				File indexDir = new File(luceneDir);
-				Directory fsDir = FSDirectory.getDirectory(indexDir);
-				searcher = new IndexSearcher(fsDir);
-			}
+		if (searcher == null) {
+			createNewLuceneIndex();
+		}
+		try {				
 			IndexReader ir = searcher.getIndexReader();
 	        if (! ir.isCurrent()) {
 	        	prglog.info("[PRG] " + "Lucene searcher's index reader is not current. Calling reopen().");
@@ -79,6 +78,11 @@ public class LuceneSearcher {
 	        	   searcher = new IndexSearcher(newir);
 	        	 }
 	        }
+
+		} catch (java.io.FileNotFoundException fnfe) {
+			System.out.println("lucene index files not found: " + fnfe);
+			createNewLuceneIndex();
+			
 		} catch (Exception e) {
 			prglog.error("[ERROR] " + "Failed to retrieve Lucene searcher's index reader.  Continuing to use original reader.");
 		}
@@ -88,11 +92,10 @@ public class LuceneSearcher {
 	// Make sure we are using an up-to-date index reader.
 	// If it's not current, then we will miss out on recently committed changes
 	private IndexReader getIndexReader() {
+		if (indexReader == null) {
+			createNewLuceneIndex();
+		}
 		try {	
-			if (indexReader == null) {
-				File indexDir = new File(luceneDir);
-	            indexReader = IndexReader.open(indexDir);
-			}
 	        if (! indexReader.isCurrent()) {
 	        	prglog.info("[PRG] " + "Lucene index reader is not current. Calling reopen().");
 	        	IndexReader newir = indexReader.reopen();
@@ -103,30 +106,45 @@ public class LuceneSearcher {
 	        	   indexReader = newir;
 	        	 }
 	        }
+
+		} catch (java.io.FileNotFoundException fnfe) {
+			System.out.println("lucene index files not found: " + fnfe);
+			createNewLuceneIndex();
+			
 		} catch (Exception e) {
-			prglog.error("[ERROR] " + "Failed to retrieve Lucene index reader.  Continuing to use original reader.");
+			prglog.error("[ERROR] " + "Failed to retrieve Lucene index reader.  Continuing to use original reader." + e);
 		}
 		return indexReader;
 	}
-
 	
-	public LuceneSearcher(String luceneDir) {
-
-		this.luceneDir = luceneDir;
-
+	private void createNewLuceneIndex() {
 		try {
 			File indexDir = new File(luceneDir);
 			Directory fsDir = FSDirectory.getDirectory(indexDir);
+	
+			IndexWriter writer = new IndexWriter(indexDir, new StandardAnalyzer());
+			writer.close();
+			
+			// attempt once more to open index searcher and reader
 			searcher = new IndexSearcher(fsDir);
-            indexReader = IndexReader.open(indexDir);
-            //bits = new BitSet(indexReader.maxDoc());
-         } catch(IOException e) {
-			System.out.println("[PRG] " + e);
-			searcher = null;
-			indexReader = null;
-         }
-            
- 		
+			indexReader = IndexReader.open(indexDir);
+			
+		} catch (IOException e) {
+			System.out.println("Failed to create new lucene index: " + e);
+		}
+
+	}
+	
+	
+	public LuceneSearcher(String luceneDir) {
+		
+		this.luceneDir = luceneDir;
+
+		getSearcher();
+		getIndexReader();
+			
+        //bits = new BitSet(indexReader.maxDoc());
+            		
 		/*
 		xmlSelector = new FieldSelector() {
 			private static final long serialVersionUID = 1426724242925499003L;
