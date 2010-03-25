@@ -26,7 +26,9 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -104,6 +106,17 @@ public class TextUtil {
 		}
 		return sb.toString();
 	}
+	
+	public static Date dateToUTCDate(Date d)
+    {
+	    String strDate = "";
+	    GregorianCalendar calendar = new GregorianCalendar();
+	    calendar.setTime(d);
+	    int utcOffsetInMinutes =  -(calendar.get(Calendar.ZONE_OFFSET) + calendar.get(Calendar.DST_OFFSET)) / (60 * 1000);
+	    calendar.add(Calendar.MINUTE, utcOffsetInMinutes);
+	    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+	    return calendar.getTime();
+    }
 	
 	/** 
 	 * Convert string in format "yyyyMMddhhmmss.S" (as in the MARC records)

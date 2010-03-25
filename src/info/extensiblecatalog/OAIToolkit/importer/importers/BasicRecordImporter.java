@@ -23,6 +23,7 @@ import info.extensiblecatalog.OAIToolkit.utils.ApplInfo;
 import info.extensiblecatalog.OAIToolkit.utils.ExceptionPrinter;
 import info.extensiblecatalog.OAIToolkit.utils.Logging;
 import info.extensiblecatalog.OAIToolkit.utils.XMLValidator;
+import info.extensiblecatalog.OAIToolkit.utils.TextUtil;
 
 import org.apache.log4j.Logger;
 import org.marc4j.MarcXmlWriter;
@@ -135,7 +136,8 @@ public class BasicRecordImporter {
 			data.setCreationDate(record.getLastTransactionDate());
 		}
 		// always set modification date to "now"
-		data.setModificationDate(new Timestamp(new Date().getTime()));
+		long now = TextUtil.dateToUTCDate(new Date()).getTime(); // silly java.util.Timestamp / java.sql.Timestamp workaround
+		data.setModificationDate(new java.sql.Timestamp(now));
 
 		data.setRecordType(ApplInfo.setIdsByName.get(
 				record.getRecordTypeAbbreviation()));
