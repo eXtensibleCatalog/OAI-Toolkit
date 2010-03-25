@@ -352,16 +352,7 @@ public class ApplInfo {
 					System.out.println("Lucene directory (luceneDir in OAIToolkit.directory.properties)" +
 							" isn't set. Please set this directory!");
 				} else {
-					if(new File(luceneDir).exists()){
-						luceneSearcher = new LuceneSearcher(luceneDir);
-					} else {
-						File f = new File(luceneDir);
-						while(!f.exists()) {
-							System.out.println("LuceneDir doesn't exist");
-							f = f.getParentFile();
-						}
-						System.out.println(f.getAbsolutePath() + " exists");
-					}
+					luceneSearcher = new LuceneSearcher(luceneDir);
 				}
 			}
 
