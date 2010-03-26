@@ -216,7 +216,7 @@ public class Facade {
 		Element responseDate = new Element("responseDate");
 		responseDate.addContent(
 			new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
-					.format(new Date()));
+					.format(TextUtil.dateToUTCDate(new Date())));
 		form.setResponseDate(XMLUtil.format.outputString(responseDate));
 
 		Element requestEl = new Element("request");
