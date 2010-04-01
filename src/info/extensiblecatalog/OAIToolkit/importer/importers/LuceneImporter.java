@@ -131,12 +131,6 @@ public class LuceneImporter extends BasicRecordImporter
 		SetToRecordDTO setsToRecord = createSetToRecordDTO(rec);
 		RecordDTO searchData = createSearchData(data);
         
-		//if(rec.isDeleted()) {
-		//	typeList.add(ImportType.DELETED);
-		//}
-		typeList.add(rec.getRecordTypeAsImportType());
-        //xcoaiid = xcoaiid.concat(recordType);
-
 		try {
 			//String id;
 			long start = System.currentTimeMillis();
@@ -188,29 +182,38 @@ public class LuceneImporter extends BasicRecordImporter
 			}
 
             if (docTest == true) {
-			Document doc = new Document();
-			doc.add(luceneMgr.keyword("id", id));
-			doc.add(luceneMgr.keyword("external_id",
-					data.getExternalId()));
-            doc.add(luceneMgr.keyword("xc_oaiid", xcoaiid));
-			doc.add(luceneMgr.keyword("record_type",
-					data.getRecordType().toString()));
-            doc.add(luceneMgr.keyword("is_deleted",
-					data.getIsDeleted().toString()));
-			if(data.getCreationDate() != null) {
-				doc.add(luceneMgr.keyword("creation_date",
-					data.getCreationDate().toString()));
-			}
-			doc.add(luceneMgr.keyword("modification_date",
-					data.getModificationDate().toString()));
-
-			doc.add(luceneMgr.keyword("set",
-					setsToRecord.getSetId().toString()));
-			doc.add(luceneMgr.stored("xml", xml.getXml()));
-
-			start = System.currentTimeMillis();
-			luceneMgr.addDoc(doc);
-			insertTime = System.currentTimeMillis() - start;
+	            // we did _something_ with this record (add/update/delete)
+	        	typeList.add(rec.getRecordTypeAsImportType());
+	            	
+				Document doc = new Document();
+				doc.add(luceneMgr.keyword("id", id));
+				doc.add(luceneMgr.keyword("external_id",
+						data.getExternalId()));
+	            doc.add(luceneMgr.keyword("xc_oaiid", xcoaiid));
+				doc.add(luceneMgr.keyword("record_type",
+						data.getRecordType().toString()));
+	            doc.add(luceneMgr.keyword("is_deleted",
+						data.getIsDeleted().toString()));
+				if(data.getCreationDate() != null) {
+					doc.add(luceneMgr.keyword("creation_date",
+						data.getCreationDate().toString()));
+				}
+				doc.add(luceneMgr.keyword("modification_date",
+						data.getModificationDate().toString()));
+	
+				doc.add(luceneMgr.keyword("set",
+						setsToRecord.getSetId().toString()));
+				doc.add(luceneMgr.stored("xml", xml.getXml()));
+	
+				start = System.currentTimeMillis();
+				luceneMgr.addDoc(doc);
+				insertTime = System.currentTimeMillis() - start;
+            } else {
+            	// existing record, but not in lucene -
+            	// this means it is probably still in the buffer?
+            	// ignore it since we can't do anything with it
+            	// (we need the re-use the xcoaiid!)
+    			typeList.add(ImportType.SKIPPED);   	
             }
 
 		} catch (Exception ex) {
