@@ -67,6 +67,7 @@ import info.extensiblecatalog.OAIToolkit.utils.ApplInfo;
 import info.extensiblecatalog.OAIToolkit.utils.ExceptionPrinter;
 import info.extensiblecatalog.OAIToolkit.utils.Logging;
 import info.extensiblecatalog.OAIToolkit.utils.XMLUtil;
+import info.extensiblecatalog.OAIToolkit.utils.XMLValidator;
 
 /**
  * Public interface for converting and importing MARC records to
@@ -414,6 +415,10 @@ public class Importer {
 		Arrays.sort(files, new FileNameComparator());
 		Modifier modifier = new Modifier(configuration);
 		int counter;
+		
+		/** The SAX based XML validator, validates against schema file */
+		XMLValidator validator = new XMLValidator(configuration.getMarcSchema());
+
 
 		modificationStatistics = new ModificationStatistics();
 		ModificationStatistics fileStatistics = null;
@@ -422,10 +427,8 @@ public class Importer {
 			InputStream in = null;
 			OutputStream out = null;
 			MarcReader marcReader = null;
+			MarcXmlWriter badRecordWriter = null;
 			try {
-				if(!checkXml(xmlFile)) {
-					continue;
-				}
 
 				fileStatistics = new ModificationStatistics();
 				System.setProperty("file.encoding", "UTF-8");
@@ -445,9 +448,37 @@ public class Importer {
 				/** the percent of imported records in the size of file */
 				int percent;
 				while (marcReader.hasNext()) {
-					String xml = modifier.modifyRecord(marcReader.next(), configuration.isFileOfDeletedRecords());
-					out.write(xml.getBytes("UTF-8"));
-					fileStatistics.addTransformed();
+					Record record = marcReader.next();
+					String xml = modifier.modifyRecord(record, configuration.isFileOfDeletedRecords());
+
+					boolean isvalid = true;
+					// validation
+					try {
+						validator.validate(xml);
+					} catch (Exception ex) {
+						isvalid = false;
+						prglog.error("[PRG] " + ExceptionPrinter.getStack(ex));
+					}
+
+					if (isvalid) {
+						out.write(xml.getBytes("UTF-8"));
+						fileStatistics.addTransformed();
+					} else {						
+						if(null == badRecordWriter){
+							badRecordWriter = new MarcXmlWriter(
+								new FileOutputStream(
+									new File(
+										configuration.getErrorXmlDir(),
+										"error_records_in_" + xmlFile.getName()
+									)),
+								"UTF8", // encoding
+								true//, // indent
+								);//configuration.isCreateXml11()); // xml 1.0
+							
+						}
+						badRecordWriter.write(record);	
+						fileStatistics.addInvalid();
+					}
 
 					counter++;
 					if(configuration.isNeedLogDetail() && (0 == counter % 100)){
@@ -471,25 +502,7 @@ public class Importer {
 						}
 						//System.gc();
 					}
-
-					/*
-					List<ImportType> typeList = recordImporter.importRecord(record);
-					fileStatistics.add(typeList);
-					if(typeList.contains(ImportType.INVALID)) {
-						if(null == badRecordWriter){
-							badRecordWriter = new MarcXmlWriter(
-								new FileOutputStream(
-									new File(
-										configuration.getErrorXmlDir(),
-										"error_records_in_" + xmlFile.getName()
-									)),
-								"UTF8", // encoding
-								true//, // indent
-								);//configuration.isCreateXml11()); // xml 1.0
-						}
-						badRecordWriter.write(record);
-					}
-					*/
+										
 				}
 				out.write("</collection>\n".getBytes("UTF-8"));
 				out.close();
@@ -516,6 +529,13 @@ public class Importer {
 				} catch(IOException e) {
 					prglog.error("[PRG] " + ExceptionPrinter.getStack(e));
 				}
+				try {
+					if(badRecordWriter != null)
+						badRecordWriter.close();
+				} catch(Exception e) {
+					prglog.error("[PRG] " + ExceptionPrinter.getStack(e));
+				}
+
 			}
 		} // for File...
 		if(configuration.isNeedLogDetail()) {
@@ -562,8 +582,6 @@ public class Importer {
 		}
 
 		int counter = 0;
-        int invalidFiles = 0;
-		MarcXmlWriter badRecordWriter = null;
 		importStatistics = new LoadStatistics();
 		LoadStatistics fileStatistics = null;
         
@@ -575,26 +593,9 @@ public class Importer {
 			recordImporter.setCurrentFile(xmlFile.getName());
 			fileStatistics = new LoadStatistics();
 
-			badRecordWriter = null;
 			try {
 				if(configuration.isNeedLogDetail()) {
 					prglog.info("[PRG] loading " + xmlFile.getName());
-				}
-
-				if(!checkXml(xmlFile)) {
-                    File xmlErrorFile = new File(dirNameGiver.getLoadError(),
-					xmlFile.getName());
-                    if(xmlErrorFile.exists()) {
-                        boolean deleted = xmlErrorFile.delete();
-                        prglog.info("[PRG] Delete " + xmlErrorFile + " - " + deleted);
-                    }
-                    boolean remove = xmlFile.renameTo(xmlErrorFile);
-                    if(configuration.isNeedLogDetail()) {
-                        prglog.info("[PRG] Remove XML file (" + xmlFile.getName()
-						+ ") to error_xml directory: " + remove);
-                    }
-                    importStatistics.add(ImportType.INVALID_FILES);
-                    continue;
 				}
 
                 //importStatistics.setInvalidFiles(counter)
@@ -700,7 +701,7 @@ public class Importer {
 					}
 				}
 				recordImporter.commit();
-                trackedOaiIdNumberValue = recordImporter.getTrackedOaiIdValue();
+				trackedOaiIdNumberValue = recordImporter.getTrackedOaiIdValue();
                 trackingOaiIdNumberDTO.setTrackedOaiidnumber(trackedOaiIdNumberValue);
                 trackingOaiIdNumberMgr.updateByTrackingId(trackingOaiIdNumberDTO, trackingId);
                 trackingOaiIdNumberDTO = null;
@@ -733,24 +734,9 @@ public class Importer {
 						+ " lastRecordToImport: "
 						+ recordImporter.getLastRecordToImport());
                         } 
-            finally {
-                if(null != badRecordWriter) {
-					try {
-						badRecordWriter.close();
-						badRecordWriter = null;
-					} catch(Exception e) {
-						e.printStackTrace();
-						prglog.error("[PRG] Error in closing bad records file "
-								+ e.getMessage()
-								+ " error_records_in_" + xmlFile.getName());
-					}
-				}
-			}
 
 		}
 
-        //importStatistics.setInvalidFiles(invalidFiles);
-        //dirNameGiver.getLoadError().
 
 		if(configuration.isNeedLogDetail()) {
 			prglog.info("[PRG] Import statistics summary: " + importStatistics.toString());

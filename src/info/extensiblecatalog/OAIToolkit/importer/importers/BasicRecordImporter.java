@@ -202,6 +202,13 @@ public class BasicRecordImporter {
 		}
 		badRecordWriter.write(record);
 	}
+	
+	private void closeBadRecords() {
+		if (null != badRecordWriter) {
+			badRecordWriter.close();
+			badRecordWriter = null;
+		}
+	}
 
 	/**
 	 * Get the last record's ID to import
@@ -216,6 +223,7 @@ public class BasicRecordImporter {
 	 * @param currentFile
 	 */
 	public void setCurrentFile(String currentFile) {
+		closeBadRecords(); // close previous file
 		this.currentFile = currentFile;
 	}
 
@@ -280,4 +288,5 @@ public class BasicRecordImporter {
 	public long getInsertTime() {
 		return insertTime;
 	}
+	
 }

@@ -250,8 +250,13 @@ public class LuceneImporter extends BasicRecordImporter
 	}
 
 	public void optimize() {
+		optimize(true);
+	}
+	
+	public void optimize(boolean doClose) {
 		luceneMgr.optimize();
-		luceneMgr.close();
+		if (doClose)
+			luceneMgr.close();
 	}
 
 	public void setCurrentFile(String currentFile) {
