@@ -419,6 +419,7 @@ public class Importer {
 		/** The SAX based XML validator, validates against schema file */
 		XMLValidator validator = new XMLValidator(configuration.getMarcSchema());
 
+		boolean doValidate = configuration.isModifyValidation();
 
 		modificationStatistics = new ModificationStatistics();
 		ModificationStatistics fileStatistics = null;
@@ -451,16 +452,19 @@ public class Importer {
 					Record record = marcReader.next();
 					String xml = modifier.modifyRecord(record, configuration.isFileOfDeletedRecords());
 
-					boolean isvalid = true;
-					// validation
-					try {
-						validator.validate(xml);
-					} catch (Exception ex) {
-						isvalid = false;
-						prglog.error("[PRG] " + ExceptionPrinter.getStack(ex));
+					boolean isValid = true;
+					
+					if (doValidate) {
+						// validation
+						try {
+							validator.validate(xml);
+						} catch (Exception ex) {
+							isValid = false;
+							prglog.error("[PRG] " + ExceptionPrinter.getStack(ex));
+						}
 					}
 
-					if (isvalid) {
+					if (isValid) {
 						out.write(xml.getBytes("UTF-8"));
 						fileStatistics.addTransformed();
 					} else {						
@@ -506,6 +510,14 @@ public class Importer {
 				}
 				out.write("</collection>\n".getBytes("UTF-8"));
 				out.close();
+				
+				// remove source file...
+				prglog.info("[PRG] Delete " + xmlFile);
+				boolean remove = xmlFile.delete();
+				if(configuration.isNeedLogDetail()) {
+					prglog.info("[PRG] Deleting XML file (" + xmlFile.getName()
+						+ ") " + remove);
+				}
 
 				if(configuration.isNeedLogDetail()) {
 					prglog.info("[PRG] Modify statistics for " + xmlFile.getName()

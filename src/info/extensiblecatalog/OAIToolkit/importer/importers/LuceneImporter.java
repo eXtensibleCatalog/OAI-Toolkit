@@ -248,15 +248,10 @@ public class LuceneImporter extends BasicRecordImporter
 	public void commit() {
 		luceneMgr.commit();
 	}
-
-	public void optimize() {
-		optimize(true);
-	}
 	
-	public void optimize(boolean doClose) {
+	public void optimize() {
 		luceneMgr.optimize();
-		if (doClose)
-			luceneMgr.close();
+		luceneMgr.close();
 	}
 
 	public void setCurrentFile(String currentFile) {

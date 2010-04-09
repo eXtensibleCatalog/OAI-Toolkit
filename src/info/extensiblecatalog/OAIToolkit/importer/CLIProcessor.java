@@ -198,6 +198,7 @@ public class CLIProcessor {
                 Option translate_nonleader_bad_chars_to_spaces = new Option("translate_nonleader_bad_chars_to_spaces", 
                                 "Change the Bad characters in the control and the data fields to spaces");
                 
+        Option modify_validation = new Option ("modify_validation", "Perform validation check during modify step");
 		
 		OptionBuilder.withArgName("replace_repository_code");
 		OptionBuilder.hasArg();
@@ -278,6 +279,7 @@ public class CLIProcessor {
 		options.addOption(indent_xml);
 		options.addOption(xml_version_11);
                 options.addOption(translate_leader_bad_chars_to_zero);
+                options.addOption(modify_validation);
                 options.addOption(translate_nonleader_bad_chars_to_spaces);
                 options.addOption(fileof_deleted_records);
                 options.addOption(stats_lucene_dir);
@@ -424,7 +426,12 @@ public class CLIProcessor {
 				importer.configuration.setCreateXml11(true);
 			}
 			
-            // translate_leader_bad_chars_to_zero
+            // modify_validation
+			if (line.hasOption("modify_validation")) {
+				importer.configuration.setModifyValidation(true);
+			}
+ 
+			// translate_leader_bad_chars_to_zero
 			if (line.hasOption("translate_leader_bad_chars_to_zero")) {
 				importer.configuration.setTranslateLeaderBadCharsToZero(true);
 			}

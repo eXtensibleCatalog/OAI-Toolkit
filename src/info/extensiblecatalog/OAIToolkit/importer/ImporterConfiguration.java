@@ -77,6 +77,9 @@ public class ImporterConfiguration {
 	
 	/** create XML 1.1? */
 	private boolean createXml11 = false;
+	
+	/** perform validation during modify step? */
+	private boolean modifyValidation = false;
 
 	/** Translate the bad characters in the Leader (1-8, B-C, E-1F hexadecimal 
 	 * codes) to zeros */
@@ -392,6 +395,14 @@ public class ImporterConfiguration {
         public boolean isTranslateLeaderBadCharsToZero() {
 		return translateLeaderBadCharsToZero;
 	}
+        
+    public void setModifyValidation(boolean mod) {
+    	this.modifyValidation = mod;
+    }
+    
+    public boolean isModifyValidation() {
+    	return this.modifyValidation;
+    }
 
 	public void setTranslateLeaderBadCharsToZero(boolean translateLeaderBadCharsToZero) {
 		this.translateLeaderBadCharsToZero = translateLeaderBadCharsToZero;

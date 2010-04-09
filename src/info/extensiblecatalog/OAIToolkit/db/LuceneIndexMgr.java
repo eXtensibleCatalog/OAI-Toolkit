@@ -58,12 +58,13 @@ public class LuceneIndexMgr {
 	public void open(String _indexDir) {
 		try {
 			indexDir = FSDirectory.getDirectory(_indexDir);
-			writer   = new IndexWriter(indexDir, new StandardAnalyzer());//, false);
+			writer   = new IndexWriter(indexDir, false, new StandardAnalyzer());// autocommit = false
 			//writer.setRAMBufferSizeMB(256.0);
 			writer.setRAMBufferSizeMB((double)
 					(Runtime.getRuntime().maxMemory()/2.0) / (double)(1024*1024));
-			writer.setMaxBufferedDocs(100000);
-			writer.setMergeFactor(2000);
+			//writer.setMaxBufferedDocs(100000); /* don't set this _and_ setRAMBufferSizeMB */
+			//writer.setMergeFactor(2000);
+			writer.setMergeFactor(25);
 			openSearcher();
 		} catch (IOException e) {
 			e.printStackTrace();
