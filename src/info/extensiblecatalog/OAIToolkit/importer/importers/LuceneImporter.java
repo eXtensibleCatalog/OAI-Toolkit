@@ -67,7 +67,7 @@ public class LuceneImporter extends BasicRecordImporter
     /**
 	 * The list of IDs stored in index
 	 */
-	private static Set<String> ids = new TreeSet<String>();
+	//private static Set<String> ids = new TreeSet<String>();
 
 	/**
 	 * Creates a new importer, which creates Lucene index
@@ -79,7 +79,7 @@ public class LuceneImporter extends BasicRecordImporter
 		super(schemaFile);
 		luceneMgr = new LuceneIndexMgr(luceneIndexDir);
 		long start = System.currentTimeMillis();
-		luceneMgr.putAllIds(ids);
+		//luceneMgr.putAllIds(ids);
 		prglog.info("[PRG] Read all ids. It took " + MilliSecFormatter.toString(
 				System.currentTimeMillis()-start));
 	}
@@ -138,13 +138,14 @@ public class LuceneImporter extends BasicRecordImporter
             boolean docTest = true;
 
             //prglog.debug("The id inserted is" + id);
-            boolean isExistent = ids.contains(id);//luceneMgr.doesExist(id);
-			checkTime = System.currentTimeMillis() - start;
+            //boolean isExistent = ids.contains(id);//luceneMgr.doesExist(id);
+			boolean isExistent = luceneMgr.doesExist(id);
+            checkTime = System.currentTimeMillis() - start;
 			if (isExistent == false) {
 				//id = data.getExternalId() + "t" + data.getRecordType();
 
 				typeList.add(ImportType.CREATED);
-				ids.add(id);
+				//ids.add(id);
 
                 // Get the last_inserted successful ID from the database.
                 xcoaiid = xcoaiid + trackedOaiIdValue;

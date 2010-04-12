@@ -726,6 +726,10 @@ public class Importer {
 						+ recordImporter.getLastRecordToImport());
                         } 
 			catch(MarcException e) {
+				
+				// If we can't read this marc file for some reason, keep track of the count
+				importStatistics.add(ImportType.INVALID_FILES);
+				
                                 e.printStackTrace();
 				prglog.error("[PRG] [MarcException] " + e.getMessage()
 						+ " " + xmlFile.getName()
