@@ -578,54 +578,9 @@ public class Facade {
 			return;
 		}
 
-        char[] crs = identifier.toCharArray();
-        int index = 0;
-        for (int i = 0; i < crs.length; i++) {
-           if (Character.isDigit(crs[i])) {
-                prglog.debug("[PRG]first index = " + i);
-                index = i;
-                break;
-            }
-        }
-
-        String recordTypeParam = identifier.substring(0,index);
-        String idParam = identifier.substring(index);
-
-		//String[] identifierParts = identifier.split(
-		//		underscore_delimiter);
-		//String recordTypeParam = identifierParts[identifierParts.length-2];
-		//String idParam = identifierParts[identifierParts.length-1];
-		prglog.info("[PRG] recordTypeParam: " + recordTypeParam);
-		prglog.info("[PRG] idParam: " + idParam);
-
-		/*
-		String id = identifier.substring(
-				identifier.lastIndexOf(
-					ApplInfo.oaiConf.getOaiIdentifierDelimiter())+1);
-		*/
-		Integer id;
-		Integer recordType;
-		try {
-			id = Integer.valueOf(idParam);
-			prglog.info("[PRG] id: " + id);
-			recordType = ApplInfo.setIdsByName.get(recordTypeParam);
-		} catch(NumberFormatException e) {
-			prglog.error("[PRG] " + e);
-			form.setXml(ErrorCodes.badArgumentError("The identifier parameter"
-					+ " should end with an integer."));
-			return;
-		}
-
-		if(null == recordType){
-			form.setXml(ErrorCodes.idDoesNotExistError());
-			return;
-		}
-
 		StringBuffer xml = new StringBuffer();
 		try {
-			List<DataTransferObject> records = dataProvider.getRecord(id, 
-					recordType,
-					Arrays.asList(new String[]{"record_id", "record_type"}));
+			List<DataTransferObject> records = dataProvider.getRecord(identifier);
 
 			if(null == records || 0 == records.size()){
 				form.setXml(ErrorCodes.idDoesNotExistError());

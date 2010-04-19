@@ -75,6 +75,18 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 			return "";
 		}
 	}
+
+	public List<DataTransferObject> getRecord(String xcOaiId) {
+		List<DataTransferObject> list = new ArrayList<DataTransferObject>();
+
+		Integer docId[] = new Integer[1];
+		Document doc = ApplInfo.luceneSearcher.getRecordByXcOaiID(xcOaiId, docId);
+		if(doc != null) {
+			list.add(doc2RecordDTO(doc, docId[0]));
+		}
+
+		return list;
+	}
 	
 	public List<DataTransferObject> getRecord(Integer id, Integer recordType, 
 			List<String> filter) { 
@@ -324,7 +336,8 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 		}
 		return null;
 	}
-	
+
+
 	private RecordDTO doc2RecordDTO(Document doc, int id) {
 		RecordDTO mainData = new RecordDTO(id);
 		try {

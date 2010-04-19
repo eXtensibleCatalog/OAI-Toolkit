@@ -35,6 +35,7 @@ public interface FacadeDataProvider {
 	public DataTransferObject nextRecord();
 
 	/** get record */
+	public List<DataTransferObject> getRecord(String xcOaiId);
 	public List<DataTransferObject> getRecord(Integer id, Integer recordType, 
 			List<String> fieldFilter);
 	

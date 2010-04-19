@@ -75,6 +75,13 @@ public class MySQLFacadeDataProvider extends BasicFacadeDataProvider
 		return earliestDatestamp;
 	}
 	
+	public List<DataTransferObject> getRecord(String xcOaiId) {
+		/* TODO: implement this method
+		 * 
+		 */
+		return null;
+	}
+
 	public List<DataTransferObject> getRecord(Integer id, Integer recordType, 
 			List<String> filter) { 
 		try {

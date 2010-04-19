@@ -236,22 +236,28 @@ public class LuceneSearcher {
 
     /**
      * Get the record from the Xc OAI ID passed to it
-     * @param recordId
+     * @param xcOaiId (String)
+     * @param docId An Integer array (of size 1) which will be set to the document id number of the record
      * @return Document
      */
-	public Document getRecordByXcOaiID(Integer xcOaiId) {
+	public Document getRecordByXcOaiID(String xcOaiId, Integer[] docId) {
 		Document doc = null;
-		try {
-			if(xcOaiId >= 0 && xcOaiId <= getSearcher().getIndexReader().numDocs()) {
-				doc = getSearcher().doc(xcOaiId);
-			}
-			//Query query = new TermQuery(new Term("id", recordId.toString()));
-			//Hits hits = getSearcher().search(query);
-			//doc = hits.doc(0);
-		} catch(IOException e) {
+
+        try {
+			BooleanQuery query = new BooleanQuery();
+			query.add(new TermQuery(new Term("xc_oaiid", xcOaiId)), 
+					Occur.MUST);
+           
+			Hits hits = getSearcher().search(query);
+			prglog.info("[PRG] " + query + ", found: " + hits.length());
+			for (int i = 0; i < hits.length(); i++) {
+				docId[0] = hits.id(i);
+				doc = getIndexReader().document(docId[0], allFieldSelector);
+			} 
+		} catch (IOException e) {
 			prglog.error("[PRG] " + e);
-			e.printStackTrace();
 		}
+				
 		return doc;
 	}
 
