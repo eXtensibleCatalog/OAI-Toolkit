@@ -3,7 +3,7 @@
 # III Millennium Data Offload Script
 # Written by Stephen Westman, adapted from code by Adam Brin
 #
-# To use this script, you will at least nneed to have Perl installed with the perl-Expect (yum) or
+# To use this script, you will at least need to have Perl installed with the perl-Expect (yum) or
 #  Expect.pm (CPAN).  Note that you MAY also need to have Expect installed (we already did, so I don't
 #  know if this library will work without it).  It also needs to be loaded on your XC server so that
 #  the MARC records can be transferred FROM III TO the XC server.  You also need to have an FTP server
@@ -32,7 +32,10 @@
 #        will also return to the next file type so that no files will be sent to the XC server.
 #        Our hope is to have it finished within a few weeks  
 #     2) emailing the XC administrator concerning the status of each data load once it has 
-#        finished 
+#        finished
+#     3) Writing the last day that the file has been downloaded.  That way, the next time that
+#        the script is run, that date can be the $earliest_date value.  At this point, we just
+#        make allowances for the script not running after Saturday or Sunday. 
 #
 # Also, this script has been tested and seems to work with our setup.  That does not mean that 
 #  it will work properly in your environment for reasons already stated.  My suggestion is to
@@ -45,24 +48,31 @@
 #       or search for "Expect.pm" in Google.  This documentation is invaluable in helping you to
 #       find other ways of doing things (which is often necessary). 
 #  
+# One other thing: the day that the script is run will get the work done from the PREVIOUS 24 hour
+#  period.  Thus it does not run on Monday (since there probably was little to no work done on
+#  Sunday).  Also, the download for Friday is run on Saturday morning.  Note that this may cause
+#  a bit of confusion in reading the script.
 #
-#
+# Also note that I have added debugging statements that will print where you are in a given
+#  process to STDOUT.  This helps in isolating where problems may be hiding.
 ###################################################################################################
 use strict;
 use Expect;
 
 my $server = "iii-server.institution.edu";       # Name of Millennium server's telnet interface
-my $filenum = 69;                      # Work area for bib output
+my $filenum = 69;                      # Work area for bib output. Note that once you are sure 
+                                       #  everything is working correctly, you can have all three
+                                       #  of these work areas use the same work area number
 my $sc_filenum = 29;                   # Work area for suppressed/created records
 my $sm_filenum = 63;                   # Work area for suppressed/modified records
 my $debug = shift || 0;
 my $testing = 0;                       # Set testing (which allows you to search only a subset of the
                                        #  of the entire database)
-my @my_test_range = ("\n");            # First bib number (without .i) record of test range
+my @my_test_range = ("\n");            # First bib number (without .b) record of test range
 my @my_test_range2 = ("\n");           # Last record of test range (use "\n" alone to have it be the 
                                        #  last record)
 
-# Email parameters for sending email that load was successful (not yet programmed)
+# Email parameters for sending email that load was successful (not yet implemented)
 my $to = 'admin@xc.institution.edu';         # Email address to whom emails should be sent 
 my $from = 'xcuzr@xcbox.institution.edu';    # User from whom the records are sent
 my $cc = '';                                 # Any cc's that you want to include
@@ -72,22 +82,26 @@ my $tmpdir = '/tmp';                # Location for temporary files
 my $logfile = $tmpdir . "/newbooks.txt";   # Location of log file.  Note that you can do a tail -f
                                              # on this file while the script is being run to see what
                                              # what is happening "behind the scenes"
-my $xc_server = "xcserver..institution.edu";   # IP addresss/name of XC box
-my @exp_user = ( "username\n");          # username on XC box
+my $xc_server = "xcserver.institution.edu";   # IP addresss/name of XC box
+my @exp_user = ( "username\n");          # username on XC box (for transferring files to the XC box)
 my @exp_pass = "password\n";             # password on XC box
 my $filename = "bibfile.txt";            # Filename for main bib file offload
 my $sc_filename = "sup_cre.txt";         # Filename for suppressed created records
 my $sm_filename = "sup_mod.txt";         # Filename for suppressed modified records
-my $number = 0;                     
-my @my_range = ("00000000\n");           # Ranges of bib numbers for ( $type eq "test" ) below
-my @my_range2 = ("00000000\n");
 
 my $init = 'init_user';                  # Initials for getting into lists and MARC
 my $ipass = 'init_password';             # output systems
 
+# When searching for suppressed date, to avoid having 0 records found (which is 
+#  not yet handled by the code), you need to set this to a day at least 3-4 months
+#  ago where there will be new records that will have been suppressed and updated
+#  records modified in the system since that date 
+my $suppresseddate = "010110";
+
 
 #This section no longer needs to be modified
 #------------------------------DO NOT MODIFY------------------------------------------------------#
+my $number = 0;                          # Initialize $number 
 
 my $start = localtime time;
 
@@ -123,15 +137,17 @@ if ( $day == 2 ) {
 my @tim = localtime($time);
 $tim[5] +=1900;
 $tim[4] +=1;
-if ( $day == 0 || $day == 0 ) {
+if ( $day == 0 || $day == 1 ) {  # If today is Sunday or Monday (i.e. if
+                                   the updates are from Saturday or Sunday)
    exit;
 }
 # Use $tim to populate elements of $latest date
 my $latestdate = sprintf ("%02d%02d%02d", $tim[4],$tim[3],substr( $tim[5],2,2));
 
 
-########################################################################V
-#The following two values are set only for use in covering 3 day weekends
+#########################################################################
+# The following two values are set only for use in covering 2 day weekends.
+#  Code to cover other eventualities will be forthcoming.
 #########################################################################
 
 # Create array @tim for $time1 using Perl's localtime() function
@@ -154,12 +170,6 @@ my $earliestdate = sprintf ("%02d%02d%02d", $tim[4],$tim[3],substr( $tim[5],2,2)
 #print $earliestdate, "\n\n";
 #print $middledate, "\n\n";
 #print $latestdate, "\n\n";
-
-# When searching for suppressed date, to avoid having 0 records found (which is 
-#  not yet handled by the code), you need to set this to a day at least 3-4 months
-#  ago where there will be new records that will have been suppressed and updated
-#  records modified in the system since that date 
-my $supresseddate = "010110";
 
 # Initialize $delfile value - used to handle the possibility of a file already 
 #  being present and needing to be deleted
@@ -211,7 +221,6 @@ print "running List function\n";
    #  saved (set in the variables above) and set timeout to 10 seconds
    if ( $type eq "bibs" ) {
       $filenum = $filenum;
-#   } elsif ( $type eq "suppressed_c" || $type eq "test" ) {
    } elsif ( $type eq "suppressed_c" ) {
       $filenum = $sc_filenum;
    } elsif ( $type eq "suppressed_m" ) {
@@ -356,7 +365,7 @@ print "Entering Tuesday multidate subroutine\n";    # STDOUT debugging to tell w
       $exp->expect($t,"CREATED");
       print $exp "G";
       $exp->expect($t,"mo-dy-20yr");
-      print $exp ("$supresseddate\r\n");
+      print $exp ("$suppresseddate\r\n");
       $exp->expect($t,"range for searching");
       print $exp "A";
       $exp->expect($t,"Enter code in front of desired field");
@@ -387,7 +396,7 @@ print "Entering Tuesday multidate subroutine\n";    # STDOUT debugging to tell w
       $exp->expect($t,"UPDATED");
       print $exp "G";
       $exp->expect($t,"mo-dy-20yr");
-      print $exp ("$supresseddate\r\n");
+      print $exp ("$suppresseddate\r\n");
       $exp->expect($t,"range for searching");
       print $exp "A";
       $exp->expect($t,"Enter code in front of desired field");
@@ -526,19 +535,21 @@ print "Get file number";      # STDOUT debugging to tell where you are
    $exp->send( @next );
    $exp->expect($t, "Choose one");
    $workarea .= $exp->before();
-   ##exit;
+
    $exp->send( @next );
    $exp->expect($t, "Choose one");
    $workarea .= $exp->before();
-   ##exit;
+
+   $exp->send( @next );
+   $exp->expect($t, "Choose one");
+   $workarea .= $exp->before();
+
    $exp->send( @next );
    $exp->expect($t, "Choose one");
    $workarea .= $exp->before();
    $exp->send( @next );
-   $exp->expect($t, "Choose one");
-   $workarea .= $exp->before();
-   $exp->send( @next );
-   print "Made it this far!";
+
+print "Made it this far!";
    
    # Next we go through $workarea to which we saved the screens to find the file area
    #  where $filename has been saved.  We begin by initializing it.  We open up the
@@ -636,7 +647,6 @@ print "$xc_server\n";               # Print out to $xc_server to STDOUT
    my $y = $exp->before();          # use $exp_before to populate $y with the contents
                                     # of the screen before the "expected" string was
                                     # found and save to $y
-#   print $y;
    my $ip_pos = index( $y, $xc_server);   # Locate where in $y the $xc_server IP address
                                           # is located and save the position to $ip_pos
    
