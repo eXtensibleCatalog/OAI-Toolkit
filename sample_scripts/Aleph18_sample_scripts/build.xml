@@ -57,6 +57,48 @@
   	<target name="tar" depends="build">
   		<tar destfile="${dist.dir}/xc_oai_export_${DSTAMP}.tar" basedir="${build.dir}"/>
   	</target>
+  	
+  	<!--assumes this is either run on the server where something is deployed or have a local mount to target dir-->
+  	<!--also assumes you are running task as appropriate user for ownership and credentials of deployed files-->
+  	<!-- Depolyment -->  	
+  	  <target name="deploy" depends="build">  	
+  	    <exec executable="sudo">   		
+  	    	<arg value="-u"/> 
+  	    	<arg value="${user.id}"/>
+  	    	<arg value="mkdir"/>
+  	    	<arg value="${deploy.dir}/${build.number}"/> 
+  	  	</exec>
+  	    <exec executable="sudo">   		
+  	    	<arg value="-u"/> 
+  	    	<arg value="${user.id}"/>
+  	    	<arg value="rm"/>
+  	    	<arg value="${deploy.dir}/current"/> 
+  	  	</exec>
+  	    <exec executable="sudo" dir="${build.dir}">
+  			<arg value="-u"/> 
+  			<arg value="${user.id}"/>
+  			<arg value="cp"/>
+  	    	<arg value="-r"/>
+  	  		<arg value="."/>
+  	  		<arg value="${deploy.dir}/${build.number}"/>		
+  	  	</exec>
+  	  	<exec executable="sudo">
+  	  		<arg value="-u"/> 
+  	  		<arg value="${user.id}"/>
+  	  		<arg value="ln"/>
+  	  		<arg value="-s"/>  	  	
+  	  		<arg value="${deploy.dir}/${build.number}"/>
+  	  		<arg value="${deploy.dir}/current"/>
+  	  	</exec> 
+  	  	<exec executable="sudo">
+  	  		<arg value="-u"/> 
+  	  		<arg value="${user.id}"/>
+  	  		<arg value="chmod"/>
+  	  		<arg value="-R"/>  		  	  	
+  	  		<arg value="755"/>
+  	  		<arg value="${deploy.dir}/${build.number}/bin"/>  		
+  	  	</exec>
+  	  </target>  	
 
   <!-- CLEAN TARGET -->
   <target name="clean" depends="init">

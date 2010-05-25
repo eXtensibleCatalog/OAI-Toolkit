@@ -9,6 +9,7 @@ At the minimum the following needs to be done:
           2. There must be a local Perl installation on the Aleph Server
           3. Perl Module MARC::Record must be installed on the Aleph Server (go to cpan.org to obtain)
           4. JVM version 6 or greater install where OAIToolkitImporter will run
+          5. Ant version 1.7 or greater installed
 
 OAIToolkit Importer Install and Configuration:
 
@@ -29,24 +30,24 @@ Scripts Configuration:
 Before building the scripts you will want update various paths in the csh scripts to mirror your environment, especially the runtime/install
 location of the scripts needs to be correct.  You will also want to update the biblibrary mentioned in the aleph_export_full_oai_toolkit.csh
 and aleph_export_deltas_to_oai_toolkit.csh scripts.  You also need to make the location of the OAIToolkitImporter and lucene target directory
-paths are correct.  At a minimum you should check and update the following environment variables in each script:
+paths are correct.  
 
-	aleph_export_full_oai_toolkit.csh & aleph_export_deltas_to_oaitoolkit.csh:
-	
-		xc_bin_dir			The deployment location of all of the csh and perl scripts included
+!!!*************************************************************************************************************!!!
+
+You must make sure XC_HOME environment variable is set in the user's environment that will execute the scripts
+
+!!!*************************************************************************************************************!!!
+
+Also, at a minimum you should check and update the following environment variables in environment.csh:
+
 		biblibrary1      	You should change this to the appropriate bib library
         
-	aleph_export_to_oai_toolkit.csh:
-	
 		fix_routine_add_sys_no_to_01			The name of the fixroutine created above to put the system number into 001.
-		xc_home									Should be set to the root of the install location of these scripts on the aleph server
 		
-	aleph_call_java_oai_toolkit_importer.csh:
-	
 		xc_oai_toolkit_importer_dir				OAIToolkit Importer install location
 		java_bin_dir							Java 6 bin directory
 		oai_toolkit_importer_data_dir			Data Directory for running the OAIToolkit Importer 
-												(lucene files will be placed in $oai_toolkit_importer_data_dir/lucene)		
+												(lucene files will be placed in $oai_toolkit_importer_data_dir/lucene)
 
 Build and Deploy:
 
@@ -68,6 +69,22 @@ Execution Full load:
 
 csh -f [install_location]/bin/aleph_export_full_oai_toolkit.csh
 
-Execution Delta Load:
+The delta load is split into two parts as deleted items need to be loaded separately.
+They would most likely be run daily following one or infrequent full load....
+
+Execution Delta Load (Add/Modify):
 
 csh -f [install_location]/bin/aleph_export_deltas_to_oai_toolkit.csh
+
+Execution Delta Load (Delete):
+
+csh -f [install_location]/bin/aleph_export_deleted_deltas_to_oai_toolkit.csh
+
+There is also a script to load all deleted items from Aleph.  This will probably only
+be used if data on the XC side cannot be completely refreshed and many deleted items are missed.
+Normally, the full load script would be run once and then the two delta scripts would be
+cronned to run daily.
+
+Execution Load All Deleted Items:
+
+csh -f [install_location]/bin/aleph_export_deleted_full_oai_toolkit.csh

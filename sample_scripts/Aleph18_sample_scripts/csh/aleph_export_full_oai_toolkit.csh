@@ -27,27 +27,12 @@
 set echo
 
 #setup local environment
-set aleph_proc = /exlibris/aleph/a18_1/aleph/proc
-
-source /exlibris/aleph/a18_1/alephm/.cshrc
-source $aleph_proc/def_local_env
-source /exlibris/aleph/u18_1/alephe/aleph_start
-
-set xc_bin_dir = /home/aleph18/xc/bin
+csh -f $XC_HOME/bin/environment.csh
 
 #get file last modified date in form yyyymmdd
 set start_date = 00000000
 set end_date = 99999999
 
-## Execute a full load for the bib below, copy and paste this block as needed for other bib libraries #############################################################
-set biblibrary1 = NDU01
-#set biblibrary1 = SMC01
-#set biblibrary1 = BCI01
-#set biblibrary1 = HCC01
+set get_deleted = N
 
-set biblibrary1_lc = `echo $biblibrary1 | tr '[A-Z]' '[a-z]'`
-
-#get sql connection credentials from Aleph
-setenv ALEPH_BIB1_LOGON "$biblibrary1/`/exlibris/aleph/a18_1/aleph/exe/get_ora_passwd $biblibrary1`"
-
-csh -f $xc_bin_dir/aleph_export_to_oai_toolkit.csh $biblibrary1 $ALEPH_BIB1_LOGON /aleph_scratch/$biblibrary1_lc $start_date $end_date
+csh -f $xc_bin_dir/aleph_export_to_oai_toolkit.csh $biblibrary1 $ALEPH_BIB1_LOGON /aleph_scratch/$biblibrary1_lc $start_date $end_date $get_deleted

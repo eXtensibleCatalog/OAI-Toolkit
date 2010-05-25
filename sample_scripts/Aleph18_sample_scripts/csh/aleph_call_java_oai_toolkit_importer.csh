@@ -16,25 +16,15 @@
 ######################################################################################################
 # Set OAIToolkit Importer paths
 ######################################################################################################
-set xc_oai_toolkit_importer_dir = /clu_shared/importer/OAIToolkit
-set xc_oai_jar = $xc_oai_toolkit_importer_dir/lib/OAIToolkit-0.6alpha.jar
+csh -f $XC_HOME/bin/environment.csh
 
-#java location
-set java_dir = /usr/java/bin
-
-set oai_toolkit_importer_data_dir = /clu_shared
-set oai_mrc_src_dir = $oai_toolkit_importer_data_dir/src
-set oai_log_dir = $oai_toolkit_importer_data_dir/log
-set oai_error_xml_dir = $oai_toolkit_importer_data_dir/temp_error
-set oai_error_dir = $oai_toolkit_importer_data_dir/temp_error
-set oai_dest_dir = $oai_toolkit_importer_data_dir/marc_dest
-set oai_dest_xml_dir = $oai_toolkit_importer_data_dir/temp
-
-# lucene destination dir for importer result
-set oai_lucene_dir = $oai_toolkit_importer_data_dir/lucene_index
+######################################################################################################
+# Get Output files and whether to include deleted records from input
+######################################################################################################
 
 set marc_output_file_utf8 = $1
 set marc_output_file_marc8 = $2
+set get_deleted = $3
 
 #make directories if necessary
 #if (! -d $oai_dir) then 
@@ -78,4 +68,8 @@ rm $oai_mrc_src_dir/*
 cp $marc_output_file_utf8 $oai_mrc_src_dir
 cp $marc_output_file_marc8 $oai_mrc_src_dir
 
-$java_dir/java -jar $xc_oai_jar -convert -load -source $oai_mrc_src_dir -destination $oai_dest_dir -destination_xml $oai_dest_xml_dir -error $oai_error_dir -error_xml $oai_error_xml_dir -log $oai_log_dir -storage_type Lucene -lucene_index $oai_lucene_dir > /dev/null
+if ($get_deleted == "Y") then
+	$java_dir/java -jar $xc_oai_jar -convert -load -fileof_deleted_records -source $oai_mrc_src_dir -destination $oai_dest_dir -destination_xml $oai_dest_xml_dir -error $oai_error_dir -error_xml $oai_error_xml_dir -log $oai_log_dir -log_detail -split_size 10000 -storage_type Lucene -lucene_index $oai_lucene_dir -translate_leader_bad_chars_to_zero -translate_nonleader_bad_chars_to_spaces > /dev/null
+else
+	$java_dir/java -jar $xc_oai_jar -convert -load -source $oai_mrc_src_dir -destination $oai_dest_dir -destination_xml $oai_dest_xml_dir -error $oai_error_dir -error_xml $oai_error_xml_dir -log $oai_log_dir -log_detail -split_size 10000 -storage_type Lucene -lucene_index $oai_lucene_dir -translate_leader_bad_chars_to_zero -translate_nonleader_bad_chars_to_spaces > /dev/null
+endif
