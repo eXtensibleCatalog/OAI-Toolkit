@@ -26,7 +26,7 @@
   	  	<mkdir dir="${dist.dir}"/>
   	</target>
   	
-  	<target name="dist" depends="tar"/>
+  	<target name="dist" depends="zip"/>
   	
   	<!--build scripts-->
   	<target name="build" depends="create-dir">
@@ -53,9 +53,12 @@
   		</copy>
   	</target>
   	
-  	<!--tar SMC and Bethel scripts-->
   	<target name="tar" depends="build">
   		<tar destfile="${dist.dir}/xc_oai_export_${DSTAMP}.tar" basedir="${build.dir}"/>
+  	</target>
+  	
+  	<target name="zip" depends="build">
+  	  	<zip destfile="${dist.dir}/XC_OAIToolkit_Aleph18_Sample_Scripts.zip" basedir="${build.dir}"/>
   	</target>
   	
   	<!--assumes this is either run on the server where something is deployed or have a local mount to target dir-->

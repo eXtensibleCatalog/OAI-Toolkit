@@ -1,8 +1,20 @@
-Scripts are included to perform either a full load or delta load from an Aleph instance to the OAIToolkit.  In order to run correctly,
-some configuration is necessary (steps to follow).
+##################################################################################################################################
+#
+# XC OAI Toolkit Aleph 18 Sample Scripts 
+# Author: Rick Johnson (University of Notre Dame)
+# Created: 6/02/09
+# Updated: 5/26/10
+#
+##################################################################################################################################
 
-Note: This currently does not cover deleted records.  Support will be added soon.
+Scripts are included to perform the following from an Aleph 18 instance to the OAIToolkit:
 
+          1. Full MARC Record Export from Aleph 18 and load into XC OAIToolkit
+          2. Delta MARC Record Export from Aleph 18 and load into XC OAIToolkit
+          3. Full Deleted MARC Record Export from Aleph 18 and load into XC OAIToolkit
+          4. Delta Deleted MARC Record Export from Aleph 18 and load into XC OAIToolkit
+
+In order to run correctly, some configuration is necessary. 
 At the minimum the following needs to be done:
 
 		  1. Install and run scripts on machine with Aleph install
@@ -51,7 +63,7 @@ Also, at a minimum you should check and update the following environment variabl
 
 Build and Deploy:
 
-	Run ant dist to build the tar ball for the OAIToolkit Importer shell scripts
+	Run ant dist to build the zip file for the OAIToolkit Importer shell scripts
 	scp the tar ball created in the dist directory to your Aleph server
 
 	Extract the contents to a temporary directory and run the following to deploy the files to the correct location.
