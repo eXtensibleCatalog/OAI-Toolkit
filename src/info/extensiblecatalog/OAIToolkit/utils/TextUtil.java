@@ -9,13 +9,17 @@
 
 package info.extensiblecatalog.OAIToolkit.utils;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.ConnectException;
@@ -199,19 +203,16 @@ public class TextUtil {
 	 * @throws IOException
 	 */
 	public static String readFileAsString(String filePath) throws IOException {
-        StringBuffer content = new StringBuffer(BUFFER_SIZE);
-        BufferedReader reader = new BufferedReader(new FileReader(filePath));
-        String readData;
-        char[] buf = new char[BUFFER_SIZE];
-        int numOfBytes = reader.read(buf);
-        while(numOfBytes != -1){
-            readData = String.valueOf(buf, 0, numOfBytes);
-            content.append(readData);
-            buf = new char[BUFFER_SIZE];
-            numOfBytes = reader.read(buf);
-        }
-        reader.close();
-        return content.toString();
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		InputStream is = new BufferedInputStream(new FileInputStream(filePath));
+		byte[] buf = new byte[BUFFER_SIZE];
+		int numOfBytes = is.read(buf);
+		while(numOfBytes != -1){
+			baos.write(buf, 0, numOfBytes);
+			numOfBytes = is.read(buf);
+		}
+		is.close();
+		return new String(baos.toByteArray(), "UTF-8");
     }
 	
 	/**
@@ -221,7 +222,7 @@ public class TextUtil {
 	 * @param content The content of the new file
 	 */
 	public static void writeFile(File file, String content) throws IOException {
-		Writer out = new BufferedWriter(new FileWriter(file));
+		Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
 		out.write(content);
 		out.close();
 	}
