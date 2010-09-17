@@ -58,7 +58,10 @@ public class LuceneIndexMgr {
 	public void open(String _indexDir) {
 		try {
 			indexDir = FSDirectory.getDirectory(_indexDir);
-			writer   = new IndexWriter(indexDir, false, new StandardAnalyzer());// autocommit = false
+			
+			// autocommit = true; So that flush() will cause a commit, thus allowing new docs to be visible to the Reader.  This is important because we need to lookup IDs for potential updates!			
+			writer   = new IndexWriter(indexDir, true, new StandardAnalyzer());
+			
 			//writer.setRAMBufferSizeMB(256.0);
 			writer.setRAMBufferSizeMB((double)
 					(Runtime.getRuntime().maxMemory()/2.0) / (double)(1024*1024));

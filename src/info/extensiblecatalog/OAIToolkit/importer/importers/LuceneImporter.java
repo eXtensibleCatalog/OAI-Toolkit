@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.HashMap;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.Hits;
@@ -65,9 +66,9 @@ public class LuceneImporter extends BasicRecordImporter
     private String oaiIdRepositoryIdentifier;
 
     /**
-	 * The list of IDs stored in index
+	 * The cached IDs and oaiids of records encountered during this import pass
 	 */
-	//private static Set<String> ids = new TreeSet<String>();
+	private static HashMap<String, String> oaiids;
 
 	/**
 	 * Creates a new importer, which creates Lucene index
@@ -79,7 +80,6 @@ public class LuceneImporter extends BasicRecordImporter
 		super(schemaFile);
 		luceneMgr = new LuceneIndexMgr(luceneIndexDir);
 		long start = System.currentTimeMillis();
-		//luceneMgr.putAllIds(ids);
 		prglog.info("[PRG] Read all ids. It took " + MilliSecFormatter.toString(
 				System.currentTimeMillis()-start));
 	}
@@ -130,62 +130,95 @@ public class LuceneImporter extends BasicRecordImporter
 		XmlDTO xml = new XmlDTO(rec.getXml());
 		SetToRecordDTO setsToRecord = createSetToRecordDTO(rec);
 		RecordDTO searchData = createSearchData(data);
-        
 		try {
-			//String id;
 			long start = System.currentTimeMillis();
 			String id = searchData.getExternalId() + "t" + searchData.getRecordType();
             boolean docTest = true;
 
             //prglog.debug("The id inserted is" + id);
-            //boolean isExistent = ids.contains(id);//luceneMgr.doesExist(id);
-			boolean isExistent = luceneMgr.doesExist(id);
+            
+            // if this is an update for a record previously seen during this pass,
+            // then we need to keep track of the oaiid ourself (instead of relying on
+            // the lucene index, since the record hadn't yet been committed).
+            boolean updateThisPass = false;
+            boolean isExistent = false;
+            if (oaiids.containsKey(id)) {
+            	isExistent = true;
+            	updateThisPass = true;
+            } else {
+            	isExistent = luceneMgr.doesExist(id); // check the actual lucene index, too (which is where MOST of our updated records should be)			     
+            }
+
             checkTime = System.currentTimeMillis() - start;
-			if (isExistent == false) {
+			
+            if (isExistent == false) {
 				//id = data.getExternalId() + "t" + data.getRecordType();
-
+            	
 				typeList.add(ImportType.CREATED);
-				//ids.add(id);
-
+				
                 // Get the last_inserted successful ID from the database.
                 xcoaiid = xcoaiid + trackedOaiIdValue;
-                // Assign that new id. Insert it into the DB.
+
+         	   	//prglog.debug("ID="+ id + " OAIID=" + xcoaiid + " FILE=" + currentFile + " NEW");
+         
+                 // Assign that new id. Insert it into the DB.
                 // Increase the ID, and then update the DB with the new last_inserted_value
                 //prglog.debug(" The value of the xcoai ID (created new) is:"+ xcoaiid);
                 trackedOaiIdValue++;
                                 
 			} else {
+  
+				if (updateThisPass) {
+            	   xcoaiid = oaiids.get(id);
+            	   
+            	   //prglog.debug("ID="+ id + " OAIID=" + xcoaiid + " FILE=" + currentFile + " UPDATETHISPASS");
+            	   
+				} else {
                    //searchData.getXcOaiId()
                    Document doc = luceneMgr.getDoc(searchData);
                            //ApplInfo.luceneSearcher.getRecordByID(externalId);
                    if (doc == null){
                        prglog.debug("The document is null");
                        docTest = false;
-                   }
-                   else {
+                   } else {
                        xcoaiid = doc.get("xc_oaiid");
                        //prglog.debug("the xcoaiid is" + xcoaiid);
                        //prglog.debug("The xcoai ID value got before update/deletion of record is" + xcoaiid);
-                                     
-                   id = luceneMgr.getId(searchData);
-                   //prglog.debug("The value of the id is" + id);
-                   
-                   luceneMgr.delDoc("id", id);
-                   // Get the xcoaiid which was inserted in Lucene.
-                   // Store it in a variable and then utilise it down there, when you insert again.
-                   
-                   if(rec.isDeleted()) {
-                    typeList.add(ImportType.DELETED);
-                    }
-                   else
-                    typeList.add(ImportType.UPDATED);
-                   }
-			}
+                
+                       
+                       id = luceneMgr.getId(searchData);
+                       //prglog.debug("The value of the id is" + id);
+                       
+                       //prglog.debug("ID="+ id + " OAIID=" + xcoaiid + " FILE=" + currentFile + " UPDATE");
+                       
+                   }                
+                                  
+               }
+                
+				if (docTest == true) {
 
+					luceneMgr.delDoc("id", id);
+					
+                    if(rec.isDeleted()) {
+                        typeList.add(ImportType.DELETED);
+                    } else {
+                 	   typeList.add(ImportType.UPDATED);
+                    }
+                }
+						
+			}
+            
             if (docTest == true) {
-	            // we did _something_ with this record (add/update/delete)
-	        	typeList.add(rec.getRecordTypeAsImportType());
-	            	
+
+            	// cache the id and xcoaiid in case we need it later for an update
+				oaiids.put(id, xcoaiid);
+
+            	// we did _something_ with this record (add/update/delete)
+				if (! isExistent) {
+					// we do not want to count updated records since they are not new; instead, they are replacement records
+					typeList.add(rec.getRecordTypeAsImportType());
+				}
+				
 				Document doc = new Document();
 				doc.add(luceneMgr.keyword("id", id));
 				doc.add(luceneMgr.keyword("external_id",
@@ -215,6 +248,7 @@ public class LuceneImporter extends BasicRecordImporter
             	// ignore it since we can't do anything with it
             	// (we need the re-use the xcoaiid!)
     			typeList.add(ImportType.SKIPPED);   	
+    			libloadlog.error("rec.id=" + lastRecordToImport + " ; " + id + " was skipped because we couldn't retrieve from lucene for an update.");
             }
 
 		} catch (Exception ex) {
@@ -258,5 +292,8 @@ public class LuceneImporter extends BasicRecordImporter
 	public void setCurrentFile(String currentFile) {
 		super.setCurrentFile(currentFile);
 		recordCounter = 0;
+		
+		//oaiids.clear();
+		oaiids = new HashMap<String, String>(); // I believe this is more efficient than clear()
 	}
 }
