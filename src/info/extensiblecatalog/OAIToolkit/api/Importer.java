@@ -507,8 +507,8 @@ public class Importer {
 					}
 										
 				}
-				out.write("</collection>\n".getBytes("UTF-8"));
-				out.close();
+				//out.write("</collection>\n".getBytes("UTF-8"));  // now performed in the finally block...
+				//out.close();
 				
 				// remove source file...
 				prglog.info("[PRG] Delete " + xmlFile);
