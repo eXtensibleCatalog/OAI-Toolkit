@@ -423,7 +423,6 @@ public class Importer {
 
 		modificationStatistics = new ModificationStatistics();
 		ModificationStatistics fileStatistics = null;
-
 		for(File xmlFile : files) {
 			InputStream in = null;
 			OutputStream out = null;
@@ -442,7 +441,7 @@ public class Importer {
 				out.write("<collection xmlns=\"http://www.loc.gov/MARC21/slim\">\n".getBytes("UTF-8"));
 
 				if(configuration.isNeedLogDetail()) {
-					prglog.info("[PRG] Modifying records...");
+					prglog.info("[PRG] Modifying records... filename:" + xmlFile.getName());
 				}
 				counter = 0;
 				int prevPercent = 0;
@@ -528,6 +527,19 @@ public class Importer {
 				prglog.error("[PRG] " + ExceptionPrinter.getStack(e));
 			} catch(IOException e) {
 				prglog.error("[PRG] " + ExceptionPrinter.getStack(e));
+			} catch (MarcException e) {
+				
+				// If we can't read this marc file for some reason, keep track of the count
+				modificationStatistics.addInvalidFile();
+				// some records may have been added/updated/etc.
+				modificationStatistics.add(fileStatistics);
+				
+                                e.printStackTrace();
+				prglog.error("[PRG] [MarcException] " + e.getMessage()
+						+ " " + xmlFile.getName()
+						+ " lastRecordToModify: "
+						+ modifier.getLastRecordToModify());
+
 			} finally {
 				try {
 					if(in != null)
@@ -536,8 +548,10 @@ public class Importer {
 					prglog.error("[PRG] " + ExceptionPrinter.getStack(e));
 				}
 				try {
-					if(out != null)
+					if(out != null) {	
+						out.write("</collection>\n".getBytes("UTF-8"));
 						out.close();
+					}
 				} catch(IOException e) {
 					prglog.error("[PRG] " + ExceptionPrinter.getStack(e));
 				}
@@ -547,7 +561,6 @@ public class Importer {
 				} catch(Exception e) {
 					prglog.error("[PRG] " + ExceptionPrinter.getStack(e));
 				}
-
 			}
 		} // for File...
 		if(configuration.isNeedLogDetail()) {
@@ -750,8 +763,19 @@ public class Importer {
 						+ " lastRecordToImport: "
 						+ recordImporter.getLastRecordToImport());
                         } 
+			finally {
+				// It is important to commit here because if we encounter an exception,
+				// there may be unflushed records (those added before the exception occurred)
+				// that we may later need to retrieve in order to perform potential updates.
+				// Otherwise, there is a chance we could add duplicate records for the same external_id/record_type!
+				recordImporter.commit();
+				// some records were added/updated/etc.
+				importStatistics.add(fileStatistics);
+			}
 
 		}
+		
+		recordImporter.closeCurrentFile(); // perform any necessary cleanup on this re-usable object
 
 
 		if(configuration.isNeedLogDetail()) {

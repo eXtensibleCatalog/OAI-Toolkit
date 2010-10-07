@@ -23,6 +23,9 @@ public class ModificationStatistics {
 	/** The number of invalid, not converted MARC records */
 	private int invalid = 0;
 	
+	/** The number of invalid, not converted MARC files */
+	private int invalidFiles = 0;
+	
 	/** The start time of import */
 	private long startTime;
 
@@ -52,7 +55,9 @@ public class ModificationStatistics {
 	public String toString() {
 		return "converted: " + getTransformed()
 			+ ", invalid: " + getInvalid()
-			+ " records. It took " + MilliSecFormatter.toString(getTimeSpan());
+			+ " records."
+			+ "  Invalid files:" + getInvalidFiles() + "."
+			+ "  It took " + MilliSecFormatter.toString(getTimeSpan());
 	}
 
 	public int getTransformed() {
@@ -69,6 +74,14 @@ public class ModificationStatistics {
 
 	public void addTransformed() {
 		this.transformed += 1;
+	}
+	
+	public void addInvalidFile() {
+		this.invalidFiles += 1;
+	}
+	
+	public int getInvalidFiles() {
+		return this.invalidFiles;
 	}
 
 	public int getInvalid() {

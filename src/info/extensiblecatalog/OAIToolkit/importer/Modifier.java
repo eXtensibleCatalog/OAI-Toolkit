@@ -39,7 +39,12 @@ public class Modifier {
 	
 	private boolean doIndent = false;
     private boolean doFileOfDeletedRecords = false;
-	
+    
+	/**
+	 * The last record entering into the modify process. Used only for tracking
+	 * errors.
+	 */
+	protected String lastRecordToModify;	
 	
 	public Modifier(boolean doIndent, boolean doFileOfDeletedRecords) {
 		this.doIndent = doIndent;
@@ -54,6 +59,15 @@ public class Modifier {
 		addStyleSheets(configuration.getXslts());
 		setDoIndent(configuration.isDoIndentXml());
 	}
+	
+	/**
+	 * Get the last record's ID to import
+	 * @return
+	 */
+	public String getLastRecordToModify() {
+		return lastRecordToModify;
+	}
+
 
 	public void addStyleSheets(List<String> xslts) {
 		if(transformators == null) {
@@ -77,6 +91,7 @@ public class Modifier {
 	/** Modify a Record's XML string */
 	public String modifyRecord(Record record, boolean doFileOfDeletedRecords) {
 		MARCRecordWrapper marc = new MARCRecordWrapper(record, doFileOfDeletedRecords);
+		lastRecordToModify = marc.getId();
 		marc.setDoIndentXml(doIndent);
         marc.setDoFileOfDeletedRecords(doFileOfDeletedRecords);
 		return modifyRecord(marc);

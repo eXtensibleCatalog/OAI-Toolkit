@@ -39,6 +39,11 @@ public interface IImporter {
 	 * @param currentFile The MARCXML files's name
 	 */
 	public void setCurrentFile(String currentFile);
+	
+	/**
+	 * allow importer do do clean-up on this re-usable object
+	 */
+	public void closeCurrentFile();
 
 	/**
 	 * Decide whether indent or not the MARCXML record

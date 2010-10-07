@@ -226,6 +226,15 @@ public class BasicRecordImporter {
 		closeBadRecords(); // close previous file
 		this.currentFile = currentFile;
 	}
+	
+	/**
+	 * This is needed to flush out the bad record writer
+	 * setCurrentFile() does this too, but not on the last file!
+	 * @param currentFile
+	 */
+	public void closeCurrentFile() {
+		closeBadRecords(); // close previous file
+	}
 
 	/**
 	 * Decide whether indent or not the MARCXML record
