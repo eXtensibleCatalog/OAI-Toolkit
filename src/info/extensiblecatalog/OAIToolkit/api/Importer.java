@@ -612,13 +612,14 @@ public class Importer {
         
         /** Manager of Tracking OAI ID Number */
 	    trackingOaiIdNumberMgr = new TrackingOaiIdNumberMgr();
-
+	    
 		for(File xmlFile : files) {
-
+			
 			recordImporter.setCurrentFile(xmlFile.getName());
 			fileStatistics = new LoadStatistics();
 
 			try {
+								
 				if(configuration.isNeedLogDetail()) {
 					prglog.info("[PRG] loading " + xmlFile.getName());
 				}
@@ -695,8 +696,7 @@ public class Importer {
 					prglog.info("[PRG] " + fileStatistics.toString(xmlFile.getName()));
                                         libloadlog.info("[LIB] " + fileStatistics.toString(xmlFile.getName()) + "\n\n");
 				}
-				importStatistics.add(fileStatistics);
-
+				
 				// move file to destination xml directory
 				if(configuration.isDoDeleteTemporaryFiles()) {
 					prglog.info("[PRG] Delete " + xmlFile);
@@ -725,7 +725,6 @@ public class Importer {
 							+ destXmlFile.getAbsolutePath() + "): " + remove);
 					}
 				}
-				recordImporter.commit();
 				trackedOaiIdNumberValue = recordImporter.getTrackedOaiIdValue();
                 trackingOaiIdNumberDTO.setTrackedOaiidnumber(trackedOaiIdNumberValue);
                 trackingOaiIdNumberMgr.updateByTrackingId(trackingOaiIdNumberDTO, trackingId);
@@ -738,8 +737,7 @@ public class Importer {
 						+ " lastRecordToImport: "
 						+ recordImporter.getLastRecordToImport());
                         } 
-			catch(MarcException e) {
-				
+			catch(MarcException e) {								
 				// If we can't read this marc file for some reason, keep track of the count
 				importStatistics.add(ImportType.INVALID_FILES);
 				
@@ -763,15 +761,18 @@ public class Importer {
 						+ " lastRecordToImport: "
 						+ recordImporter.getLastRecordToImport());
                         } 
-			finally {
-				// It is important to commit here because if we encounter an exception,
-				// there may be unflushed records (those added before the exception occurred)
-				// that we may later need to retrieve in order to perform potential updates.
-				// Otherwise, there is a chance we could add duplicate records for the same external_id/record_type!
-				recordImporter.commit();
-				// some records were added/updated/etc.
-				importStatistics.add(fileStatistics);
-			}
+			
+			
+			// Be sure (outside of the try/catch block) to:
+			// commit here because if we encounter an exception,
+			// there may be unflushed records (those added before the exception occurred)
+			// that we may later need to retrieve in order to perform potential updates.
+			// Otherwise, there is a chance we could add duplicate records for the same external_id/record_type!
+			recordImporter.commit();
+			// Be sure (outside of the try/catch block) to:
+			// add file stats because if we encounter an exception,
+			// there is a good chance some records got through first
+			importStatistics.add(fileStatistics);
 
 		}
 		
