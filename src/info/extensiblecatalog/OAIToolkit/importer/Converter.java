@@ -278,6 +278,8 @@ public class Converter {
 				} else {
 					prglog.error("[PRG] INVALID " + record.getControlNumber());
 					statistics.addInvalid();
+					
+					badRecordWriter.write(record);
 				}
 
 				if((0 == counter % 100)){
