@@ -42,6 +42,7 @@ public class ModificationStatistics {
 	public void add(ModificationStatistics otherStat) {
 		this.transformed += otherStat.getTransformed();
 		this.invalid   += otherStat.getInvalid();
+		this.invalidFiles += otherStat.getInvalidFiles();
 	}
 
 	private void init() {

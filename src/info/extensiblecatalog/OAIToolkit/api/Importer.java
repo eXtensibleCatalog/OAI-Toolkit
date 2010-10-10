@@ -248,9 +248,10 @@ public class Importer {
 		Arrays.sort(files, new FileNameComparator());
 
 		conversionStatistics = new ConversionStatistics();
-		ConversionStatistics fileStatistics;
 
 		for(File marcFile : files) {
+			ConversionStatistics fileStatistics = null;
+
 			File xmlFile = new File(configuration.getDestinationXmlDir(),
 					marcFile.getName().replaceAll(".mrc$", ".xml"));
             try {
@@ -295,11 +296,6 @@ public class Importer {
 							+ ": " + remove);
 				}
 
-				conversionStatistics.add(fileStatistics);
-				if(importStatistics != null) {
-					importStatistics.add(converter.getLoadStatistics());
-				}
-
 			} catch(Exception e){
 				if(e instanceof MarcException) {
 					prglog.error("[PRG] " + e.getMessage()
@@ -341,6 +337,14 @@ public class Importer {
 					}
 				}
 			}
+					
+			if (fileStatistics != null) {
+				conversionStatistics.add(fileStatistics);
+			}
+			if(importStatistics != null) {
+				importStatistics.add(converter.getLoadStatistics());
+			}			
+			
 		}
 
         //Delete the directories
@@ -518,11 +522,6 @@ public class Importer {
 						+ ") " + remove);
 				}
 
-				if(configuration.isNeedLogDetail()) {
-					prglog.info("[PRG] Modify statistics for " + xmlFile.getName()
-							+ ": " + fileStatistics.toString());
-				}
-				modificationStatistics.add(fileStatistics);
 			} catch(FileNotFoundException e) {
 				prglog.error("[PRG] " + ExceptionPrinter.getStack(e));
 			} catch(IOException e) {
@@ -530,9 +529,7 @@ public class Importer {
 			} catch (MarcException e) {
 				
 				// If we can't read this marc file for some reason, keep track of the count
-				modificationStatistics.addInvalidFile();
-				// some records may have been added/updated/etc.
-				modificationStatistics.add(fileStatistics);
+				fileStatistics.addInvalidFile();
 				
                                 e.printStackTrace();
 				prglog.error("[PRG] [MarcException] " + e.getMessage()
@@ -541,6 +538,14 @@ public class Importer {
 						+ modifier.getLastRecordToModify());
 
 			} finally {
+				
+				modificationStatistics.add(fileStatistics);
+				
+				if(configuration.isNeedLogDetail()) {
+					prglog.info("[PRG] Modify statistics for " + xmlFile.getName()
+							+ ": " + fileStatistics.toString());
+				}
+
 				try {
 					if(in != null)
 						in.close();
@@ -692,11 +697,6 @@ public class Importer {
 				}
 				in.close();
 
-				if(configuration.isNeedLogDetail()) {
-					prglog.info("[PRG] " + fileStatistics.toString(xmlFile.getName()));
-                                        libloadlog.info("[LIB] " + fileStatistics.toString(xmlFile.getName()) + "\n\n");
-				}
-				
 				// move file to destination xml directory
 				if(configuration.isDoDeleteTemporaryFiles()) {
 					prglog.info("[PRG] Delete " + xmlFile);
@@ -739,7 +739,7 @@ public class Importer {
                         } 
 			catch(MarcException e) {								
 				// If we can't read this marc file for some reason, keep track of the count
-				importStatistics.add(ImportType.INVALID_FILES);
+				fileStatistics.add(ImportType.INVALID_FILES);
 				
                                 e.printStackTrace();
 				prglog.error("[PRG] [MarcException] " + e.getMessage()
@@ -773,6 +773,11 @@ public class Importer {
 			// add file stats because if we encounter an exception,
 			// there is a good chance some records got through first
 			importStatistics.add(fileStatistics);
+			
+			if(configuration.isNeedLogDetail()) {
+				prglog.info("[PRG] " + fileStatistics.toString(xmlFile.getName()));
+                                    libloadlog.info("[LIB] " + fileStatistics.toString(xmlFile.getName()) + "\n\n");
+			}			
 
 		}
 		
