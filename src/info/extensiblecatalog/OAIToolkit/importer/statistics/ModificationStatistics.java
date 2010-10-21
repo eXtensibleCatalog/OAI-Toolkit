@@ -57,7 +57,7 @@ public class ModificationStatistics {
 		return "converted: " + getTransformed()
 			+ ", invalid: " + getInvalid()
 			+ " records."
-			+ "  Invalid files:" + getInvalidFiles() + "."
+			+ "  Invalid files: " + getInvalidFiles() + "."
 			+ "  It took " + MilliSecFormatter.toString(getTimeSpan());
 	}
 

@@ -530,12 +530,13 @@ public class Importer {
 				
 				// If we can't read this marc file for some reason, keep track of the count
 				fileStatistics.addInvalidFile();
-				
-                                e.printStackTrace();
+
 				prglog.error("[PRG] [MarcException] " + e.getMessage()
 						+ " " + xmlFile.getName()
 						+ " lastRecordToModify: "
 						+ modifier.getLastRecordToModify());
+				
+				prglog.error("[PRG] " + ExceptionPrinter.getStack(e));
 
 			} finally {
 				
