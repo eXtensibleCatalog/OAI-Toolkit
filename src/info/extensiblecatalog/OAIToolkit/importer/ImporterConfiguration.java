@@ -137,6 +137,8 @@ public class ImporterConfiguration {
     private boolean fileOfDeletedRecords = false;
 
     private boolean luceneStatistics = false;
+    
+    private boolean luceneDumpIds = false;
 
     private String statsLuceneDir = "lucene_index";
 
@@ -360,10 +362,18 @@ public class ImporterConfiguration {
 		return luceneStatistics;
 	}
 
+    public boolean isLuceneDumpIds() {
+		return luceneDumpIds;
+	}
+
 	public void setLuceneStatistics(boolean luceneStatistics) {
 		this.luceneStatistics = luceneStatistics;
     }
 
+	public void setLuceneDumpIds(boolean luceneDumpIds) {
+		this.luceneDumpIds = luceneDumpIds;
+    }
+	
 	public boolean isDoIndentXml() {
 		return doIndentXml;
 	}

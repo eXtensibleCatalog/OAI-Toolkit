@@ -216,6 +216,8 @@ public class CLIProcessor {
 
         Option lucene_statistics = new Option("lucene_statistics", "Statistics for Lucene Database");
 
+        Option lucene_dump_ids = new Option("lucene_dump_ids", "List all ids (001s) to standard output");
+        
         OptionBuilder.withArgName("stats_lucene_dir");
 		OptionBuilder.hasArg();
 		OptionBuilder.withDescription("The directory of Lucene index given by the user.");
@@ -284,6 +286,7 @@ public class CLIProcessor {
                 options.addOption(fileof_deleted_records);
                 options.addOption(stats_lucene_dir);
                 options.addOption(lucene_statistics);
+                options.addOption(lucene_dump_ids);
 		options.addOption(replace_repository_code);
 		options.addOption(convert_dir);
 		options.addOption(load_dir);
@@ -461,6 +464,10 @@ public class CLIProcessor {
 
             if (line.hasOption("lucene_statistics")) {
 				importer.configuration.setLuceneStatistics(true);
+			}
+
+            if (line.hasOption("lucene_dump_ids")) {
+				importer.configuration.setLuceneDumpIds(true);
 			}
 
 			// lucene Directory for Lucene Statistics

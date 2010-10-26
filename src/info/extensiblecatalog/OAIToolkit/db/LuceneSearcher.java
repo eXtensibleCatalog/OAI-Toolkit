@@ -58,6 +58,7 @@ public class LuceneSearcher {
 	private String earliestDatestamp;
 	//private FieldSelector xmlSelector;
 	private FieldSelector allFieldSelector;
+	private FieldSelector idFieldSelector;
     //private BitSet bits;
 	
 	// Make sure that the searcher is using an up-to-date index reader.
@@ -167,6 +168,18 @@ public class LuceneSearcher {
 					return FieldSelectorResult.NO_LOAD;
 				} else {
 					return FieldSelectorResult.LOAD;
+				}
+			};
+		};
+		
+		idFieldSelector = new FieldSelector() {
+			private static final long serialVersionUID = 1426724242925499003L;
+
+			public FieldSelectorResult accept(String fieldName) {
+				if (fieldName.equals("id")) {
+					return FieldSelectorResult.LOAD;
+				} else {
+					return FieldSelectorResult.NO_LOAD;
 				}
 			};
 		};
@@ -448,4 +461,19 @@ public class LuceneSearcher {
 	public FieldSelector getAllFieldSelector() {
 		return allFieldSelector;
 	}
+	
+	public void dumpIds() {
+		Hits hits = search("is_deleted:false");
+		int docId;
+		for (int i = 0; i < hits.length(); i++) {
+			try {
+			docId = hits.id(i);
+			String theId = getIndexReader().document(docId, idFieldSelector).get("id");
+			System.out.println(theId);
+			} catch (IOException io) {
+				
+			}
+		} 		
+	}
+
 }

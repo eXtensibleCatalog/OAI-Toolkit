@@ -37,6 +37,7 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.Options;
 
+import info.extensiblecatalog.OAIToolkit.db.LuceneIndexMgr;
 import info.extensiblecatalog.OAIToolkit.db.LuceneSearcher;
 import info.extensiblecatalog.OAIToolkit.DTOs.TrackingOaiIdNumberDTO;
 import info.extensiblecatalog.OAIToolkit.db.managers.TrackingOaiIdNumberMgr;
@@ -932,6 +933,16 @@ public class Importer {
      *Execute function called when the lucene statistics is been invoked from command line.
      * 
      **/
+    private void dumpids() {
+        LuceneSearcher ls = new LuceneSearcher(configuration.getStatsLuceneDir());
+        ls.dumpIds();
+    }
+    
+    
+    /**
+     *Execute function called when the lucene statistics is been invoked from command line.
+     * 
+     **/
     private void statsexecute() {
         LuceneSearcher ls = new LuceneSearcher(configuration.getStatsLuceneDir());
 
@@ -976,6 +987,10 @@ public class Importer {
             if (line.hasOption("lucene_statistics")) {
 				importer.configuration.setLuceneStatistics(true);
 			}
+            if (line.hasOption("lucene_dump_ids")) {
+				importer.configuration.setLuceneDumpIds(true);
+			}
+
 
 			// lucene Directory for Lucene Statistics
 			if (line.hasOption("stats_lucene_dir")) {
@@ -987,6 +1002,9 @@ public class Importer {
             if (importer.configuration.isLuceneStatistics()) {
                 importer.statsinit();
                 importer.statsexecute();
+            } else if (importer.configuration.isLuceneDumpIds()) {
+            	importer.statsinit();
+            	importer.dumpids();
             }
             else {
 			importer.init();
