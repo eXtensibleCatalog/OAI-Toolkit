@@ -51,6 +51,12 @@ public interface IImporter {
 	 * MARCXML record
 	 */
 	public void setDoIndentXml(boolean doIndentXml);
+	
+	/**
+	 * Value to use in absence of a repository code defined in 003
+	 * @param defaultRepositoryCode
+	 */
+	public void setDefaultRepositoryCode(String defaultRepositoryCode);
 
 	/**
 	 * Decide whether create XML 1.1 or XML 1.0. The difference between the

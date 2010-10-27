@@ -232,9 +232,9 @@ public class Converter {
 				}
 				if(!hasInvalidChars) {
 
-					if(!ignoreRepositoryCode) {
-						merge003and001(record);
-					}
+					//if(!ignoreRepositoryCode) {
+						//merge003and001(record);
+					//}
 
 					if(modifier != null) {
 						String xml = modifier.modifyRecord(record, false);

@@ -23,6 +23,10 @@ public class RecordDTO extends DataTransferObject {
 	 * Accessors: {@link #getId}, {@link #setId} */
 	private Integer recordId;
 	
+	/** The identifier of the repository (the MARC 003 field). 
+	 * Accessors: {@link #getRepositoryCode}, {@link #setRepositoryCode} */
+	private String repositoryCode = null;
+	
 	/** The id of the MARC record (external_id in DB). 
 	 * Accessors: {@link #getExternalId}, {@link #setExternalId} */
 	private String externalId;
@@ -67,6 +71,9 @@ public class RecordDTO extends DataTransferObject {
 	public RecordDTO(Map map) {
 		if(map.containsKey("record_id")) {
 			recordId = (Integer) map.get("record_id");
+		}
+		if(map.containsKey("repository_code")) {
+			repositoryCode = (String) map.get("repository_code");
 		}
 		if(map.containsKey("externalid")) {
 			externalId = (String) map.get("externalid");
@@ -113,6 +120,20 @@ public class RecordDTO extends DataTransferObject {
 		this.recordId = recordId;
 	}
 
+	/**
+	 * @return {@link #repositoryCode}
+	 */
+	public String getRepositoryCode() {
+		return repositoryCode;
+	}
+	/**
+	 * Set the {@link #repositoryCode}
+	 * @param repositoryCode {@link #repositoryCode}
+	 */
+	public void setRepositoryCode(String repositoryCode) {
+		this.repositoryCode = repositoryCode;
+	}	
+	
 	/**
 	 * @return {@link #externalId}
 	 */
@@ -253,6 +274,7 @@ public class RecordDTO extends DataTransferObject {
 		StringBuilder sb = new StringBuilder();
 		sb.append("recordId: ").append(recordId);
 		sb.append(", externalId: ").append(externalId);
+        sb.append(", repositoryCode: ").append(repositoryCode);
         sb.append(", xcOaiId: ").append(xcOaiId);
 		sb.append(", recordType: ").append(recordType);
 		sb.append(", creationDate: ").append(creationDate);
@@ -273,6 +295,7 @@ public class RecordDTO extends DataTransferObject {
 	public String toAbstract() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("externalId: ").append(externalId);
+        sb.append(", repositoryCode: ").append(repositoryCode);
         sb.append(", xcOaiId: ").append(xcOaiId);
 		sb.append(", recordType: ").append(recordType);
 		sb.append(", creationDate: ").append(creationDate);
@@ -312,6 +335,9 @@ public class RecordDTO extends DataTransferObject {
 			((externalId == null && other.getExternalId() == null) 
 				|| (externalId != null && other.getExternalId() != null 
 					&& externalId.equals(other.getExternalId())))
+			&& ((repositoryCode == null && other.getRepositoryCode() == null) 
+				|| (repositoryCode != null && other.getRepositoryCode() != null
+					&& repositoryCode.equals(other.getRepositoryCode())))			
 			&& ((recordType == null && other.getRecordType() == null) 
 				|| (recordType != null && other.getRecordType() != null
 					&& recordType.equals(other.getRecordType())))
@@ -361,6 +387,11 @@ public class RecordDTO extends DataTransferObject {
 				|| (recordType != null && other.getRecordType() != null
 					&& ! recordType.equals(other.getRecordType()))) {
 				differentFields.add("recordType");
+		} else if((repositoryCode == null && other.getRepositoryCode() != null)
+				||	(repositoryCode != null && other.getRepositoryCode() == null)
+				|| (repositoryCode != null && other.getRepositoryCode() != null
+					&& ! repositoryCode.equals(other.getRepositoryCode()))) {
+				differentFields.add("repositoryCode");
 		} else if((creationDate == null && other.getCreationDate() != null)
 			||	(creationDate != null && other.getCreationDate() == null)
 			|| (creationDate != null && other.getCreationDate() != null

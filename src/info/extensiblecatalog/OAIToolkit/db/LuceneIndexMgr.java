@@ -132,6 +132,8 @@ public class LuceneIndexMgr {
 				searchData.getExternalId())), Occur.MUST);
 		query.add((Query)new TermQuery(new Term("record_type", 
 				searchData.getRecordType().toString())), Occur.MUST);
+		query.add((Query)new TermQuery(new Term("repository_code", 
+				searchData.getRepositoryCode())), Occur.MUST);
 		return query;
 	}
 

@@ -148,6 +148,9 @@ public class MARCRecordWrapper {
 	/** The MARCXML version of MARC record */
 	private String xml;
 	
+	/** The 003 field */
+	private String repositoryCode = null;
+	
 	/** The current file in which this marc record takes place */
 	private String currentFile = "";
 	
@@ -204,11 +207,28 @@ public class MARCRecordWrapper {
         else setStatus();
 		setType();
 		setBibliographicLevel();
+		setRepositoryCode();
 	}
 
 	/** Read the Leader of the record into the leader property */
 	private void setLeader() {
 		leader = record.getLeader();
+	}
+	
+	/** Read the 003 of the record into the repository code property */
+	private void setRepositoryCode() {
+		ControlField the003 = (ControlField)record.getVariableField("003");
+		if(null != the003) {
+			repositoryCode = the003.getData();
+		}		
+	}
+	
+	/**
+	 * Get the repository code
+	 * @return The repository code
+	 */
+	public String getRepositoryCode() {
+		return repositoryCode;
 	}
 
 	/** Read the status code of the record into the status property */

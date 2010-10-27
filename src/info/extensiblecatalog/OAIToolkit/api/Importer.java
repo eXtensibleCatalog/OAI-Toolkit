@@ -911,6 +911,10 @@ public class Importer {
 		recordImporter.setDoIndentXml(configuration.isDoIndentXml());
 		recordImporter.setCreateXml11(configuration.isCreateXml11());
 		recordImporter.setErrorXmlDir(configuration.getErrorXmlDir());
+		
+		if (configuration.getDefaultRepositoryCode() != null) {
+			recordImporter.setDefaultRepositoryCode(configuration.getDefaultRepositoryCode());
+		}
 	}
 
     /**

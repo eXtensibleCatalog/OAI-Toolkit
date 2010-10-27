@@ -148,7 +148,7 @@ public class ImporterConfiguration {
 
 	private boolean ignoreRepositoryCode = false;
 	
-	private String defaultRepositoryCode;
+	private String defaultRepositoryCode = null;
 	
 	public String getParams() {
 		StringBuffer sb = new StringBuffer();

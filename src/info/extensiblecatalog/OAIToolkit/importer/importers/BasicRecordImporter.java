@@ -61,6 +61,12 @@ public class BasicRecordImporter {
 
 	/** Flag to indent XML */
 	protected boolean doIndentXml;
+	
+    /**
+     * Default repository code
+     */
+    protected String defaultRepositoryCode = "";
+	
 
 	/**
 	 * Flag to create XML 1.1
@@ -141,6 +147,10 @@ public class BasicRecordImporter {
 
 		data.setRecordType(ApplInfo.setIdsByName.get(
 				record.getRecordTypeAbbreviation()));
+		
+		if (record.getRepositoryCode() != null)
+			data.setRepositoryCode(record.getRepositoryCode());
+		
 		return data;
 	}
 
@@ -167,6 +177,7 @@ public class BasicRecordImporter {
 		RecordDTO searchData = new RecordDTO();
         searchData.setExternalId(data.getExternalId());
 		searchData.setRecordType(data.getRecordType());
+		searchData.setRepositoryCode(data.getRepositoryCode() != null ? data.getRepositoryCode() : defaultRepositoryCode);
 		return searchData;
 	}
 
@@ -245,6 +256,9 @@ public class BasicRecordImporter {
 		this.doIndentXml = doIndentXml;
 	}
 
+    public void setDefaultRepositoryCode(String defaultRepositoryCode) {
+    	this.defaultRepositoryCode = defaultRepositoryCode;
+    }
     
    /**
 	 * Get the current value of the {@link #createXml11}.

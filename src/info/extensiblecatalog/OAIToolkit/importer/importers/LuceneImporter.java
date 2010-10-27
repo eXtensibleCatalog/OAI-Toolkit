@@ -64,7 +64,7 @@ public class LuceneImporter extends BasicRecordImporter
      * XC OAI ID Repository Identifier parameter
      */
     private String oaiIdRepositoryIdentifier;
-
+    
     /**
 	 * The cached IDs and oaiids of records encountered during this import pass
 	 */
@@ -132,7 +132,7 @@ public class LuceneImporter extends BasicRecordImporter
 		RecordDTO searchData = createSearchData(data);
 		try {
 			long start = System.currentTimeMillis();
-			String id = searchData.getExternalId() + "t" + searchData.getRecordType();
+			String id = searchData.getExternalId() + "t" + searchData.getRecordType() + "r" + searchData.getRepositoryCode();
             boolean docTest = true;
 
             //prglog.debug("The id inserted is" + id);
@@ -223,7 +223,16 @@ public class LuceneImporter extends BasicRecordImporter
 				doc.add(luceneMgr.keyword("id", id));
 				doc.add(luceneMgr.keyword("external_id",
 						data.getExternalId()));
-	            doc.add(luceneMgr.keyword("xc_oaiid", xcoaiid));
+				
+				if (data.getRepositoryCode() == null) {
+						doc.add(luceneMgr.keyword("repository_code",
+								defaultRepositoryCode));
+				} else {
+					doc.add(luceneMgr.keyword("repository_code",
+						data.getRepositoryCode()));
+				}
+				
+				doc.add(luceneMgr.keyword("xc_oaiid", xcoaiid));
 				doc.add(luceneMgr.keyword("record_type",
 						data.getRecordType().toString()));
 	            doc.add(luceneMgr.keyword("is_deleted",
@@ -279,6 +288,7 @@ public class LuceneImporter extends BasicRecordImporter
     public void setTrackedOaiIdValue(int trackedOaiIdNumberValue) {
         trackedOaiIdValue = trackedOaiIdNumberValue;
     }
+    
 
 	public void commit() {
 		luceneMgr.commit();
