@@ -180,12 +180,6 @@ public class ApplInfo {
         System.out.println("ApplInfo::init(" + webAppName + ")");
         applVer = webAppName;
 		initApplication();
-		initLogging(tomcatBinDir.getAbsolutePath(), 
-				logDir, OAI_LOG4J_CNF_FILE);
-		//initLogging(logDir, new File(
-		//		tomcatBinDir, OAI_LOG4J_CNF_FILE).getAbsolutePath());
-		initDB();
-		initSets();
 	}
 
 	/**
@@ -266,14 +260,15 @@ public class ApplInfo {
 			System.out.println("reading application properties");
 			String basePropertiesFileName = OAI_DIRECTORY_CNF_FILE;
 			File oaiConfigFile = null;
+			String configDirName = null;
 			if(null != tomcatBinDir) {
 				basePropertiesFileName = new File(tomcatBinDir, 
 						basePropertiesFileName).getAbsolutePath();
-				oaiConfigFile = new File(tomcatBinDir, OAI_SERVER_CNF_FILE);
+	            configDirName = tomcatBinDir.getAbsolutePath(); // default
+
 			}
 
 			System.out.println("basePropertiesFileName: " + basePropertiesFileName);
-			System.out.println("oaiConfigFile: " + oaiConfigFile);
 
 			PropertiesConfiguration applConf = ConfigUtil
 					.load(basePropertiesFileName);
@@ -282,7 +277,10 @@ public class ApplInfo {
             String cacheDir = null;
 
             if(applVer.equals("OAIToolkit")) {
-                logDir = applConf.getString("logDir");
+            	// allow alternate config dir
+            	configDirName = applConf.getString("configDir", configDirName);
+            	
+              	logDir = applConf.getString("logDir");
                 logDir = logDir.replaceAll("\\\\+","/");
                 System.out.println("ApplInfo::logDir: " + logDir);
                 resourceDir = applConf.getString("resourceDir");
@@ -296,6 +294,9 @@ public class ApplInfo {
                 System.out.println("ApplInfo::cacheDir: " + cacheDir);
             }
             else {
+            	// alternate config dir is NECESSARY when running multiple instances!
+            	configDirName = applConf.getString(applVer + "." + "configDir");
+
                 String versionedLogDir = applVer + "." + "logDir";
                 logDir = applConf.getString(versionedLogDir);
                 logDir = logDir.replaceAll("\\\\+","/");
@@ -336,6 +337,10 @@ public class ApplInfo {
 			
 			// oai server configuration
 			prglog.trace("[PRG] reading OAI properties");
+			
+			oaiConfigFile = new File(configDirName + "/" + OAI_SERVER_CNF_FILE);			
+			System.out.println("oaiConfigFile: " + oaiConfigFile);
+						
 			if(null != oaiConfigFile) {
 				prglog.info("[PRG] OAIConfiguration with oaiConfigFile: " 
 						+ oaiConfigFile);
@@ -361,6 +366,12 @@ public class ApplInfo {
 			metadataFormats = MetadataFormatUnmarshaler.load(
 					new File(resourceDir, "metadataFormats.xml"), 
 					new File(resourceDir, "metadata-format-mapping.xml"));
+			
+			
+			initLogging(configDirName, 
+					logDir, OAI_LOG4J_CNF_FILE);
+			initDB(configDirName);
+			initSets();
 			
 
 		} catch(Exception e) {
