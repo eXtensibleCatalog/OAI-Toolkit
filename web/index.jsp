@@ -63,23 +63,23 @@
 	<fieldset class="test">
 		<legend>GetRecord</legend>
 		<ul type="square">
-			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:extensiblecatalog.info:bib:1290748&metadataPrefix=oai_dc"
+			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:library.rochester.edu:URVoyager1/2&metadataPrefix=oai_dc"
 				>GetRecord</html:link> (dc)</li>
-			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:extensiblecatalog.info:bib:1290748&metadataPrefix=oai_marc"
+			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:library.rochester.edu:URVoyager1/2&metadataPrefix=oai_marc"
 				>GetRecord</html:link> (oai_marc)</li>
-			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:extensiblecatalog.info:bib:1290748&metadataPrefix=mods"
+			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:library.rochester.edu:URVoyager1/2&metadataPrefix=mods"
 				>GetRecord</html:link> (mods)</li>
-			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:extensiblecatalog.info:bib:1290748&metadataPrefix=marcxml"
+			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:library.rochester.edu:URVoyager1/2&metadataPrefix=marcxml"
 				>GetRecord</html:link> (marc21)</li>
 			<li><html:link action="oai-request?verb=GetRecord"
 				>w/o param</html:link></li>
 			<li><html:link action="oai-request?verb=GetRecord&amp;identifier="
 				>empty param</html:link></li>
-			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:extensiblecatalog.info:s3"
+			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:library.rochester.edu:s3"
 				>bad param</html:link></li>
-			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:extensiblecatalog.info:bib:9999999"
-				>inexistent identifier</html:link></li>
-			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:extensiblecatalog.info:6"
+			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:library.rochester.edu:BogusIdentifier/9999999"
+				>nonexistent identifier</html:link></li>
+			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:library.rochester.edu:URVoyager1/2"
 				>no metadata format</html:link></li>
 		</ul>
 	</fieldset>
