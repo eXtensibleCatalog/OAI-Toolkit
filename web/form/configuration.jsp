@@ -43,10 +43,10 @@
 					</td>
 				</tr>
 				<tr>
-					<td><bean:message key="configuration.oai-identifier.domainName" /></td>
+					<td><bean:message key="configuration.oai-identifier.delimiter" /></td>
 					<td>
-						<html:text property="oaiIdentifierDomainName" />
-						<html:errors property="oaiIdentifierDomainName" />
+						<html:text property="oaiIdentifierDelimiter" />
+						<html:errors property="oaiIdentifierDelimiter" />
 					</td>
 				</tr>
 

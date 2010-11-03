@@ -155,7 +155,7 @@ public class Facade {
 	private static final String idPrefix = 
 		ApplInfo.oaiConf.getOaiIdentifierScheme() 
 		+ colon_delimiter
-		+ ApplInfo.oaiConf.getOaiIdentifierDomainName()
+		+ ApplInfo.oaiConf.getOaiIdentifierDelimiter()
 		+ colon_delimiter
         + ApplInfo.oaiConf.getOaiIdentifierRepositoryIdentifier()
         + slash_delimiter;

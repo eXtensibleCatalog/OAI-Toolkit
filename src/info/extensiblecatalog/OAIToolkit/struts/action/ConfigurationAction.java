@@ -73,7 +73,7 @@ public class ConfigurationAction extends Action {
 		conf.setDescription(form.getDescription());
 		conf.setOaiIdentifierScheme(form.getOaiIdentifierScheme());
 		conf.setOaiIdentifierRepositoryIdentifier(form.getOaiIdentifierRepositoryIdentifier());
-		conf.setOaiIdentifierDomainName(form.getOaiIdentifierDomainName());
+		conf.setOaiIdentifierDelimiter(form.getOaiIdentifierDelimiter());
 		conf.setOaiIdentifierSampleIdentifier(form.getOaiIdentifierSampleIdentifier());
 		conf.setBaseUrl(form.getBaseUrl());
 		conf.setAdminEmail(form.getAdminEmail());
@@ -113,7 +113,7 @@ public class ConfigurationAction extends Action {
 		form.setDescription(conf.getDescription());
 		form.setOaiIdentifierScheme(conf.getOaiIdentifierScheme());
 		form.setOaiIdentifierRepositoryIdentifier(conf.getOaiIdentifierRepositoryIdentifier());
-		form.setOaiIdentifierDomainName(conf.getOaiIdentifierDomainName());
+		form.setOaiIdentifierDelimiter(conf.getOaiIdentifierDelimiter());
 		form.setOaiIdentifierSampleIdentifier(conf.getOaiIdentifierSampleIdentifier());
 		form.setBaseUrl(conf.getBaseUrl());
 		form.setAdminEmail(conf.getAdminEmail());

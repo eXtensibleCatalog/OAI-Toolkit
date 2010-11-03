@@ -47,7 +47,7 @@ public class OAIConfigurationTestCase extends TestCase {
 			"sampleIdentifier>\r\n</oai-identifier>\r\n";
 	private static final String adminEmail = "pkiraly@tesuji.eu";
 	private static final String oaiIdentifierRepositoryIdentifier = "extensiblecatalog.info";
-    private static final String oaiIdentifierDomainName = "Sample1";
+    private static final String oaiIdentifierDelimiter = ":";
 	private static final String storageType = "Lucene";
 	private static final String[] compression = {"gzip", "compress", "deflate"};
 	private static final int expirationDate = -1;
@@ -199,21 +199,21 @@ public class OAIConfigurationTestCase extends TestCase {
 				conf.getOaiIdentifierRepositoryIdentifier());
 	}
 
-    public void testGetOaiIdentifierDomainName() {
+    public void testGetOaiIdentifierDelimiter() {
 		conf = new OAIConfiguration(new File(configFile));
 		conf.load();
-		assertEquals("bad oaiIdentifierDomainName",
-				oaiIdentifierDomainName,
-				conf.getOaiIdentifierDomainName());
+		assertEquals("bad oaiIdentifierDelimiter",
+				oaiIdentifierDelimiter,
+				conf.getOaiIdentifierDelimiter());
 	}
 
-	public void testSetOaiIdentifierDomainName() {
-		String newValue = oaiIdentifierDomainName + "_fake";
+	public void testSetOaiIdentifierDelimiter() {
+		String newValue = oaiIdentifierDelimiter + "_fake";
 		conf = new OAIConfiguration(new File(configFile));
 		conf.load();
-		conf.setOaiIdentifierDomainName(newValue);
-		assertEquals("bad oaiIdentifierDomainName", newValue,
-				conf.getOaiIdentifierDomainName());
+		conf.setOaiIdentifierDelimiter(newValue);
+		assertEquals("bad oaiIdentifierDelimiter", newValue,
+				conf.getOaiIdentifierDelimiter());
 	}
 
 	public void testGetOaiIdentifierSampleIdentifier() {
@@ -462,7 +462,7 @@ public class OAIConfigurationTestCase extends TestCase {
 		expected.append(", " + description);
 		expected.append(", " + oaiIdentifierScheme);
 		expected.append(", " + oaiIdentifierRepositoryIdentifier);
-		expected.append(", " + oaiIdentifierDomainName);
+		expected.append(", " + oaiIdentifierDelimiter);
 		expected.append(", " + oaiIdentifierSampleIdentifier);
 		expected.append(", " + baseUrl);
 		expected.append(", " + adminEmail);
