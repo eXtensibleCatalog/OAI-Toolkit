@@ -258,7 +258,7 @@
 			srcdir		= "${src.dir}" 
 			destdir		= "${build.classes.dir}"
 			debug		= "${compile.debug}" 
-			debuglevel  = "lines,source"
+			debuglevel  = "lines,vars,source"
 			deprecation	= "${compile.deprecation}" 
 			optimize	= "${compile.optimize}" 
 			failonerror	= "false" 
