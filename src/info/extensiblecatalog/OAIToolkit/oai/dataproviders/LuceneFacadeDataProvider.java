@@ -113,16 +113,20 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
         lastRecord = offset + recordLimit;
         //prglog.info("In select Records offset: " + offset );
         //prglog.info("In select Records recordLimit: " + recordLimit );
-
 		if(lastRecord > ids.cardinality()) {
 			lastRecord = ids.cardinality();
 		}
-		//hitIterator    = (HitIterator) hits.iterator();
-		currentRecord  = offset;
+		currentRecord = offset; // count each iteration
+		
+		int NthBit = 0;
+		for (int n = offset; n >= 0; n--) {
+			NthBit = ids.nextSetBit(NthBit + 1);
+		}
+		tempIndex = NthBit; // keep track of the current bit (not always incremental!)
+
 		getIdTime      = 0;
 		doc2RecordTime = 0;
 		getDocTime     = 0;
-        tempIndex = currentRecord;
 
         //bits = ApplInfo.luceneSearcher.getBits();
         //range = bits.get(currentRecord, lastRecord);
