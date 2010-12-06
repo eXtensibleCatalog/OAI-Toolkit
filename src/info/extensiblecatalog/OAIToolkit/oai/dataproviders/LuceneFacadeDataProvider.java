@@ -119,7 +119,12 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 		currentRecord = offset; // count each iteration
 		
 		int NthBit = 0;
-		for (int n = offset; n >= 0; n--) {
+		int n = offset;
+		// Is the first bit set?  If not, then we need to account for the fact we aren't starting at N=0.
+		if (! ids.get(0)) {
+			n++;
+		}
+		for (; n > 0; n--) {
 			NthBit = ids.nextSetBit(NthBit + 1);
 		}
 		tempIndex = NthBit; // keep track of the current bit (not always incremental!)
