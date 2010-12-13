@@ -29,6 +29,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import info.extensiblecatalog.OAIToolkit.DTOs.DataTransferObject;
+import info.extensiblecatalog.OAIToolkit.DTOs.RecordDTO;
 import info.extensiblecatalog.OAIToolkit.db.DButil;
 import info.extensiblecatalog.OAIToolkit.db.FieldMetadata;
 import info.extensiblecatalog.OAIToolkit.db.SQLPlaceholder;
@@ -285,7 +286,7 @@ public class PrototypeMgr {
 		return rowNumber; 
 	}
 
-	public int updateByExternal(DataTransferObject newRecord, String externalId) 
+	public int updateByExternal(DataTransferObject newRecord, RecordDTO originalRecord) 
 			throws SQLException, Exception {
 		checkConnection();
 
@@ -293,7 +294,11 @@ public class PrototypeMgr {
 		SQLPlaceholder placeholder = getValuesFromDTO(newRecord);
 		String sql = "UPDATE " + TABLE_NAME + " SET "
 				+ placeholder.createUpdate() 
-				+ " WHERE external_id = '" + externalId + "'";
+				+ " WHERE external_id = '" + originalRecord.getExternalId() + "'"
+				+ " AND repository_code = '"
+				+ originalRecord.getRepositoryCode() + "'"
+				+ " AND record_type = " + originalRecord.getRecordType();				
+
 		PreparedStatement stmt = null;
 		int rowNumber;
 		try {

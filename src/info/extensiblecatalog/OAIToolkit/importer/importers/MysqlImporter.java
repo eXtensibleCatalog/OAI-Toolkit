@@ -160,7 +160,7 @@ public class MysqlImporter extends BasicRecordImporter
 				if(storedData == null || !storedData.equalData(data)) {
 					//logger.debug("difference: " + storedData.difference(data));
 					prglog.debug("[PRG] updateByExternal data");
-					recordsMgr.updateByExternal(data, searchData.getExternalId());
+					recordsMgr.updateByExternal(data, storedData);
 					lastSuccessfullSQL = "recordsMgr.updateByExternal";
 					
 					// refresh the setSpecs state

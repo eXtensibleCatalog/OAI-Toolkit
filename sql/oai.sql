@@ -36,6 +36,8 @@ CREATE TABLE `records` (
   `record_id` int(11) NOT NULL auto_increment,
   `external_id` varchar(20) NOT NULL default '',
   `record_type` int(11) NOT NULL,
+  `repository_code` varchar(20) NOT NULL default '',
+  `xc_oai_id` varchar(90) NOT NULL,
   `creation_date` datetime NOT NULL default '0000-00-00 00:00:00',
   `modification_date` datetime NOT NULL default '0000-00-00 00:00:00',
   `is_deleted` boolean NOT NULL default false,

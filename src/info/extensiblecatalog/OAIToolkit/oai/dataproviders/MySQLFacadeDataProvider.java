@@ -76,9 +76,16 @@ public class MySQLFacadeDataProvider extends BasicFacadeDataProvider
 	}
 	
 	public List<DataTransferObject> getRecord(String xcOaiId) {
-		/* TODO: implement this method
-		 * 
-		 */
+		try {
+			RecordDTO mainData = new RecordDTO();
+			mainData.setXcOaiId(xcOaiId);
+
+			return mgr.get(mainData);
+		} catch(SQLException e) {
+			prglog.error("[PRG] " + e);
+		} catch(Exception e) {
+			prglog.error("[PRG] " + e);
+		}
 		return null;
 	}
 

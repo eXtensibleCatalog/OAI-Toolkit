@@ -146,8 +146,7 @@ public class MixedImporter extends BasicRecordImporter
 					// logger.debug("difference: " +
 					// storedData.difference(data));
 					prglog.debug("[PRG] updateByExternal data");
-					recordsMgr.updateByExternal(data, searchData
-							.getExternalId());
+					recordsMgr.updateByExternal(data, storedData);
 
 					// refresh the setSpecs state
 					SetToRecordDTO setSpecsSearch = new SetToRecordDTO();

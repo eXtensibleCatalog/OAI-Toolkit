@@ -47,6 +47,8 @@ public class RecordsMgr extends PrototypeMgr {
 			throws Exception {
 		String sql = "SELECT * FROM records WHERE external_id = '" 
 			+ searchRecord.getExternalId() + "'"
+			+ " AND repository_code = '"
+			+ searchRecord.getRepositoryCode() + "'"
 			+ " AND record_type = " + searchRecord.getRecordType();
 		prglog.debug("[PRG] " + sql);
 		return select(sql, searchRecord);
