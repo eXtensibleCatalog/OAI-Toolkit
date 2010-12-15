@@ -254,6 +254,10 @@ public class MySQLFacadeDataProvider extends BasicFacadeDataProvider
 		if(null != from) {
 			whereList.add("modification_date >= '" 
 				+ TextUtil.utcToMysqlTimestamp(from) + "'");
+		// if this is a clean harvest, there is no need to serve
+		// deleted records
+		} else {
+			whereList.add("is_deleted = 0");
 		}
 		if(null != until) {
 			whereList.add("modification_date <= '" 

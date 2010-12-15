@@ -283,7 +283,14 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 
 	private void extractQueriesFromParameters(String from, String until, 
 			String set) {
+		boolean cleanHarvest = false;
 		StringBuffer queryBuffer = new StringBuffer();
+		if (null == from) {
+			// if this is a clean harvest, there is no need to serve
+			// deleted records
+			cleanHarvest = true;
+			queryBuffer.append("+is_deleted:false");				
+		}
 		if(null != from || null != until) {
 			prglog.info("[PRG] " + from + ", " + until);
 			if(null == from) {
@@ -317,7 +324,8 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 			//until = new Timestamp(new Date().getTime()).toString();
 			//queryBuffer.append("+modification_date:[\"" + from + "\" TO \"" 
 			//	+ until + "\"]");
-			queryBuffer.append("+is_deleted:(true OR false)");
+			if (! cleanHarvest)
+				queryBuffer.append("+is_deleted:(true OR false)");
 		}
 		queryString = queryBuffer.toString();
 		prglog.info("[PRG] " + queryString);
