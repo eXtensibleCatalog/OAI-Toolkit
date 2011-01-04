@@ -1,0 +1,3 @@
+ant OAIToolkitInstallPackage-server
+ant OAIToolkitInstallPackage-linux
+ant OAIToolkitInstallPackage-windows
