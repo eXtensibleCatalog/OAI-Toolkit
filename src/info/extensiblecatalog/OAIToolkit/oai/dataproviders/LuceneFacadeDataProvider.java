@@ -315,6 +315,9 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 			// checking the set's existence
 			if(ApplInfo.setIdsByName.containsKey(set)) {
 				int setId = ApplInfo.setIdsByName.get(set);
+				if (queryBuffer.length() > 0) {
+					queryBuffer.append(" AND ");
+				}
 				queryBuffer.append("+set:" + setId);
 			}
 		}
