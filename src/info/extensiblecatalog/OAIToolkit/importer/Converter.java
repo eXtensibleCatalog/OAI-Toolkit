@@ -78,7 +78,7 @@ public class Converter {
 	/**
 	 * Converts <encoding> to UTF-8 Valid encodings are: MARC8, ISO5426, ISO6937
 	 */
-	private String convertEncoding = "MARC8";
+	private String convertEncoding = null;
 
 	/** perform Unicode normalization */
 	private boolean normalize = true;
@@ -384,16 +384,18 @@ public class Converter {
 		if (null != convertEncoding) {
 			CharConverter charconv = null;
 			try {
-				if (Constants.MARC_8_ENCODING.equals(convertEncoding)) {
-					charconv = new AnselToUnicode();
-				} else if (Constants.ISO5426_ENCODING.equals(convertEncoding)) {
-					charconv = new Iso5426ToUnicode();
-				} else if (Constants.ISO6937_ENCODING.equals(convertEncoding)) {
-					charconv = new Iso6937ToUnicode();
-				} else {
-					throw new Exception("Unknown character set");
+				if (convertEncoding != null) {
+					if (Constants.MARC_8_ENCODING.equals(convertEncoding)) {
+						charconv = new AnselToUnicode();
+					} else if (Constants.ISO5426_ENCODING.equals(convertEncoding)) {
+						charconv = new Iso5426ToUnicode();
+					} else if (Constants.ISO6937_ENCODING.equals(convertEncoding)) {
+						charconv = new Iso6937ToUnicode();
+					} else {
+						throw new Exception("Unknown character set");
+					}
+					writer.setConverter(charconv);
 				}
-				writer.setConverter(charconv);
 			} catch (javax.xml.parsers.FactoryConfigurationError e) {
 				e.printStackTrace();
 				throw new Exception(e);
