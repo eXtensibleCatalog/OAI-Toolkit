@@ -7,13 +7,7 @@
 		<xslt-file-name>MARC21slim2OAIDC.xsl</xslt-file-name>
 	</metadata-format>
 	<metadata-format>
-		<metadata-prefix>oai_marc</metadata-prefix>
-		<schema>http://www.openarchives.org/OAI/1.1/oai_marc.xsd</schema>
-		<metadata-namespace>http://www.openarchives.org/OAI/1.1/oai_marc</metadata-namespace>
-		<xslt-file-name>MARC21slim2OAIMARC.xsl</xslt-file-name>
-	</metadata-format>
-	<metadata-format>
-		<metadata-prefix>marcxml</metadata-prefix>
+		<metadata-prefix>marc21</metadata-prefix>
 		<schema>http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd</schema>
 		<metadata-namespace>http://www.loc.gov/MARC21/slim</metadata-namespace>
 	</metadata-format>

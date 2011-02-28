@@ -962,7 +962,7 @@ public class Facade {
 			ApplInfo.metadataFormats.getMetadataFormat(metadataPrefix);
 		if(metadataFormat == null) {
 			throw new Exception(ErrorCodes.noMetadataFormatsError(
-					"Cause: unsupproted metadatada prefix: " + metadataPrefix));
+					"Cause: unsupported metadata prefix: " + metadataPrefix));
 		}
 
 		try {
