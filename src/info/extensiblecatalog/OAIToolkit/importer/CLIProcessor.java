@@ -259,6 +259,8 @@ public class CLIProcessor {
 		Option ignore_repository_code = new Option(
 				"ignore_repository_code", 
 				"Do not merge 003 and 001 together.");
+		
+		Option help = new Option ("help", "list available options");
 
 		Options options = new Options();
 		options.addOption(production);
@@ -298,6 +300,7 @@ public class CLIProcessor {
 		options.addOption(error_modifiedxml);
 		options.addOption(default_repository_code);
 		options.addOption(ignore_repository_code);
+		options.addOption(help);
 				
 		return options;
 	}
