@@ -26,97 +26,9 @@
 <fieldset class="admin">
 	<legend>Administration</legend>
 	<ul type="square">
-		<li><html:link action="configuration">configuration</html:link></li>
-	</ul>
-	
-	<h2>documentation</h2>
-	<ul type="square">
-		<li><a href="README.html">Manual</a></li>
-		<li><a href="javadoc/index.html">OAIToolkit API JavaDoc</a></li>
+		<li><html:link action="configuration">OAI sample requests / repository configuration</html:link></li>
 	</ul>
 </fieldset>
 
-<fieldset class="container">
-	<legend>OAI test requests</legend>
-	<fieldset class="test">
-		<legend>Identify</legend>
-		<ul type="square">
-			<li><html:link action="oai-request?verb=Identify">Identify</html:link></li>
-		</ul>
-	</fieldset>
-
-	<fieldset class="test">
-		<legend>ListMetadataFormats</legend>
-		<ul type="square">
-			<li><html:link action="oai-request?verb=ListMetadataFormats"
-				>ListMetadataFormats</html:link></li>
-		</ul>
-	</fieldset>
-
-	<fieldset class="test">
-		<legend>ListSets</legend>
-		<ul type="square">
-			<li><html:link action="oai-request?verb=ListSets">ListSets</html:link></li>
-		</ul>
-	</fieldset>
-
-	<fieldset class="test">
-		<legend>GetRecord</legend>
-		<ul type="square">
-			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:library.rochester.edu:URVoyager1/2&metadataPrefix=oai_dc"
-				>GetRecord</html:link> (dc)</li>
-			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:library.rochester.edu:URVoyager1/2&metadataPrefix=oai_marc"
-				>GetRecord</html:link> (oai_marc)</li>
-			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:library.rochester.edu:URVoyager1/2&metadataPrefix=mods"
-				>GetRecord</html:link> (mods)</li>
-			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:library.rochester.edu:URVoyager1/2&metadataPrefix=marcxml"
-				>GetRecord</html:link> (marc21)</li>
-			<li><html:link action="oai-request?verb=GetRecord"
-				>w/o param</html:link></li>
-			<li><html:link action="oai-request?verb=GetRecord&amp;identifier="
-				>empty param</html:link></li>
-			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:library.rochester.edu:s3"
-				>bad param</html:link></li>
-			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:library.rochester.edu:BogusIdentifier/9999999"
-				>nonexistent identifier</html:link></li>
-			<li><html:link action="oai-request?verb=GetRecord&amp;identifier=oai:library.rochester.edu:URVoyager1/2"
-				>no metadata format</html:link></li>
-		</ul>
-	</fieldset>
-
-	<fieldset class="test">
-		<legend>ListRecords</legend>
-		<ul type="square">
-			<li><html:link action="oai-request?verb=ListRecords&metadataPrefix=oai_marc"
-				>ListRecords</html:link></li>
-			<li><html:link action="oai-request?verb=ListRecords&metadataPrefix=marcxml"
-				>all (no params)</html:link></li>
-			<li><html:link action="oai-request?verb=ListRecords&metadataPrefix=marcxml&amp;from=2002-06-01T19:20:30%2B0200"
-				>from 2002-06-01</html:link></li>
-			<li><html:link action="oai-request?verb=ListRecords&metadataPrefix=marcxml&amp;from=2002-06-01T19:20:30%2B0200&amp;until=2003-06-01T19:20:30%2B0200"
-				>from 2002-06-01 until 2003-06-01</html:link></li>
-			<li><html:link action="oai-request?verb=ListRecords&metadataPrefix=marcxml&amp;from=2004-06-01T19:20:30%2B0200&amp;set=auth"
-				>from: 2004-06-01, set: auth</html:link></li>
-			<li><html:link action="oai-request?verb=ListRecords&metadataPrefix=marcxml&amp;set=bib"
-				>set: bib</html:link></li>
-		</ul>
-	</fieldset>
-
-	<fieldset class="test">
-		<legend>ListIdentifiers</legend>
-		<ul type="square">
-			<li><html:link action="oai-request?verb=ListIdentifiers"
-				>all (no params)</html:link></li>
-			<li><html:link action="oai-request?verb=ListIdentifiers&amp;from=2002-06-01T19:20:30%2B0200"
-				>from 2002-06-01</html:link></li>
-			<li><html:link action="oai-request?verb=ListIdentifiers&amp;from=2002-06-01T19:20:30%2B0200&amp;until=2003-06-01T19:20:30%2B0200"
-				>from 2002-06-01 until 2003-06-01</html:link></li>
-			<li><html:link action="oai-request?verb=ListIdentifiers&amp;from=2004-06-01T19:20:30%2B0200&amp;set=auth"
-				>from: 2004-06-01, set: auth</html:link></li>
-			<li><html:link action="oai-request?verb=ListIdentifiers&amp;set=bib"
-				>set: bib</html:link></li>
-		</ul>
-	</fieldset>
-</fieldset>
 </body>
 </html>

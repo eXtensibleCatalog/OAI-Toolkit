@@ -51,7 +51,11 @@ public class ConfigurationAction extends Action {
 
 		if(null != configForm.getSubmitButton()) { 
 			// form submitted
+			/*****
+			 * We no longer allow configuration via Web (security risk)
+			 * Issue 79
 			saveData(configForm, ApplInfo.oaiConf);
+			****/
 		} else { 
 			// form displayed
 			if(ApplInfo.oaiConf != null) {
