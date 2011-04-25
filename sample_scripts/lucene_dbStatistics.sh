@@ -8,4 +8,4 @@
 # OAIToolkit Manual for the details.
 # ====================================================
 
-java -Xmx1024m -jar lib/OAIToolkit-0.6.10alpha.jar -lucene_statistics
+java -Xmx1024m -jar lib/OAIToolkit-0.6.11alpha.jar -lucene_statistics
