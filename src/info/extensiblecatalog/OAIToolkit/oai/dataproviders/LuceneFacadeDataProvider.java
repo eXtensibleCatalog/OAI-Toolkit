@@ -31,7 +31,6 @@ import info.extensiblecatalog.OAIToolkit.utils.ApplInfo;
 import info.extensiblecatalog.OAIToolkit.utils.Logging;
 import info.extensiblecatalog.OAIToolkit.utils.TextUtil;
 import java.text.SimpleDateFormat;
-import java.util.BitSet;
 import java.util.TimeZone;
 
 /**
@@ -56,13 +55,9 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 	private Hits   hits;
 	private int    currentRecord;
 	private int    lastRecord;
-    private int    tempIndex;
 	private long   getIdTime      = 0;
 	private long   doc2RecordTime = 0;
 	private long   getDocTime     = 0;
-    //private BitSet range;
-    private BitSet ids;
-	//private HitIterator hitIterator;
     
 	
 	public String getEarliestDatestamp() {
@@ -110,81 +105,31 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 	}
 	
 	public void selectRecords() {
-        lastRecord = offset + recordLimit;
-        //prglog.info("In select Records offset: " + offset );
-        //prglog.info("In select Records recordLimit: " + recordLimit );
-		if(lastRecord > ids.cardinality()) {
-			lastRecord = ids.cardinality();
+        lastRecord = recordLimit;
+		if(lastRecord > hits.length()) {
+			lastRecord = hits.length();
 		}
-		currentRecord = offset; // count each iteration
-		
-		int NthBit = 0;
-		int n = offset;
-		// Is the first bit set?  If not, then we need to account for the fact we aren't starting at N=0.
-		if (! ids.get(0)) {
-			n++;
-		}
-		for (; n > 0; n--) {
-			NthBit = ids.nextSetBit(NthBit + 1);
-		}
-		tempIndex = NthBit; // keep track of the current bit (not always incremental!)
-
-		getIdTime      = 0;
-		doc2RecordTime = 0;
-		getDocTime     = 0;
-
-        //bits = ApplInfo.luceneSearcher.getBits();
-        //range = bits.get(currentRecord, lastRecord);
+		currentRecord = 0; // count each iteration		
 	}
 	
 	public boolean hasNextRecord() {
-        //prglog.info("In HasNextRecord Current Record: " + currentRecord);
-        //prglog.info("In HasNextRecord Last Record: " + lastRecord);
 		return currentRecord < lastRecord;
 	}
 
 	public DataTransferObject nextRecord() {
-		//Hit hit = (Hit)hitIterator.next();
-		//DataTransferObject recordDTO = null;
 		RecordDTO recordDTO = null;
 		int id;
         long t1 = System.currentTimeMillis();
 		long t2 = 0;
 		long t3 = 0;
 		try {
-
-            //Document doc = ApplInfo.luceneSearcher.getDoc(currentRecord);
-            //id =
-			//id = hits.id(currentRecord);
-            //ids.get(currentRecord);
 			t2 = System.currentTimeMillis();
 			getIdTime += (t2-t1);
-			//Document doc = hit.getDocument();
-
-            id = ids.nextSetBit(tempIndex);
-            //prglog.info("Inserted Record ID: " +id);
+            id = hits.id(currentRecord);
             Document doc = ApplInfo.luceneSearcher.getDoc(id);
-
-            //currentRecord = id;
-
-            /*
-			Document doc = hits.doc(currentRecord);
-			id = hits.id(currentRecord); */
-
-			/*
-			prglog.info(id + ", " + doc.get("external_id") + ", " + doc.get("record_type") + ", " 
-					+ doc.get("xml").substring(90, 300));
-			*/
-			//Document doc = ApplInfo.luceneSearcher.getDoc(id);//, 
-				//ApplInfo.luceneSearcher.getAllFieldSelector());
 			t3 = System.currentTimeMillis();
 			getDocTime += (t3-t2);
-            //prglog.info("In Next Record current Record "+ currentRecord);
-            //prglog.info("The id of the record in the List of the records is " + id);
-            tempIndex = id + 1;
-			//id = currentRecord;
 			recordDTO = doc2RecordDTO(doc, id);
-			//prglog.info(recordDTO.getRecordId() + ", " + recordDTO.getExternalId() + ", " + recordDTO.getRecordType());
 			doc2RecordTime += (System.currentTimeMillis()-t3);
 		} catch(Exception e) {
 			prglog.error("[PRG] " + e);
@@ -224,29 +169,32 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 				badResumptionTokenError = true;
 			} else {
 				queryString = tokenDTO.getQuery();
-				query = ApplInfo.luceneSearcher.parseQuery(queryString);
 				metadataPrefix = tokenDTO.getMetadataPrefix();
 			}
 		} else {
 			extractQueriesFromParameters(from, until, set);
-			if(null == query){
-				prglog.error("[PRG] query is null");
+			if(0 >= queryString.length()){
+				prglog.error("[PRG] query string is null");
 			}
 		}
+		Sort sort = new Sort("xc_id");
+		
+		if (lastRecordRead > 0) {
+			String from = String.format("%016d", lastRecordRead);
+			hits = ApplInfo.luceneSearcher.searchRange(queryString, "xc_id", from, null, false, true, sort);
+		} else {
+			hits = ApplInfo.luceneSearcher.search(queryString, sort);	
+		}		
 	}
 
-    public int getTotalRecordCount() {
-		//Sort sort = Sort.INDEXORDER;
-		//Sort sort = new Sort("modification_date");
-		//Sort sort = null;
-
-        Sort sort = null;
-        ids = ApplInfo.luceneSearcher.searchForBits(query, sort);
-        return ids.cardinality();
-
-		//hits = ApplInfo.luceneSearcher.search(query, sort);
-		//return hits.length();
+    public int getTotalRecordCount() {    	
+		return ApplInfo.luceneSearcher.search(queryString).length();
 	}
+    
+	public boolean hasMoreRecords() {
+		return hits.length() > lastRecord;
+	}
+    
 	
 	public String getMetadataPrefix() {
 		if(metadataPrefix != null) {
@@ -283,14 +231,24 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 
 	private void extractQueriesFromParameters(String from, String until, 
 			String set) {
-		boolean cleanHarvest = false;
 		StringBuffer queryBuffer = new StringBuffer();
 		if (null == from) {
 			// if this is a clean harvest, there is no need to serve
 			// deleted records
-			cleanHarvest = true;
 			queryBuffer.append("+is_deleted:false");				
 		}
+
+		// if until is not set, we set it implicitly to "now"
+		if(null == until) {
+			Date date = new Timestamp(new Date().getTime());
+            SimpleDateFormat df = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ssZ" );
+            TimeZone tz = TimeZone.getTimeZone( "UTC" );
+            df.setTimeZone( tz );
+            until = df.format(date);
+		} else {
+			until = TextUtil.utcToMysqlTimestamp(until);
+		}
+
 		if(null != from || null != until) {
 			prglog.info("[PRG] " + from + ", " + until);
 			if(null == from) {
@@ -298,16 +256,12 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 			} else {
 				from = TextUtil.utcToMysqlTimestamp(from);
 			}
-			if(null == until) {
-				Date date = new Timestamp(new Date().getTime());
-                SimpleDateFormat df = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ssZ" );
-                TimeZone tz = TimeZone.getTimeZone( "UTC" );
-                df.setTimeZone( tz );
-                until = df.format(date);
-			} else {
-				until = TextUtil.utcToMysqlTimestamp(until);
-			}
 			prglog.info("[PRG] " + from + ", " + until);
+			
+			if (queryBuffer.length() > 0) {
+				queryBuffer.append(" AND ");
+			}
+
 			queryBuffer.append("+modification_date:[\"" + from + "\" TO \"" 
 					+ until + "\"]");
 		}
@@ -321,19 +275,8 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 				queryBuffer.append("+set:" + setId);
 			}
 		}
-		if(null == from && until == null && set == null) {
-			//from  = getEarliestDatestamp();
-			//from  = ApplInfo.luceneSearcher.getEarliestDatestamp();
-			//until = new Timestamp(new Date().getTime()).toString();
-			//queryBuffer.append("+modification_date:[\"" + from + "\" TO \"" 
-			//	+ until + "\"]");
-			if (! cleanHarvest)
-				queryBuffer.append("+is_deleted:(true OR false)");
-		}
 		queryString = queryBuffer.toString();
 		prglog.info("[PRG] " + queryString);
-		query = ApplInfo.luceneSearcher.parseQuery(queryString);
-		prglog.info("[PRG] " + query);
 	}
 	
 	public String storeResumptionToken() {
@@ -374,6 +317,7 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 		}
 		mainData.setExternalId(doc.get("external_id"));
         mainData.setXcOaiId(doc.get("xc_oaiid"));
+        mainData.setXcId(Integer.parseInt(doc.get("xc_id")));
 		mainData.setIsDeleted(Boolean.valueOf(doc.get("is_deleted")));
 		mainData.setRecordType(Integer.parseInt(doc.get("record_type")));
 		return mainData;

@@ -34,6 +34,12 @@ public class RecordDTO extends DataTransferObject {
     /** The XC oai id of the MARC record (xc_oaiid in DB).
 	 * Accessors: {@link #getExternalId}, {@link #setExternalId} */
 	private String xcOaiId;
+	
+	/**
+	 * The numeric part of XC oai id
+	 * This is used for sorting and comparisons during resumption processing
+	 */
+	private Integer xcId;
 
     /** The id of record type (which is equal the id of set created
 	 * according to the record type) */
@@ -80,6 +86,9 @@ public class RecordDTO extends DataTransferObject {
 		}
         if(map.containsKey("xc_oaiid")) {
 			xcOaiId = (String) map.get("xc_oaiid");
+		}
+		if(map.containsKey("xc_id")) {
+			xcId = (Integer) map.get("xc_id");
 		}
 		if(map.containsKey("record_type")) {
 			recordType = (Integer) map.get("record_type");
@@ -179,6 +188,23 @@ public class RecordDTO extends DataTransferObject {
 	}
 
 	/**
+	 * Get the {@link #xcId}
+	 * @return {@link #xcId}
+	 */
+	public Integer getXcId() {
+		return xcId;
+	}
+
+	/**
+	 * Set the {@link #xcId}
+	 * @param recordType {@link #xcId}
+	 */
+	public void setXcId(Integer xcId) {
+		this.xcId = xcId;
+	}
+
+	
+	/**
 	 * @return {@link #creationDate}
 	 */
 	public Timestamp getCreationDate() {
@@ -276,6 +302,7 @@ public class RecordDTO extends DataTransferObject {
 		sb.append(", externalId: ").append(externalId);
         sb.append(", repositoryCode: ").append(repositoryCode);
         sb.append(", xcOaiId: ").append(xcOaiId);
+		sb.append(", xcId: ").append(xcId);
 		sb.append(", recordType: ").append(recordType);
 		sb.append(", creationDate: ").append(creationDate);
 		sb.append(", modificationDate: ").append(modificationDate);
@@ -297,6 +324,7 @@ public class RecordDTO extends DataTransferObject {
 		sb.append("externalId: ").append(externalId);
         sb.append(", repositoryCode: ").append(repositoryCode);
         sb.append(", xcOaiId: ").append(xcOaiId);
+		sb.append(", xcId: ").append(xcId);
 		sb.append(", recordType: ").append(recordType);
 		sb.append(", creationDate: ").append(creationDate);
 		sb.append(", modificationDate: ").append(modificationDate);
@@ -324,7 +352,7 @@ public class RecordDTO extends DataTransferObject {
 	}
 
 	/**
-	 * Same as equals() except it don't compare the id, because when we
+	 * Same as equals() except it doesn't compare the id, because when we
 	 * get the object from a MARC record, it hasn't got the ID came from the
 	 * database.
 	 * @param other The other RecordDTO object

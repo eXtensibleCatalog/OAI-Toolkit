@@ -667,6 +667,7 @@ public class Facade {
 		dataProvider.prepareQuery();
 
         int totalRecordNr = dataProvider.getTotalRecordCount();
+         
 		prglog.info("[PRG] totalRecordNr: " + totalRecordNr);
 		if(dataProvider.hasBadResumptionTokenError()) {
 			result.setContent(ErrorCodes.badResumptionTokenError());
@@ -674,15 +675,6 @@ public class Facade {
 		}
 		//prglog.info("get total record");
 
-		boolean hasMore = false;
-		if(totalRecordNr > (offset + recordLimit)) {
-			if(null == tokenId) {
-				prglog.info("[PRG] ->storeResumptionToken");
-                tokenId = dataProvider.storeResumptionToken();
-				//sql, counterSQL, metadataPrefix);
-			}
-			hasMore = true;
-		}
 		
 		//List<DataTransferObject> records;
 		try {
@@ -700,6 +692,7 @@ public class Facade {
 				domBuildTime = 0;
 				long t1;
 				long t2;
+				int lastReadId = 0;
 				while(dataProvider.hasNextRecord()) {
 					t1 = System.currentTimeMillis();
 					RecordDTO record = (RecordDTO)dataProvider.nextRecord();
@@ -707,13 +700,13 @@ public class Facade {
 					if(xml.length() >= maxLength) {
 						prglog.info("[PRG] The record exceed the maxSizeInBytes at " +
 								"the " + insertedRecords + "th record");
-						hasMore = true;
 						break;
 					}
 					t2 = System.currentTimeMillis();
 					xml.append(transformRecord(record, verb));
 					transformTime += (System.currentTimeMillis()-t2);
 					insertedRecords++;
+					lastReadId = record.getXcId();
 				}
 				prglog.info("[PRG] /while transformRecord. " +
 						"insertedRecords: " + insertedRecords
@@ -733,14 +726,24 @@ public class Facade {
 						+ "/" + Math.ceil((double)domBuildTime/insertedRecords) + 
 						")"
 						);
+				
+				boolean hasMore = false;
+				if(dataProvider.hasMoreRecords()) {
+					if(null == tokenId) {
+						prglog.info("[PRG] ->storeResumptionToken");
+		                tokenId = dataProvider.storeResumptionToken();
+					}
+					hasMore = true;
+				}
+				
 				if(hasMore) {
 					result.setNextResumptionToken(
-							tokenId + "|" + (offset + insertedRecords));
+							tokenId + "|" + lastReadId);
 					xml.append(
 						XMLUtil.xmlTag("resumptionToken",
 							result.getNextResumptionToken(),
 							new String[]{
-								"cursor", "" + offset, 
+								/* "cursor", "" + lastReadId, */
 								"completeListSize", ""+totalRecordNr}));
 				}
 				

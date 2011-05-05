@@ -105,7 +105,12 @@ public class MySQLFacadeDataProvider extends BasicFacadeDataProvider
 	}
 	
 	public void selectRecords() {
-		sql += " LIMIT " + offset + "," + recordLimit;
+		/**
+		 * TODO: fix mysql SQL to handle new select strategy (sort by oai id, then use lastRecordRead instead of offset counts)
+		 */
+		//sql += " LIMIT " + offset + "," + recordLimit;
+		
+		
 		try {
 			RecordDTO mainData = new RecordDTO();
 			result = mgr.select(sql, mainData);
@@ -213,7 +218,15 @@ public class MySQLFacadeDataProvider extends BasicFacadeDataProvider
 		}
 		return totalRecordNr;
 	}
-
+	
+	public boolean hasMoreRecords() {
+		/**
+		 * TODO: implement this method!
+		 */
+		return true;
+	}
+    
+	
 	public String getMetadataPrefix() {
 		if(metadataPrefix != null) {
 			return metadataPrefix; 

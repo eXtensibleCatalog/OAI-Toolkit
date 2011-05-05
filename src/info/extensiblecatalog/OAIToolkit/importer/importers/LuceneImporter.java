@@ -142,6 +142,8 @@ public class LuceneImporter extends BasicRecordImporter
             // the lucene index, since the record hadn't yet been committed).
             boolean updateThisPass = false;
             boolean isExistent = false;
+            String xcid = String.format("%016d", trackedOaiIdValue);
+
             if (oaiids.containsKey(id)) {
             	isExistent = true;
             	updateThisPass = true;
@@ -182,6 +184,7 @@ public class LuceneImporter extends BasicRecordImporter
                        docTest = false;
                    } else {
                        xcoaiid = doc.get("xc_oaiid");
+                       xcid = doc.get("xc_id");
                        //prglog.debug("the xcoaiid is" + xcoaiid);
                        //prglog.debug("The xcoai ID value got before update/deletion of record is" + xcoaiid);
                 
@@ -233,6 +236,7 @@ public class LuceneImporter extends BasicRecordImporter
 				}
 				
 				doc.add(luceneMgr.keyword("xc_oaiid", xcoaiid));
+				doc.add(luceneMgr.keyword("xc_id", xcid));
 				doc.add(luceneMgr.keyword("record_type",
 						data.getRecordType().toString()));
 	            doc.add(luceneMgr.keyword("is_deleted",

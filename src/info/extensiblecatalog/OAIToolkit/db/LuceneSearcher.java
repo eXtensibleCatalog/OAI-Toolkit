@@ -28,7 +28,9 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.ConstantScoreRangeQuery;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.HitCollector;
 import org.apache.lucene.search.IndexSearcher;
@@ -392,6 +394,16 @@ public class LuceneSearcher {
 		}
 		return hits;
 	}
+	
+	public Hits searchRange(String queryString, String rangeField, String from, String to, boolean includeFrom, boolean includeTo, Sort sort) {
+		Query originalQuery = parseQuery(queryString);
+		ConstantScoreRangeQuery rangeQuery = new ConstantScoreRangeQuery(rangeField, from, to, includeFrom, includeTo);
+		BooleanQuery both = new BooleanQuery();
+		both.add(originalQuery, BooleanClause.Occur.MUST);
+		both.add(rangeQuery, BooleanClause.Occur.MUST);
+		return search(both, sort);
+	}
+
 	
 	public Document getDoc(int i) {
 		Document doc = null;

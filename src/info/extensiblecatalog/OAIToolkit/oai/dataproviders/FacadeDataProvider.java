@@ -27,7 +27,10 @@ public interface FacadeDataProvider {
     
 	/** get the total number of records */
 	public int getTotalRecordCount();
-
+	
+	/** are there records remaining in set? */
+	public boolean hasMoreRecords();
+	
 	/** has next record? */
 	public boolean hasNextRecord();
 
@@ -41,7 +44,7 @@ public interface FacadeDataProvider {
 	
 	//public List<DataTransferObject> selectRecords();
 
-	/** select recors */
+	/** select records */
 	public void selectRecords();
 
 	/** get sets of record */
