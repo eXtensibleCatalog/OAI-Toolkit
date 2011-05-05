@@ -179,12 +179,17 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 		}
 		Sort sort = new Sort("xc_id");
 		
-		if (lastRecordRead > 0) {
-			String from = String.format("%016d", lastRecordRead);
-			hits = ApplInfo.luceneSearcher.searchRange(queryString, "xc_id", from, null, false, true, sort);
-		} else {
-			hits = ApplInfo.luceneSearcher.search(queryString, sort);	
-		}		
+		try {
+			if (lastRecordRead > 0) {
+				String from = String.format("%016d", lastRecordRead);
+				hits = ApplInfo.luceneSearcher.searchRange(queryString, "xc_id", from, null, false, true, sort);
+			} else {
+					hits = ApplInfo.luceneSearcher.search(queryString, sort);
+			}
+		} catch (Exception ex) {
+			hits = null;
+		}
+
 	}
 
     public int getTotalRecordCount() {    	

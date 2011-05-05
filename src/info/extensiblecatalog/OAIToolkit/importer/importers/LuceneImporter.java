@@ -245,12 +245,13 @@ public class LuceneImporter extends BasicRecordImporter
 						data.getCreationDate().toString()));
 				}
 				
+				doc.add(luceneMgr.keyword("modification_date",
+						data.getModificationDate().toString()));
 				for (String modificationDate : modificationDates) {
                     doc.add(luceneMgr.keyword("modification_date", 
                     		modificationDate));
 				}
-				doc.add(luceneMgr.keyword("modification_date",
-						data.getModificationDate().toString()));
+
 	
 				doc.add(luceneMgr.keyword("set",
 						setsToRecord.getSetId().toString()));
