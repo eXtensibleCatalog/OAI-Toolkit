@@ -13,14 +13,19 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.TopDocs;
 
 import info.extensiblecatalog.OAIToolkit.DTOs.DataTransferObject;
 import info.extensiblecatalog.OAIToolkit.DTOs.RecordDTO;
@@ -52,7 +57,7 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 
 	private String queryString;
 	private Query  query;
-	private Hits   hits;
+	private TopDocs   hits;
 	private int    currentRecord;
 	private int    lastRecord;
 	private long   getIdTime      = 0;
@@ -106,8 +111,11 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 	
 	public void selectRecords() {
         lastRecord = recordLimit;
-		if(lastRecord > hits.length()) {
-			lastRecord = hits.length();
+		if(lastRecord > recordLimit) {
+			lastRecord = recordLimit;
+		}
+		if (lastRecord > hits.scoreDocs.length) {
+			lastRecord = hits.scoreDocs.length;
 		}
 		currentRecord = 0; // count each iteration		
 	}
@@ -115,6 +123,12 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 	public boolean hasNextRecord() {
 		return currentRecord < lastRecord;
 	}
+	
+	public boolean hasMoreRecords() {
+		return hits.scoreDocs.length > recordLimit;
+	}
+    
+
 
 	public DataTransferObject nextRecord() {
 		RecordDTO recordDTO = null;
@@ -125,7 +139,7 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 		try {
 			t2 = System.currentTimeMillis();
 			getIdTime += (t2-t1);
-            id = hits.id(currentRecord);
+            id = hits.scoreDocs[currentRecord].doc;
             Document doc = ApplInfo.luceneSearcher.getDoc(id);
 			t3 = System.currentTimeMillis();
 			getDocTime += (t3-t2);
@@ -180,11 +194,12 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 		Sort sort = new Sort("xc_id");
 		
 		try {
+			// query recordLimit+1 (one extra) so that way we'll know if we're done with our list
 			if (lastRecordRead > 0) {
 				String from = String.format("%016d", lastRecordRead);
-				hits = ApplInfo.luceneSearcher.searchRange(queryString, "xc_id", from, null, false, true, sort);
+				hits = ApplInfo.luceneSearcher.searchRange(queryString, "xc_id", from, null, false, false, sort, recordLimit+1);
 			} else {
-					hits = ApplInfo.luceneSearcher.search(queryString, sort);
+					hits = ApplInfo.luceneSearcher.search(queryString, sort, recordLimit+1);
 			}
 		} catch (Exception ex) {
 			hits = null;
@@ -192,12 +207,21 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 
 	}
 
-    public int getTotalRecordCount() {    	
-		return ApplInfo.luceneSearcher.search(queryString).length();
-	}
-    
-	public boolean hasMoreRecords() {
-		return hits.length() > lastRecord;
+    public int getTotalRecordCount() {    	   	
+    	Sort sort = null;
+    	Query query = null;
+    	QueryParser parser = new QueryParser("id", new StandardAnalyzer());
+		try {
+			query = parser.parse(queryString);
+		} catch (org.apache.lucene.queryParser.ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return 0;
+		}
+        BitSet ids = ApplInfo.luceneSearcher.searchForBits(query, sort);
+        return ids.cardinality();
+        
+		//return ApplInfo.luceneSearcher.search(queryString).length();
 	}
     
 	

@@ -35,8 +35,10 @@ import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.HitCollector;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.RangeFilter;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopFieldDocs;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -394,14 +396,17 @@ public class LuceneSearcher {
 		}
 		return hits;
 	}
+
+	public TopFieldDocs search(String queryString, Sort sort, int numrecs) throws IOException {
+		Query query = parseQuery(queryString);
+		return getSearcher().search(query, null, numrecs, sort);
+	}
+
 	
-	public Hits searchRange(String queryString, String rangeField, String from, String to, boolean includeFrom, boolean includeTo, Sort sort) {
-		Query originalQuery = parseQuery(queryString);
-		ConstantScoreRangeQuery rangeQuery = new ConstantScoreRangeQuery(rangeField, from, to, includeFrom, includeTo);
-		BooleanQuery both = new BooleanQuery();
-		both.add(originalQuery, BooleanClause.Occur.MUST);
-		both.add(rangeQuery, BooleanClause.Occur.MUST);
-		return search(both, sort);
+	public TopFieldDocs searchRange(String queryString, String rangeField, String from, String to, boolean includeFrom, boolean includeTo, Sort sort, int numrecs) throws IOException {
+		Query query = parseQuery(queryString);
+		RangeFilter filter = new RangeFilter(rangeField, from, to, includeFrom, includeTo);
+		return getSearcher().search(query, filter, numrecs, sort);
 	}
 
 	
