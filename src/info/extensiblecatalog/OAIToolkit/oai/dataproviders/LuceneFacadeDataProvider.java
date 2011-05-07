@@ -208,20 +208,18 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 	}
 
     public int getTotalRecordCount() {    	   	
-    	Sort sort = null;
-    	Query query = null;
-    	QueryParser parser = new QueryParser("id", new StandardAnalyzer());
-		try {
-			query = parser.parse(queryString);
-		} catch (org.apache.lucene.queryParser.ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return 0;
-		}
-        BitSet ids = ApplInfo.luceneSearcher.searchForBits(query, sort);
-        return ids.cardinality();
-        
-		//return ApplInfo.luceneSearcher.search(queryString).length();
+	    	Sort sort = null;
+	    	Query query = null;
+	    	QueryParser parser = new QueryParser("id", new StandardAnalyzer());
+			try {
+				query = parser.parse(queryString);
+			} catch (org.apache.lucene.queryParser.ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return 0;
+			}
+	        BitSet ids = ApplInfo.luceneSearcher.searchForBits(query, sort);
+	        return ids.cardinality();
 	}
     
 	

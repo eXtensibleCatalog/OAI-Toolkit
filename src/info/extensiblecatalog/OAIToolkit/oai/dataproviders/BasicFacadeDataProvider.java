@@ -15,6 +15,8 @@ public class BasicFacadeDataProvider {
 	protected String from;
 	protected String until;
 	protected String set;
+	protected int offset;
+	protected int totalRecordCount;
 	protected String metadataPrefix;
 	protected int lastRecordRead;
 	protected int recordLimit;
@@ -22,22 +24,21 @@ public class BasicFacadeDataProvider {
 	protected boolean badResumptionTokenError = false;
 
 	public void setParams(String tokenId, String from, 
-			String until, String set, String metadataPrefix, int lastRecordRead) {
+			String until, String set, String metadataPrefix, int lastRecordRead, int offset, int totalRecordCount) {
 		this.tokenId         = tokenId;
 		this.from            = from;
 		this.until           = until;
 		this.set             = set;
+		this.offset          = offset;
 		this.metadataPrefix  = metadataPrefix;
-		this.lastRecordRead          = lastRecordRead;
+		this.lastRecordRead  = lastRecordRead;
+		this.totalRecordCount = totalRecordCount;
 	}
 
 	public void setRecordLimit(int recordLimit) {
 		this.recordLimit = recordLimit;
 	}
 
-    public void setOffset(int lastRecordRead) {
-        this.lastRecordRead = lastRecordRead;
-    }
 
     public boolean hasBadResumptionTokenError() {
 		return badResumptionTokenError;

@@ -21,7 +21,7 @@ public interface FacadeDataProvider {
 	/** store parameters */
 	public void setParams(String tokenId, String from, 
 			String until, String set, String metadataPrefix, 
-			int offset);
+			int lastRecordRead, int offset, int totalRecordCount);
 	
 	public void prepareQuery();
     
@@ -57,7 +57,6 @@ public interface FacadeDataProvider {
 	public boolean hasBadResumptionTokenError();
 
     public String storeResumptionToken();
-    public void setOffset(int offset);
     	
 	public void setRecordLimit(int recordLimit);
 	

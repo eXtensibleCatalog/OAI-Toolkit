@@ -151,6 +151,9 @@ public class Facade {
 	/** Offset of a result set from the first (0th) record */
 	private int offset = 0;
 	
+	private int lastRecordRead = 0;
+	private int totalRecordCount = 0;
+	
 	/** The OAI identifier's prefix */
 	private static final String idPrefix = 
 		ApplInfo.oaiConf.getOaiIdentifierScheme() 
@@ -195,8 +198,8 @@ public class Facade {
         boolean res = parseResumptionToken();
         //prglog.info("Value of boolean returned from resumptionToken is " + res);
         if (res == true){
-        dataProvider.setParams(tokenId, from, until, set, metadataPrefix,
-				offset);
+        dataProvider.setParams(tokenId, from, until, set, metadataPrefix, lastRecordRead,
+				offset, totalRecordCount);
 		initCacheRegister();
         }
 
@@ -439,7 +442,7 @@ public class Facade {
 
 	public String getCacheId() {
 		if(resumptionToken != null) {
-			return tokenId + '_' + offset;
+			return tokenId + '_' + lastRecordRead;
 		}
 		return null;
 	}
@@ -625,6 +628,9 @@ public class Facade {
 
         boolean var = parseResumptionToken();
         if (var)  {
+        	dataProvider.setParams(tokenId, from, until, set, metadataPrefix, lastRecordRead,
+    				offset, totalRecordCount);
+        	
             if(verb.equals("ListRecords")) {
 
 			// the metadataPrefix is mandatory
@@ -666,9 +672,11 @@ public class Facade {
 		
 		dataProvider.prepareQuery();
 
-        int totalRecordNr = dataProvider.getTotalRecordCount();
-         
-		prglog.info("[PRG] totalRecordNr: " + totalRecordNr);
+		// totalRecordCount is passed via resumptionToken because it's an expensive operation (perform only once at the beginning)
+		if (totalRecordCount < 1) {
+			totalRecordCount = dataProvider.getTotalRecordCount();
+		}
+		prglog.info("[PRG] totalRecordNr: " + totalRecordCount);
 		if(dataProvider.hasBadResumptionTokenError()) {
 			result.setContent(ErrorCodes.badResumptionTokenError());
 			return result;
@@ -678,10 +686,10 @@ public class Facade {
 		
 		//List<DataTransferObject> records;
 		try {
-            //prglog.info("Value of the offset before select records" + offset);
+            //prglog.info("Value of the lastRecordRead before select records" + offset);
 			dataProvider.selectRecords();
 			StringBuffer xml = new StringBuffer();
-			if(0 == totalRecordNr){
+			if(0 == totalRecordCount){
 				xml.append(ErrorCodes.noRecordsMatchError());
 			} else {
 				int insertedRecords = 0;
@@ -738,13 +746,13 @@ public class Facade {
 				
 				if(hasMore) {
 					result.setNextResumptionToken(
-							tokenId + "|" + lastReadId);
+							tokenId + "|" + lastReadId + "|" + (offset + recordLimit) + "|" + totalRecordCount);
 					xml.append(
 						XMLUtil.xmlTag("resumptionToken",
 							result.getNextResumptionToken(),
 							new String[]{
-								/* "cursor", "" + lastReadId, */
-								"completeListSize", ""+totalRecordNr}));
+								"cursor", "" + (offset + recordLimit),
+								"completeListSize", ""+totalRecordCount}));
 				}
 				
 				if(verb.equals("ListIdentifiers")) {
@@ -930,9 +938,10 @@ public class Facade {
          if (resumptionToken != null) {
 			String[] tokens = resumptionToken.split("\\|");
 			tokenId = tokens[0];
-			offset  = Integer.parseInt(tokens[1]);
-            dataProvider.setOffset(offset);
-            //prglog.info("Value of the offset in parseResumptionToken is" + offset);
+			lastRecordRead  = Integer.parseInt(tokens[1]);
+			offset = Integer.parseInt(tokens[2]);
+			totalRecordCount = Integer.parseInt(tokens[3]);
+            //prglog.info("Value of the lastRecordRead in parseResumptionToken is" + lastRecordRead);
             }
 
         } catch (Exception e) {
