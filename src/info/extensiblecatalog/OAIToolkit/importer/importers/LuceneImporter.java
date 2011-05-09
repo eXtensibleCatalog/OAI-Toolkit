@@ -17,7 +17,8 @@ import java.util.HashMap;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.search.Hits;
+import org.apache.lucene.document.NumericField;
+import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.marc4j.marc.Record;
@@ -134,6 +135,10 @@ public class LuceneImporter extends BasicRecordImporter
 		XmlDTO xml = new XmlDTO(rec.getXml());
 		SetToRecordDTO setsToRecord = createSetToRecordDTO(rec);
 		RecordDTO searchData = createSearchData(data);
+		
+		// re-use same field for performance gain
+		NumericField xcidNumericField = new NumericField("xc_id", Store.YES, true);
+		
 		try {
 			long start = System.currentTimeMillis();
 			String id = searchData.getExternalId() + "t" + searchData.getRecordType() + "r" + searchData.getRepositoryCode();
@@ -146,7 +151,7 @@ public class LuceneImporter extends BasicRecordImporter
             // the lucene index, since the record hadn't yet been committed).
             boolean updateThisPass = false;
             boolean isExistent = false;
-            String xcid = String.format("%016d", trackedOaiIdValue);
+            String xcid = String.format("%d", trackedOaiIdValue);
 
             if (cachedDocs.containsKey(id)) {
             	isExistent = true;
@@ -235,7 +240,10 @@ public class LuceneImporter extends BasicRecordImporter
 				}
 				
 				doc.add(luceneMgr.keyword("xc_oaiid", xcoaiid));
-				doc.add(luceneMgr.keyword("xc_id", xcid));
+				
+				xcidNumericField.setIntValue(Integer.parseInt(xcid));				
+				doc.add(xcidNumericField);
+				
 				doc.add(luceneMgr.keyword("record_type",
 						data.getRecordType().toString()));
 	            doc.add(luceneMgr.keyword("is_deleted",

@@ -21,11 +21,11 @@ import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.util.Version;
 
 import info.extensiblecatalog.OAIToolkit.DTOs.DataTransferObject;
 import info.extensiblecatalog.OAIToolkit.DTOs.RecordDTO;
@@ -191,13 +191,13 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 				prglog.error("[PRG] query string is null");
 			}
 		}
-		Sort sort = new Sort("xc_id");
+		Sort sort = new Sort(new SortField("xc_id", SortField.INT));
 		
 		try {
 			// query recordLimit+1 (one extra) so that way we'll know if we're done with our list
 			if (lastRecordRead > 0) {
-				String from = String.format("%016d", lastRecordRead);
-				hits = ApplInfo.luceneSearcher.searchRange(queryString, "xc_id", from, null, false, false, sort, recordLimit+1);
+				String from = String.format("%d", lastRecordRead);
+				hits = ApplInfo.luceneSearcher.searchRange(queryString, "xc_id", Integer.valueOf(from), Integer.MAX_VALUE, false, false, sort, recordLimit+1);
 			} else {
 					hits = ApplInfo.luceneSearcher.search(queryString, sort, recordLimit+1);
 			}
@@ -210,7 +210,7 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
     public int getTotalRecordCount() {    	   	
 	    	Sort sort = null;
 	    	Query query = null;
-	    	QueryParser parser = new QueryParser("id", new StandardAnalyzer());
+	    	QueryParser parser = new QueryParser(Version.LUCENE_30, "id", new StandardAnalyzer(Version.LUCENE_30));
 			try {
 				query = parser.parse(queryString);
 			} catch (org.apache.lucene.queryParser.ParseException e) {

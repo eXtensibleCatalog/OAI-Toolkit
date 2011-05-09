@@ -30,18 +30,20 @@ import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.ConstantScoreRangeQuery;
-import org.apache.lucene.search.Hits;
-import org.apache.lucene.search.HitCollector;
+import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.NumericRangeFilter;
+import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.RangeFilter;
+import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopFieldDocs;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.SimpleFSDirectory;
+import org.apache.lucene.util.Version;
 
 /**
  * Class where all the search methods are defined to interact and
@@ -125,14 +127,14 @@ public class LuceneSearcher {
 	private void createNewLuceneIndex() {
 		try {
 			File indexDir = new File(luceneDir);
-			Directory fsDir = FSDirectory.getDirectory(indexDir);
+			SimpleFSDirectory fsDir = new SimpleFSDirectory(indexDir);
 	
-			IndexWriter writer = new IndexWriter(indexDir, new StandardAnalyzer());
+			IndexWriter writer = new IndexWriter(fsDir, new StandardAnalyzer(Version.LUCENE_30), IndexWriter.MaxFieldLength.UNLIMITED);
 			writer.close();
 			
 			// attempt once more to open index searcher and reader
 			searcher = new IndexSearcher(fsDir);
-			indexReader = IndexReader.open(indexDir);
+			indexReader = IndexReader.open(fsDir);
 			
 		} catch (IOException e) {
 			System.out.println("Failed to create new lucene index: " + e);
@@ -265,10 +267,10 @@ public class LuceneSearcher {
 			query.add(new TermQuery(new Term("xc_oaiid", xcOaiId)), 
 					Occur.MUST);
            
-			Hits hits = getSearcher().search(query);
-			prglog.info("[PRG] " + query + ", found: " + hits.length());
-			for (int i = 0; i < hits.length(); i++) {
-				docId[0] = hits.id(i);
+			TopDocs hits = getSearcher().search(query, Integer.MAX_VALUE);
+			prglog.info("[PRG] " + query + ", found: " + hits.scoreDocs.length);
+			for (int i = 0; i < hits.scoreDocs.length; i++) {
+				docId[0] = hits.scoreDocs[i].doc;
 				doc = getIndexReader().document(docId[0], allFieldSelector);
 			} 
 		} catch (IOException e) {
@@ -310,11 +312,11 @@ public class LuceneSearcher {
              }
             */
            
-			Hits hits = getSearcher().search(query);
-			prglog.info("[PRG] " + query + ", found: " + hits.length());
+			TopDocs hits = getSearcher().search(query, Integer.MAX_VALUE);
+			prglog.info("[PRG] " + query + ", found: " + hits.scoreDocs.length);
 			int docId;
-			for (int i = 0; i < hits.length(); i++) {
-				docId = hits.id(i);
+			for (int i = 0; i < hits.scoreDocs.length; i++) {
+				docId = hits.scoreDocs[i].doc;
 				list.add(new Object[]{docId, 
 						getIndexReader().document(docId, allFieldSelector)});
 			} 
@@ -344,13 +346,28 @@ public class LuceneSearcher {
         try {
             //indexReader = IndexReader.open(indexDir);
 
-        final BitSet bits = new BitSet(getIndexReader().maxDoc());
-                
-            getSearcher().search(query, new HitCollector() {
-                 public void collect(int doc, float score) {
-                     bits.set(doc);
-                 }
-                 });
+        final BitSet bits = new BitSet(getIndexReader().maxDoc());                           
+            getSearcher().search(query, new Collector() {
+            	   private int docBase;
+            	 
+            	   // ignore scorer
+            	   public void setScorer(Scorer scorer) {
+            	   }
+
+            	   // accept docs out of order (for a BitSet it doesn't matter)
+            	   public boolean acceptsDocsOutOfOrder() {
+            	     return true;
+            	   }
+            	 
+            	   public void collect(int doc) {
+            	     bits.set(doc + docBase);
+            	   }
+            	 
+            	   public void setNextReader(IndexReader reader, int docBase) {
+            	     this.docBase = docBase;
+            	   }
+            	 });            
+            
                  return bits;
       } catch (IOException e) {
         prglog.error("[PRG] " + e);
@@ -365,8 +382,8 @@ public class LuceneSearcher {
 			if(query == null) {
 				count = getSearcher().maxDoc();
 			} else {
-				Hits hits = getSearcher().search(query);
-				count = hits.length();
+				TopDocs hits = getSearcher().search(query, Integer.MAX_VALUE);
+				count = hits.scoreDocs.length;
 			}
 		} catch(IOException e) {
 			prglog.error("[PRG] " + e);
@@ -374,38 +391,38 @@ public class LuceneSearcher {
 		return count;
 	}
 
-	public Hits search(String queryString) {
+	public TopDocs search(String queryString) {
 		Query query = parseQuery(queryString);
 		return search(query, null);
 	}
 
-	public Hits search(String queryString, Sort sort) {
+	public TopDocs search(String queryString, Sort sort) {
 		Query query = parseQuery(queryString);
 		return search(query, sort);
 	}
 
-	public Hits search(Query query, Sort sort) {
-		Hits hits = null;
+	public TopDocs search(Query query, Sort sort) {
+		TopDocs hits = null;
 		try {
 			if(query == null) {
 				query = parseQuery("id:*");
 			}
-			hits = getSearcher().search(query, sort);
+			hits = getSearcher().search(query, null, Integer.MAX_VALUE, sort);
 		} catch(IOException e) {
 			prglog.error("[PRG] " + e);
 		}
 		return hits;
 	}
 
-	public TopFieldDocs search(String queryString, Sort sort, int numrecs) throws IOException {
+	public TopDocs search(String queryString, Sort sort, int numrecs) throws IOException {
 		Query query = parseQuery(queryString);
 		return getSearcher().search(query, null, numrecs, sort);
 	}
 
 	
-	public TopFieldDocs searchRange(String queryString, String rangeField, String from, String to, boolean includeFrom, boolean includeTo, Sort sort, int numrecs) throws IOException {
+	public TopDocs searchRange(String queryString, String rangeField, Integer from, Integer to, boolean includeFrom, boolean includeTo, Sort sort, int numrecs) throws IOException {
 		Query query = parseQuery(queryString);
-		RangeFilter filter = new RangeFilter(rangeField, from, to, includeFrom, includeTo);
+		NumericRangeFilter<Integer> filter = NumericRangeFilter.newIntRange(rangeField, from, to, includeFrom, includeTo);
 		return getSearcher().search(query, filter, numrecs, sort);
 	}
 
@@ -445,7 +462,7 @@ public class LuceneSearcher {
 		Query query = null;
 		if(!queryString.equals("")) {
 			try {
-				QueryParser parser = new QueryParser("id", new StandardAnalyzer());
+				QueryParser parser = new QueryParser(Version.LUCENE_30, "id", new StandardAnalyzer(Version.LUCENE_30));
 				query = parser.parse(queryString);
 			} catch(ParseException e) {
 				prglog.error("[PRG] " + e);
@@ -480,11 +497,11 @@ public class LuceneSearcher {
 	}
 	
 	public void dumpIds() {
-		Hits hits = search("is_deleted:false");
+		TopDocs hits = search("is_deleted:false");
 		int docId;
-		for (int i = 0; i < hits.length(); i++) {
+		for (int i = 0; i < hits.scoreDocs.length; i++) {
 			try {
-			docId = hits.id(i);
+			docId = hits.scoreDocs[i].doc;
 			String theId = getIndexReader().document(docId, idFieldSelector).get("id");
 			System.out.println(theId);
 			} catch (IOException io) {

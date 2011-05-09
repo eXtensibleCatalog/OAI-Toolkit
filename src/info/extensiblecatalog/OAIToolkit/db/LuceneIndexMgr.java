@@ -13,6 +13,7 @@ import info.extensiblecatalog.OAIToolkit.DTOs.RecordDTO;
 import info.extensiblecatalog.OAIToolkit.utils.Logging;
 import info.extensiblecatalog.OAIToolkit.utils.MilliSecFormatter;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 import java.util.Set;
@@ -20,6 +21,7 @@ import java.util.Set;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.NumericField;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.IndexReader;
@@ -27,12 +29,14 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.SimpleFSDirectory;
+import org.apache.lucene.util.Version;
 
 /**
  * Wrapper class to managing Lucene index creation
@@ -57,10 +61,10 @@ public class LuceneIndexMgr {
 	 */
 	public void open(String _indexDir) {
 		try {
-			indexDir = FSDirectory.getDirectory(_indexDir);
+			indexDir = new SimpleFSDirectory(new File(_indexDir));
 			
 			// autocommit = true; So that flush() will cause a commit, thus allowing new docs to be visible to the Reader.  This is important because we need to lookup IDs for potential updates!			
-			writer   = new IndexWriter(indexDir, true, new StandardAnalyzer());
+			writer   = new IndexWriter(indexDir, new StandardAnalyzer(Version.LUCENE_30), IndexWriter.MaxFieldLength.UNLIMITED);
 			
 			//writer.setRAMBufferSizeMB(256.0);
 			writer.setRAMBufferSizeMB((double)
@@ -114,9 +118,9 @@ public class LuceneIndexMgr {
 	}
 
     public Document getDoc(Query query) throws IOException {
-		Hits hits = searcher.search(query);
-		if(hits.length() == 1) {
-			return hits.doc(0);//Integer.parseInt(hits.doc(0).get("id"));
+    	TopDocs hits = searcher.search(query, 1);
+		if(hits.scoreDocs.length == 1) {
+			return searcher.doc(hits.scoreDocs[0].doc);//Integer.parseInt(hits.doc(0).get("id"));
 		} else {
 			return null;
 		}
@@ -138,8 +142,8 @@ public class LuceneIndexMgr {
 	}
 
 	public boolean doesExist(Query query) throws IOException {
-		Hits hits = searcher.search(query);
-		if(hits.length() == 0) {
+		TopDocs hits = searcher.search(query, 1);
+		if(hits.scoreDocs.length == 0) {
 			return false;
 		} else {
 			return true;
@@ -147,18 +151,18 @@ public class LuceneIndexMgr {
 	}
 
 	public String getId(Query query) throws IOException {
-		Hits hits = searcher.search(query);
-		if(hits.length() == 1) {
-			return hits.doc(0).get("id");//Integer.parseInt(hits.doc(0).get("id"));
+		TopDocs hits = searcher.search(query, 1);
+		if(hits.scoreDocs.length == 1) {
+			return searcher.doc(hits.scoreDocs[0].doc).get("id");
 		} else {
 			return "-1";
 		}
 	}
 
     public String getXcOaiId(Query query) throws IOException {
-		Hits hits = searcher.search(query);
-		if(hits.length() == 1) {
-			return hits.doc(0).get("xc_oaiid");
+		TopDocs hits = searcher.search(query, 1);
+		if(hits.scoreDocs.length == 1) {
+			return searcher.doc(hits.scoreDocs[0].doc).get("xc_oaiid");
 		} else {
 			return "-1";
 		}
@@ -197,7 +201,7 @@ public class LuceneIndexMgr {
 	public void commit() {
 		if (writer != null) {
 			try {
-				writer.flush();
+				//writer.flush();
 				if(searcher != null) {
 					closeSearcher();
 				}
@@ -226,9 +230,9 @@ public class LuceneIndexMgr {
      */
 	public void delDoc(int id) {
 		try {
-			if(IndexReader.isLocked(indexDir)) {
-				IndexReader.unlock(indexDir);
-			}
+			//if(IndexReader.isLocked(indexDir)) {
+				//IndexReader.unlock(indexDir);
+			//}
 			reader.deleteDocument(id);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -250,7 +254,7 @@ public class LuceneIndexMgr {
 	 * @return The Field object
 	 */
 	public Field text(String name, String content) {
-		return new Field(name, content, Store.YES, Index.TOKENIZED);
+		return new Field(name, content, Store.YES, Index.ANALYZED);
 	}
 
 	/**
@@ -260,9 +264,10 @@ public class LuceneIndexMgr {
 	 * @return The Field object
 	 */
 	public Field keyword(String name, String content) {
-		return new Field(name, content, Store.YES, Index.UN_TOKENIZED);
+		return new Field(name, content, Store.YES, Index.NOT_ANALYZED);
 	}
 
+	
 	/**
 	 * Return a field which wasn't indexed just stored
 	 * @param name The name of the field
