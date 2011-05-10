@@ -9,6 +9,7 @@
 
 package test.extensiblecatalog.OAIToolkit.oai;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -18,10 +19,13 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.HitCollector;
+import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Searcher;
+import org.apache.lucene.store.SimpleFSDirectory;
+import org.apache.lucene.util.Version;
 
 import junit.framework.TestCase;
 
@@ -32,7 +36,7 @@ public class DocumentReadingTimeDelayTest extends TestCase {
 	
 	public DocumentReadingTimeDelayTest() {
 		try {
-			indexReader = IndexReader.open("c:/lucene_MST/index");
+			indexReader = IndexReader.open(new SimpleFSDirectory( new File("c:/lucene_MST/index")));
 		} catch (CorruptIndexException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -48,17 +52,33 @@ public class DocumentReadingTimeDelayTest extends TestCase {
 		final BitSet bits = new BitSet(indexReader.maxDoc());
 		
 		System.out.println(ids.size());
-		QueryParser parser = new QueryParser("id", new StandardAnalyzer());
+		QueryParser parser = new QueryParser(Version.LUCENE_30, "id", new StandardAnalyzer(Version.LUCENE_30));
 		Query query = parser.parse("+is_deleted:(true OR false)");
 		System.out.println(query);
 		long start = System.currentTimeMillis();
-		searcher.search(query, new HitCollector() {
-			public void collect(int doc, float score) {
-				//System.out.println(doc);
-				bits.set(doc);
-				ids.add(doc);
-			}
-		});
+		
+		searcher.search(query, new Collector() {
+			   private int docBase;
+			 
+			   // ignore scorer
+			   public void setScorer(Scorer scorer) {
+			   }
+
+			   // accept docs out of order (for a BitSet it doesn't matter)
+			   public boolean acceptsDocsOutOfOrder() {
+			     return true;
+			   }
+			 
+			   public void collect(int doc) {
+			     bits.set(doc + docBase);
+			     ids.add(doc + docBase);
+			   }
+			 
+			   public void setNextReader(IndexReader reader, int docBase) {
+			     this.docBase = docBase;
+			   }
+			 });
+			 
 		System.out.println(System.currentTimeMillis()-start);
 		System.out.println("ok");
 		//System.out.println(bits);

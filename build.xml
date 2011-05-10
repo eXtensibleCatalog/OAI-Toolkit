@@ -289,7 +289,7 @@
 					commons-logging.jar 
 					jdom.jar
 					log4j-1.2.15.jar
-					lucene-core-2.3.2.jar
+					lucene-core-3.0.3.jar
 					marc4j-2.4.jar
 					mysql-connector-java-5.1.5-bin.jar 
 					normalizer.jar
@@ -299,7 +299,7 @@
 		
 		<copy file="${lib.dir}/jdom.jar" todir="${dist.dir}" />
 		<copy file="${lib.dir}/log4j-1.2.15.jar" todir="${dist.dir}" />
-		<copy file="${lib.dir}/lucene-core-2.3.2.jar" todir="${dist.dir}" />
+		<copy file="${lib.dir}/lucene-core-3.0.3.jar" todir="${dist.dir}" />
 		<copy file="${lib.dir}/marc4j24/marc4j-2.4.jar" todir="${dist.dir}" />
 		<copy file="${lib.dir}/mysql-connector-java-5.1.5-bin.jar" todir="${dist.dir}" />
 		<copy file="${lib.dir}/normalizer.jar" todir="${dist.dir}" />
@@ -360,7 +360,7 @@
 					commons-logging.jar
 					jdom.jar
 					log4j-1.2.15.jar
-					lucene-core-2.3.2.jar
+					lucene-core-3.0.3.jar
 					mysql-connector-java-5.1.5-bin.jar
 					normalizer.jar
 				"
@@ -431,7 +431,7 @@
 					commons-logging.jar
 					jdom.jar
 					log4j-1.2.15.jar
-					lucene-core-2.3.2.jar
+					lucene-core-3.0.3.jar
 					mysql-connector-java-5.1.5-bin.jar
 					normalizer.jar
 				"

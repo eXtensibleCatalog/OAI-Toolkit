@@ -11,6 +11,7 @@ package test.extensiblecatalog.OAIToolkit.db;
 
 import info.extensiblecatalog.OAIToolkit.utils.TextUtil;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -21,10 +22,13 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Searcher;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.SimpleFSDirectory;
+import org.apache.lucene.util.Version;
 
 import junit.framework.TestCase;
 
@@ -74,17 +78,17 @@ public class TermTest extends TestCase {
 	}
 
 	public void searchQuery(String q) throws IOException, ParseException {
-		Searcher searcher = new IndexSearcher(dir);
-		QueryParser qp = new QueryParser("id", new StandardAnalyzer());
+		Searcher searcher = new IndexSearcher(new SimpleFSDirectory(new File(dir)));
+		QueryParser qp = new QueryParser(Version.LUCENE_30, "id", new StandardAnalyzer(Version.LUCENE_30));
 		Query query = qp.parse(q);
 		System.out.println(query);
-		Hits hits = searcher.search(query);
-		System.out.println(hits.length());
+		TopDocs hits = searcher.search(query, Integer.MAX_VALUE);
+		System.out.println(hits.scoreDocs.length);
 	}
 
 	public String showFirstTerm(String field) {
 		try {
-			ir = IndexReader.open(dir);
+			ir = IndexReader.open(new SimpleFSDirectory(new File(dir)));
 			TermEnum te = ir.terms(new Term(field, ""));
 			Term t = te.term();
 			return t.text();

@@ -21,13 +21,16 @@ public interface FacadeDataProvider {
 	/** store parameters */
 	public void setParams(String tokenId, String from, 
 			String until, String set, String metadataPrefix, 
-			int offset);
+			int lastRecordRead, int offset, int totalRecordCount);
 	
 	public void prepareQuery();
     
 	/** get the total number of records */
 	public int getTotalRecordCount();
-
+	
+	/** are there records remaining in set? */
+	public boolean hasMoreRecords();
+	
 	/** has next record? */
 	public boolean hasNextRecord();
 
@@ -41,7 +44,7 @@ public interface FacadeDataProvider {
 	
 	//public List<DataTransferObject> selectRecords();
 
-	/** select recors */
+	/** select records */
 	public void selectRecords();
 
 	/** get sets of record */
@@ -54,7 +57,6 @@ public interface FacadeDataProvider {
 	public boolean hasBadResumptionTokenError();
 
     public String storeResumptionToken();
-    public void setOffset(int offset);
     	
 	public void setRecordLimit(int recordLimit);
 	

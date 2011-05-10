@@ -21,12 +21,14 @@ import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.SimpleFSDirectory;
+import org.apache.lucene.util.Version;
 
 import junit.framework.TestCase;
 
@@ -47,7 +49,7 @@ public class LuceneReadWriteTestCase extends TestCase {
 	private int max = 1000;
 	
 	public void test() throws IOException {
-		dir = FSDirectory.getDirectory(luceneDir);
+		dir = new SimpleFSDirectory(luceneDir);
 		
 		long start = System.currentTimeMillis();
 		for(int j=0; j<3; j++) {
@@ -100,9 +102,9 @@ public class LuceneReadWriteTestCase extends TestCase {
 				return false;
 			}
 		}
-		Hits hits = searcher.search(query);
+		TopDocs hits = searcher.search(query, 1);
 		boolean exists = false;
-		if(hits.length() == 0) {
+		if(hits.scoreDocs.length == 0) {
 			exists = false;
 		} else {
 			exists = true;
@@ -111,15 +113,15 @@ public class LuceneReadWriteTestCase extends TestCase {
 	}
 
 	public Field keyword(String name, String content) {
-		return new Field(name, content, Store.YES, Index.UN_TOKENIZED);
+		return new Field(name, content, Store.YES, Index.NOT_ANALYZED);
 	}
 	
 	public void addDocument(Document doc) throws IOException {
 		if(openAsNeed) {
-			writer = new IndexWriter(dir, true, new StandardAnalyzer());
+			writer = new IndexWriter(dir, new StandardAnalyzer(Version.LUCENE_30), IndexWriter.MaxFieldLength.UNLIMITED);
 		} else {
 			if(writer == null) {
-				writer = new IndexWriter(luceneDir, new StandardAnalyzer());
+				writer = new IndexWriter(new SimpleFSDirectory(luceneDir), new StandardAnalyzer(Version.LUCENE_30), IndexWriter.MaxFieldLength.UNLIMITED);
 				System.out.print('.');
 			}
 		}
@@ -134,16 +136,16 @@ public class LuceneReadWriteTestCase extends TestCase {
 	
 	public void commit() throws IOException {
 		if(openAsNeed) {
-			writer = new IndexWriter(dir, true, new StandardAnalyzer());
+			writer = new IndexWriter(dir, new StandardAnalyzer(Version.LUCENE_30), IndexWriter.MaxFieldLength.UNLIMITED);
 		} else {
 			if(writer == null) {
-				writer = new IndexWriter(luceneDir, new StandardAnalyzer());
+				writer = new IndexWriter(new SimpleFSDirectory(luceneDir), new StandardAnalyzer(Version.LUCENE_30), IndexWriter.MaxFieldLength.UNLIMITED);
 				System.out.print('.');
 			}
 		}
 		if(doCommit == 1 || (doCommit == 2 && commitCounter == 9)) {
 			long bf = System.currentTimeMillis();
-			writer.flush();
+			//writer.flush();
 			long bs = System.currentTimeMillis();
 			flushTime += (bs-bf);
 			closeSearcher();
@@ -158,14 +160,14 @@ public class LuceneReadWriteTestCase extends TestCase {
 
 	public void optimize() throws IOException {
 		if(openAsNeed) {
-			writer = new IndexWriter(luceneDir, new StandardAnalyzer());
+			writer = new IndexWriter(new SimpleFSDirectory(luceneDir), new StandardAnalyzer(Version.LUCENE_30), IndexWriter.MaxFieldLength.UNLIMITED);
 		} else {
 			if(writer == null) {
-				writer = new IndexWriter(luceneDir, new StandardAnalyzer());
+				writer = new IndexWriter(new SimpleFSDirectory(luceneDir), new StandardAnalyzer(Version.LUCENE_30), IndexWriter.MaxFieldLength.UNLIMITED);
 			}
 		}
 		writer.optimize();
-		System.out.println("docCount: " + writer.docCount());
+		System.out.println("docCount: " + writer.maxDoc());
 		writer.close();
 		closeSearcher();
 	}

@@ -16,7 +16,9 @@ import java.util.TreeSet;
 import java.util.HashMap;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.search.Hits;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.NumericField;
+import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.marc4j.marc.Record;
@@ -68,7 +70,7 @@ public class LuceneImporter extends BasicRecordImporter
     /**
 	 * The cached IDs and oaiids of records encountered during this import pass
 	 */
-	private static HashMap<String, String> oaiids;
+	private static HashMap<String, Document> cachedDocs;
 
 	/**
 	 * Creates a new importer, which creates Lucene index
@@ -93,7 +95,10 @@ public class LuceneImporter extends BasicRecordImporter
 	 */
 	public List<ImportType> importRecord(Record record, boolean doFileOfDeletedRecords) {
         String recordType;
+        
+        // we need to retain these fields when updating
         String xcoaiid;
+        List<String> modificationDates = new ArrayList<String>();
         
         recordCounter++;
         //prglog.debug("Inside the importRecord of Lucene Importer");
@@ -130,6 +135,10 @@ public class LuceneImporter extends BasicRecordImporter
 		XmlDTO xml = new XmlDTO(rec.getXml());
 		SetToRecordDTO setsToRecord = createSetToRecordDTO(rec);
 		RecordDTO searchData = createSearchData(data);
+		
+		// re-use same field for performance gain
+		NumericField xcidNumericField = new NumericField("xc_id", Store.YES, true);
+		
 		try {
 			long start = System.currentTimeMillis();
 			String id = searchData.getExternalId() + "t" + searchData.getRecordType() + "r" + searchData.getRepositoryCode();
@@ -142,7 +151,9 @@ public class LuceneImporter extends BasicRecordImporter
             // the lucene index, since the record hadn't yet been committed).
             boolean updateThisPass = false;
             boolean isExistent = false;
-            if (oaiids.containsKey(id)) {
+            String xcid = String.format("%d", trackedOaiIdValue);
+
+            if (cachedDocs.containsKey(id)) {
             	isExistent = true;
             	updateThisPass = true;
             } else {
@@ -167,36 +178,35 @@ public class LuceneImporter extends BasicRecordImporter
                 trackedOaiIdValue++;
                                 
 			} else {
+				Document doc = null;
   
 				if (updateThisPass) {
-            	   xcoaiid = oaiids.get(id);
-            	   
-            	   //prglog.debug("ID="+ id + " OAIID=" + xcoaiid + " FILE=" + currentFile + " UPDATETHISPASS");
-            	   
+					doc = cachedDocs.get(id);
 				} else {
-                   //searchData.getXcOaiId()
-                   Document doc = luceneMgr.getDoc(searchData);
-                           //ApplInfo.luceneSearcher.getRecordByID(externalId);
+                   doc = luceneMgr.getDoc(searchData);
                    if (doc == null){
                        prglog.debug("The document is null");
                        docTest = false;
                    } else {
-                       xcoaiid = doc.get("xc_oaiid");
-                       //prglog.debug("the xcoaiid is" + xcoaiid);
-                       //prglog.debug("The xcoai ID value got before update/deletion of record is" + xcoaiid);
-                
-                       
                        id = luceneMgr.getId(searchData);
-                       //prglog.debug("The value of the id is" + id);
-                       
-                       //prglog.debug("ID="+ id + " OAIID=" + xcoaiid + " FILE=" + currentFile + " UPDATE");
-                       
-                   }                
+                   } 
+                   
+                   if (docTest == true) {
+                	   // retain/preserve necessary fields from older record
+                	   xcoaiid = doc.get("xc_oaiid");
+                	   xcid = doc.get("xc_id");
+
+                	   Field[] flds = doc.getFields("modification_date");
+                       for (int i=0; i<flds.length; i++) {
+                           modificationDates.add(flds[i].stringValue());
+                       }
+
+                   }
                                   
                }
                 
 				if (docTest == true) {
-
+					
 					luceneMgr.delDoc("id", id);
 					
                     if(rec.isDeleted()) {
@@ -209,9 +219,6 @@ public class LuceneImporter extends BasicRecordImporter
 			}
             
             if (docTest == true) {
-
-            	// cache the id and xcoaiid in case we need it later for an update
-				oaiids.put(id, xcoaiid);
 
             	// we did _something_ with this record (add/update/delete)
 				if (! isExistent) {
@@ -233,6 +240,10 @@ public class LuceneImporter extends BasicRecordImporter
 				}
 				
 				doc.add(luceneMgr.keyword("xc_oaiid", xcoaiid));
+				
+				xcidNumericField.setIntValue(Integer.parseInt(xcid));				
+				doc.add(xcidNumericField);
+				
 				doc.add(luceneMgr.keyword("record_type",
 						data.getRecordType().toString()));
 	            doc.add(luceneMgr.keyword("is_deleted",
@@ -241,8 +252,14 @@ public class LuceneImporter extends BasicRecordImporter
 					doc.add(luceneMgr.keyword("creation_date",
 						data.getCreationDate().toString()));
 				}
+				
 				doc.add(luceneMgr.keyword("modification_date",
 						data.getModificationDate().toString()));
+				for (String modificationDate : modificationDates) {
+                    doc.add(luceneMgr.keyword("modification_date", 
+                    		modificationDate));
+				}
+
 	
 				doc.add(luceneMgr.keyword("set",
 						setsToRecord.getSetId().toString()));
@@ -251,6 +268,10 @@ public class LuceneImporter extends BasicRecordImporter
 				start = System.currentTimeMillis();
 				luceneMgr.addDoc(doc);
 				insertTime = System.currentTimeMillis() - start;
+				
+            	// cache this doc in case we need it later for an update (same record can get processed twice in a single pass)
+				cachedDocs.put(id, doc);
+
             } else {
             	// existing record, but not in lucene -
             	// this means it is probably still in the buffer?
@@ -303,7 +324,7 @@ public class LuceneImporter extends BasicRecordImporter
 		super.setCurrentFile(currentFile);
 		recordCounter = 0;
 		
-		//oaiids.clear();
-		oaiids = new HashMap<String, String>(); // I believe this is more efficient than clear()
+		//cachedDocs.clear();
+		cachedDocs = new HashMap<String, Document>(); // I believe this is more efficient than clear()
 	}
 }

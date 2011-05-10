@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.BasicConfigurator;
+import org.apache.lucene.search.TopDocs;
 import org.marc4j.MarcException;
 import org.marc4j.MarcReader;
 import org.marc4j.MarcXmlReader;
@@ -62,7 +63,6 @@ import info.extensiblecatalog.OAIToolkit.importer.importers.MysqlImporter;
 import info.extensiblecatalog.OAIToolkit.importer.statistics.ConversionStatistics;
 import info.extensiblecatalog.OAIToolkit.importer.statistics.LoadStatistics;
 import info.extensiblecatalog.OAIToolkit.importer.statistics.ModificationStatistics;
-import org.apache.lucene.search.Hits;
 import info.extensiblecatalog.OAIToolkit.oai.StorageTypes;
 import info.extensiblecatalog.OAIToolkit.utils.ApplInfo;
 import info.extensiblecatalog.OAIToolkit.utils.ExceptionPrinter;
@@ -950,21 +950,21 @@ public class Importer {
     private void statsexecute() {
         LuceneSearcher ls = new LuceneSearcher(configuration.getStatsLuceneDir());
 
-        Hits hits_deleted = ls.search("is_deleted:true");
-        Hits hits_notdeleted = ls.search("is_deleted:false");
-        Hits hits_bib_recordtype = ls.search("record_type:1");
-        Hits hits_auth_recordtype = ls.search("record_type:2");
-        Hits hits_hold_recordtype = ls.search("record_type:3");
-        Hits hits_class_recordtype = ls.search("record_type:4");
-        Hits hits_comm_recordtype = ls.search("record_type:5");
+        TopDocs hits_deleted = ls.search("is_deleted:true");
+        TopDocs hits_notdeleted = ls.search("is_deleted:false");
+        TopDocs hits_bib_recordtype = ls.search("record_type:1");
+        TopDocs hits_auth_recordtype = ls.search("record_type:2");
+        TopDocs hits_hold_recordtype = ls.search("record_type:3");
+        TopDocs hits_class_recordtype = ls.search("record_type:4");
+        TopDocs hits_comm_recordtype = ls.search("record_type:5");
 
-        int deleted_count = hits_deleted.length();
-        int notdeleted_count = hits_notdeleted.length();
-        int bib_count = hits_bib_recordtype.length();
-        int auth_count = hits_auth_recordtype.length();
-        int hold_count = hits_hold_recordtype.length();
-        int class_count = hits_class_recordtype.length();
-        int comm_count = hits_comm_recordtype.length();
+        int deleted_count = hits_deleted.scoreDocs.length;
+        int notdeleted_count = hits_notdeleted.scoreDocs.length;
+        int bib_count = hits_bib_recordtype.scoreDocs.length;
+        int auth_count = hits_auth_recordtype.scoreDocs.length;
+        int hold_count = hits_hold_recordtype.scoreDocs.length;
+        int class_count = hits_class_recordtype.scoreDocs.length;
+        int comm_count = hits_comm_recordtype.scoreDocs.length;
 
         lucenestatslog.info(" *************** Lucene Database Statistics *************** \n\n ");
 
