@@ -73,7 +73,7 @@ public class ImporterConfiguration {
 	private String luceneIndex;
 
 	/** The Lucene index directory */
-	private String storageType = StorageTypes.MYSQL;
+	private String storageType = StorageTypes.LUCENE;
 	
 	/** create XML 1.1? */
 	private boolean createXml11 = false;

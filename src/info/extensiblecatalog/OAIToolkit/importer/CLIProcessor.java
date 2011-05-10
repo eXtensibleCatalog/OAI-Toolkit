@@ -181,11 +181,11 @@ public class CLIProcessor {
 		OptionBuilder.withDescription("Lucene index directory.");
 		Option lucene_index = OptionBuilder.create("lucene_index");
 
-		OptionBuilder.withArgName("storage_type");
-		OptionBuilder.hasArg();
-		OptionBuilder.withDescription("The storage type of records: MySQL," +
-				" mixed, Lucene.");
-		Option storage_type = OptionBuilder.create("storage_type");
+		//OptionBuilder.withArgName("storage_type");
+		//OptionBuilder.hasArg();
+		//OptionBuilder.withDescription("The storage type of records: MySQL," +
+				//" mixed, Lucene.");
+		//Option storage_type = OptionBuilder.create("storage_type");
 
 		Option indent_xml = new Option("indent_xml", "Flag to indent XML");
 
@@ -279,7 +279,7 @@ public class CLIProcessor {
 		options.addOption(char_conversion);
 		options.addOption(split_size);
 		options.addOption(lucene_index);
-		options.addOption(storage_type);
+		//options.addOption(storage_type);
 		options.addOption(indent_xml);
 		options.addOption(xml_version_11);
                 options.addOption(translate_leader_bad_chars_to_zero);
@@ -417,10 +417,10 @@ public class CLIProcessor {
 			}
 			
 			// storage_type
-			if (line.hasOption("storage_type")) {
-				importer.configuration.setStorageType(line.getOptionValue(
-						"storage_type"));
-			}
+//			if (line.hasOption("storage_type")) {
+//				importer.configuration.setStorageType(line.getOptionValue(
+//						"storage_type"));
+//			}
 			
 			// indent_xml
 			if (line.hasOption("indent_xml")) {

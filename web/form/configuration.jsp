@@ -290,6 +290,7 @@
 						<html:errors property="schema" />
 					</td>
 				</tr>
+<!--
 				<tr>
 					<td><bean:message key="configuration.storageType" /></td>
 					<td>&nbsp;
@@ -302,6 +303,7 @@
 						<html:errors property="schema" />
 					</td>
 				</tr>
+-->
 				<tr>
 					<td><bean:message key="configuration.maxCacheLifetime" /></td>
 					<td>&nbsp;<html:text property="maxCacheLifetime" readonly="true" />
