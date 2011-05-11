@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Date;
 import java.util.Collections;
@@ -25,7 +26,12 @@ import java.text.SimpleDateFormat;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.BasicConfigurator;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.util.Version;
 import org.marc4j.MarcException;
 import org.marc4j.MarcReader;
 import org.marc4j.MarcXmlReader;
@@ -945,36 +951,38 @@ public class Importer {
     
     /**
      *Execute function called when the lucene statistics is been invoked from command line.
+     * @throws ParseException 
      * 
      **/
-    private void statsexecute() {
+    private void statsexecute() throws ParseException {
         LuceneSearcher ls = new LuceneSearcher(configuration.getStatsLuceneDir());
+        Sort sort = null;
+        QueryParser parser = new QueryParser(Version.LUCENE_30, "id", new StandardAnalyzer(Version.LUCENE_30));
+        BitSet hits_deleted = ls.searchForBits(parser.parse("is_deleted:true"), sort);
+        BitSet hits_notdeleted = ls.searchForBits(parser.parse("is_deleted:false"), sort);
+        BitSet hits_bib_recordtype = ls.searchForBits(parser.parse("record_type:1 AND is_deleted:false"), sort);
+        BitSet hits_bib_recordtype_deleted = ls.searchForBits(parser.parse("record_type:1 AND is_deleted:true"), sort);
+        BitSet hits_auth_recordtype = ls.searchForBits(parser.parse("record_type:2 AND is_deleted:false"), sort);
+        BitSet hits_auth_recordtype_deleted = ls.searchForBits(parser.parse("record_type:2 AND is_deleted:true"), sort);
+        BitSet hits_hold_recordtype = ls.searchForBits(parser.parse("record_type:3 AND is_deleted:false"), sort);
+        BitSet hits_hold_recordtype_deleted = ls.searchForBits(parser.parse("record_type:3 AND is_deleted:true"), sort);
+        BitSet hits_class_recordtype = ls.searchForBits(parser.parse("record_type:4 AND is_deleted:false"), sort);
+        BitSet hits_class_recordtype_deleted = ls.searchForBits(parser.parse("record_type:4 AND is_deleted:true"), sort);
+        BitSet hits_comm_recordtype = ls.searchForBits(parser.parse("record_type:5 AND is_deleted:false"), sort);
+        BitSet hits_comm_recordtype_deleted = ls.searchForBits(parser.parse("record_type:5 AND is_deleted:true"), sort);
 
-        TopDocs hits_deleted = ls.search("is_deleted:true");
-        TopDocs hits_notdeleted = ls.search("is_deleted:false");
-        TopDocs hits_bib_recordtype = ls.search("record_type:1 AND is_deleted:false");
-        TopDocs hits_bib_recordtype_deleted = ls.search("record_type:1 AND is_deleted:true");
-        TopDocs hits_auth_recordtype = ls.search("record_type:2 AND is_deleted:false");
-        TopDocs hits_auth_recordtype_deleted = ls.search("record_type:2 AND is_deleted:true");
-        TopDocs hits_hold_recordtype = ls.search("record_type:3 AND is_deleted:false");
-        TopDocs hits_hold_recordtype_deleted = ls.search("record_type:3 AND is_deleted:true");
-        TopDocs hits_class_recordtype = ls.search("record_type:4 AND is_deleted:false");
-        TopDocs hits_class_recordtype_deleted = ls.search("record_type:4 AND is_deleted:true");
-        TopDocs hits_comm_recordtype = ls.search("record_type:5 AND is_deleted:false");
-        TopDocs hits_comm_recordtype_deleted = ls.search("record_type:5 AND is_deleted:true");
-
-        int deleted_count = hits_deleted.scoreDocs.length;
-        int notdeleted_count = hits_notdeleted.scoreDocs.length;
-        int bib_count = hits_bib_recordtype.scoreDocs.length;
-        int bib_count_deleted = hits_bib_recordtype_deleted.scoreDocs.length;
-        int auth_count = hits_auth_recordtype.scoreDocs.length;
-        int auth_count_deleted = hits_auth_recordtype_deleted.scoreDocs.length;
-        int hold_count = hits_hold_recordtype.scoreDocs.length;
-        int hold_count_deleted = hits_hold_recordtype_deleted.scoreDocs.length;
-        int class_count = hits_class_recordtype.scoreDocs.length;
-        int class_count_deleted = hits_class_recordtype_deleted.scoreDocs.length;
-        int comm_count = hits_comm_recordtype.scoreDocs.length;
-        int comm_count_deleted = hits_comm_recordtype_deleted.scoreDocs.length;
+        int deleted_count = hits_deleted.cardinality();
+        int notdeleted_count = hits_notdeleted.cardinality();
+        int bib_count = hits_bib_recordtype.cardinality();
+        int bib_count_deleted = hits_bib_recordtype_deleted.cardinality();
+        int auth_count = hits_auth_recordtype.cardinality();
+        int auth_count_deleted = hits_auth_recordtype_deleted.cardinality();
+        int hold_count = hits_hold_recordtype.cardinality();
+        int hold_count_deleted = hits_hold_recordtype_deleted.cardinality();
+        int class_count = hits_class_recordtype.cardinality();
+        int class_count_deleted = hits_class_recordtype_deleted.cardinality();
+        int comm_count = hits_comm_recordtype.cardinality();
+        int comm_count_deleted = hits_comm_recordtype_deleted.cardinality();
 
         lucenestatslog.info(" *************** Lucene Database Statistics *************** \n\n ");
 
