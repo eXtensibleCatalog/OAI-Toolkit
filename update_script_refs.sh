@@ -1,5 +1,5 @@
-FROM=0.6.11alpha
-TO=1.0.0
+FROM=1.0.0
+TO=1.0.1
 
 FROM_JAR=OAIToolkit\-${FROM}.jar
 TO_JAR=OAIToolkit\-${TO}.jar
