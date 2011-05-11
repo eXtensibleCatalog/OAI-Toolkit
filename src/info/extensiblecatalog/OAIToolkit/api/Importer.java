@@ -90,7 +90,7 @@ public class Importer {
         private static final Logger prglog = Logging.getLogger(programmer_log);
         private static final Logger lucenestatslog = Logging.getLogger(lucene_dbStatistics_log);
 
-	public static final String VERSION = "0.6.4";
+	public static final String VERSION = "1.0.0";
 
     /** Manager of Tracking OAI ID Number */
 	private static TrackingOaiIdNumberMgr trackingOaiIdNumberMgr;
@@ -952,29 +952,44 @@ public class Importer {
 
         TopDocs hits_deleted = ls.search("is_deleted:true");
         TopDocs hits_notdeleted = ls.search("is_deleted:false");
-        TopDocs hits_bib_recordtype = ls.search("record_type:1");
-        TopDocs hits_auth_recordtype = ls.search("record_type:2");
-        TopDocs hits_hold_recordtype = ls.search("record_type:3");
-        TopDocs hits_class_recordtype = ls.search("record_type:4");
-        TopDocs hits_comm_recordtype = ls.search("record_type:5");
+        TopDocs hits_bib_recordtype = ls.search("record_type:1 AND is_deleted:false");
+        TopDocs hits_bib_recordtype_deleted = ls.search("record_type:1 AND is_deleted:true");
+        TopDocs hits_auth_recordtype = ls.search("record_type:2 AND is_deleted:false");
+        TopDocs hits_auth_recordtype_deleted = ls.search("record_type:2 AND is_deleted:true");
+        TopDocs hits_hold_recordtype = ls.search("record_type:3 AND is_deleted:false");
+        TopDocs hits_hold_recordtype_deleted = ls.search("record_type:3 AND is_deleted:true");
+        TopDocs hits_class_recordtype = ls.search("record_type:4 AND is_deleted:false");
+        TopDocs hits_class_recordtype_deleted = ls.search("record_type:4 AND is_deleted:true");
+        TopDocs hits_comm_recordtype = ls.search("record_type:5 AND is_deleted:false");
+        TopDocs hits_comm_recordtype_deleted = ls.search("record_type:5 AND is_deleted:true");
 
         int deleted_count = hits_deleted.scoreDocs.length;
         int notdeleted_count = hits_notdeleted.scoreDocs.length;
         int bib_count = hits_bib_recordtype.scoreDocs.length;
+        int bib_count_deleted = hits_bib_recordtype_deleted.scoreDocs.length;
         int auth_count = hits_auth_recordtype.scoreDocs.length;
+        int auth_count_deleted = hits_auth_recordtype_deleted.scoreDocs.length;
         int hold_count = hits_hold_recordtype.scoreDocs.length;
+        int hold_count_deleted = hits_hold_recordtype_deleted.scoreDocs.length;
         int class_count = hits_class_recordtype.scoreDocs.length;
+        int class_count_deleted = hits_class_recordtype_deleted.scoreDocs.length;
         int comm_count = hits_comm_recordtype.scoreDocs.length;
+        int comm_count_deleted = hits_comm_recordtype_deleted.scoreDocs.length;
 
         lucenestatslog.info(" *************** Lucene Database Statistics *************** \n\n ");
 
         lucenestatslog.info("Total records in the Lucene Database are: " + (deleted_count + notdeleted_count));
-        lucenestatslog.info("\n\t Bibliographic records: " + bib_count);
-        lucenestatslog.info("\t Authority records: " + auth_count);
-        lucenestatslog.info("\t Holdings records: " + hold_count);
-        lucenestatslog.info("\t Classification records: " + class_count);
-        lucenestatslog.info("\t Community information records: " + comm_count);
-        lucenestatslog.info("\t Deleted records: " + deleted_count);
+        lucenestatslog.info(" Bibliographic records: " + bib_count);
+        lucenestatslog.info("\t Deleted Bibliographic records: " + bib_count_deleted);
+        lucenestatslog.info(" Authority records: " + auth_count);
+        lucenestatslog.info("\t Deleted Authority records: " + auth_count_deleted);
+        lucenestatslog.info(" Holdings records: " + hold_count);
+        lucenestatslog.info("\t Deleted Holdings records: " + hold_count_deleted);
+        lucenestatslog.info(" Classification records: " + class_count);
+        lucenestatslog.info("\t Deleted Classification records: " + class_count_deleted);
+        lucenestatslog.info(" Community information records: " + comm_count);
+        lucenestatslog.info("\t Deleted Community information records: " + comm_count_deleted);
+        lucenestatslog.info(" Deleted records: " + deleted_count);
 
     }
 

@@ -5,7 +5,7 @@
 # Read the OAIToolkit Manual for the details.
 # ==============================================
 
-if [$# -ne 4]
+if [ $# -ne 4 ]
 then 
 	echo "$0 [root] [root's password] [new user] [new user's password]"
 	exit

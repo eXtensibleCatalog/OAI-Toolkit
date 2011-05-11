@@ -407,7 +407,11 @@ public class LuceneSearcher {
 			if(query == null) {
 				query = parseQuery("id:*");
 			}
-			hits = getSearcher().search(query, null, Integer.MAX_VALUE, sort);
+			if (sort == null) {
+				hits = getSearcher().search(query, Integer.MAX_VALUE);				
+			} else {
+				hits = getSearcher().search(query, null, Integer.MAX_VALUE, sort);
+			}
 		} catch(IOException e) {
 			prglog.error("[PRG] " + e);
 		}
