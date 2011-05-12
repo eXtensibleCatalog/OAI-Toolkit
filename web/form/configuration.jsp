@@ -73,7 +73,7 @@
 	<fieldset class="test">
 		<legend>ListRecords</legend>
 		<ul type="square">
-			<li><html:link action="oai-request?verb=ListRecords&metadataPrefix=oai_marc"
+			<li><html:link action="oai-request?verb=ListRecords&metadataPrefix=marc21"
 				>ListRecords</html:link></li>
 			<li><html:link action="oai-request?verb=ListRecords&metadataPrefix=marc21"
 				>all (no params)</html:link></li>
