@@ -8,4 +8,4 @@
 # OAIToolkit Manual for the details.
 # ====================================================
 
-java -Xmx1024m -cp lib/xercesImpl.jar -jar lib/OAIToolkit-1.0.1.jar -lucene_statistics
+java -Xmx1024m -cp "lib/xercesImpl.jar:lib/xml-apis.jar" -jar lib/OAIToolkit-1.0.1.jar -lucene_statistics
