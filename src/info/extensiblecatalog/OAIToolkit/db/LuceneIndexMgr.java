@@ -201,7 +201,7 @@ public class LuceneIndexMgr {
 	public void commit() {
 		if (writer != null) {
 			try {
-				//writer.flush();
+				writer.commit();
 				if(searcher != null) {
 					closeSearcher();
 				}
