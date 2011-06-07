@@ -218,11 +218,6 @@ public class CLIProcessor {
 
         Option lucene_dump_ids = new Option("lucene_dump_ids", "List all ids (001s) to standard output");
         
-        OptionBuilder.withArgName("stats_lucene_dir");
-		OptionBuilder.hasArg();
-		OptionBuilder.withDescription("The directory of Lucene index given by the user.");
-		Option stats_lucene_dir = OptionBuilder.create("stats_lucene_dir");
-
 		OptionBuilder.withArgName("load_dir");
 		OptionBuilder.hasArg();
 		OptionBuilder.withDescription("The directory of marcxml files after" +
@@ -286,7 +281,6 @@ public class CLIProcessor {
                 options.addOption(modify_validation);
                 options.addOption(translate_nonleader_bad_chars_to_spaces);
                 options.addOption(fileof_deleted_records);
-                options.addOption(stats_lucene_dir);
                 options.addOption(lucene_statistics);
                 options.addOption(lucene_dump_ids);
 		options.addOption(replace_repository_code);
@@ -471,12 +465,6 @@ public class CLIProcessor {
 
             if (line.hasOption("lucene_dump_ids")) {
 				importer.configuration.setLuceneDumpIds(true);
-			}
-
-			// lucene Directory for Lucene Statistics
-			if (line.hasOption("stats_lucene_dir")) {
-				importer.configuration.setStatsLuceneDir(line.getOptionValue(
-				"stats_lucene_dir"));
 			}
 
             // error_suffix

@@ -772,12 +772,6 @@ public class Importer {
 			
 			
 			// Be sure (outside of the try/catch block) to:
-			// commit here because if we encounter an exception,
-			// there may be unflushed records (those added before the exception occurred)
-			// that we may later need to retrieve in order to perform potential updates.
-			// Otherwise, there is a chance we could add duplicate records for the same external_id/record_type!
-			recordImporter.commit();
-			// Be sure (outside of the try/catch block) to:
 			// add file stats because if we encounter an exception,
 			// there is a good chance some records got through first
 			importStatistics.add(fileStatistics);
@@ -789,6 +783,9 @@ public class Importer {
 
 		}
 		
+		// explicitly flush writes to index
+		recordImporter.commit();
+
 		recordImporter.closeCurrentFile(); // perform any necessary cleanup on this re-usable object
 
 
@@ -924,27 +921,11 @@ public class Importer {
 	}
 
     /**
-     * Initialisation function if the lucene statistics is being invoked from the command line
-     * @throws java.lang.Exception
-     */
-    private void statsinit() throws Exception {
-        String statsLuceneDir = null;
-        String root = new File(".").getAbsoluteFile().getParent();
-        if (configuration.getStatsLuceneDir()!= null) {
-            statsLuceneDir = configuration.getStatsLuceneDir();
-            ApplInfo.statsInit(root, statsLuceneDir, configuration.getLogDir());
-        }
-        else {
-            ApplInfo.statsInit(root, configuration.getLogDir());
-	}
-    }
-
-    /**
      *Execute function called when the lucene statistics is been invoked from command line.
      * 
      **/
     private void dumpids() {
-        LuceneSearcher ls = new LuceneSearcher(configuration.getStatsLuceneDir());
+        LuceneSearcher ls = new LuceneSearcher(configuration.getLuceneIndex());
         ls.dumpIds();
     }
     
@@ -955,7 +936,7 @@ public class Importer {
      * 
      **/
     private void statsexecute() throws ParseException {
-        LuceneSearcher ls = new LuceneSearcher(configuration.getStatsLuceneDir());
+        LuceneSearcher ls = new LuceneSearcher(configuration.getLuceneIndex());
         Sort sort = null;
         QueryParser parser = new QueryParser(Version.LUCENE_30, "id", new StandardAnalyzer(Version.LUCENE_30));
         BitSet hits_deleted = ls.searchForBits(parser.parse("is_deleted:true"), sort);
@@ -1018,27 +999,18 @@ public class Importer {
 				importer.configuration.setLuceneDumpIds(true);
 			}
 
-
-			// lucene Directory for Lucene Statistics
-			if (line.hasOption("stats_lucene_dir")) {
-				importer.configuration.setStatsLuceneDir(line.getOptionValue(
-				"stats_lucene_dir"));
-			}
-
-            System.out.println("Lucene Statistics Value is:" + importer.configuration.isLuceneStatistics());
+            //System.out.println("Lucene Statistics Value is:" + importer.configuration.isLuceneStatistics());
             if (importer.configuration.isLuceneStatistics()) {
-                importer.statsinit();
                 importer.statsexecute();
             } else if (importer.configuration.isLuceneDumpIds()) {
-            	importer.statsinit();
             	importer.dumpids();
             }
             else {
-			importer.init();
-			prglog.info("[PRG] Importer v" + VERSION);
-			prglog.info("[PRG] " + importer.configuration.getParams());
-			importer.execute();
-            }
+				importer.init();
+				prglog.info("[PRG] Importer v" + VERSION);
+				prglog.info("[PRG] " + importer.configuration.getParams());
+				importer.execute();
+	        }
 		} catch(Exception e) {
 			e.printStackTrace();
 		}

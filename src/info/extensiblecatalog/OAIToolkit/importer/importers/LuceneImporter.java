@@ -71,6 +71,10 @@ public class LuceneImporter extends BasicRecordImporter
 	 * The cached IDs and oaiids of records encountered during this import pass
 	 */
 	private static HashMap<String, Document> cachedDocs;
+	/**
+	 * How many documents to cache before committing index
+	 */
+	private static int CACHED_DOCS_COUNT = 100000;
 
 	/**
 	 * Creates a new importer, which creates Lucene index
@@ -82,8 +86,7 @@ public class LuceneImporter extends BasicRecordImporter
 		super(schemaFile);
 		luceneMgr = new LuceneIndexMgr(luceneIndexDir);
 		long start = System.currentTimeMillis();
-		prglog.info("[PRG] Read all ids. It took " + MilliSecFormatter.toString(
-				System.currentTimeMillis()-start));
+		cachedDocs = new HashMap<String, Document>();
 	}
 
 	/**
@@ -290,10 +293,8 @@ public class LuceneImporter extends BasicRecordImporter
 			searchData = null;
             rec = null;
 		}
-		if(recordCounter % 1000 == 0) {
-			//commit();
-
-
+		if(recordCounter % CACHED_DOCS_COUNT == 0) {
+			commit();
 		}
 		return typeList;
 	}
@@ -310,6 +311,7 @@ public class LuceneImporter extends BasicRecordImporter
     
 
 	public void commit() {
+		cachedDocs = new HashMap<String, Document>(); // I believe this is more efficient than clear()
 		luceneMgr.commit();
 	}
 	
@@ -320,9 +322,5 @@ public class LuceneImporter extends BasicRecordImporter
 
 	public void setCurrentFile(String currentFile) {
 		super.setCurrentFile(currentFile);
-		recordCounter = 0;
-		
-		//cachedDocs.clear();
-		cachedDocs = new HashMap<String, Document>(); // I believe this is more efficient than clear()
 	}
 }

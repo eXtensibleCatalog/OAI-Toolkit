@@ -140,8 +140,6 @@ public class ImporterConfiguration {
     
     private boolean luceneDumpIds = false;
 
-    private String statsLuceneDir = "lucene_index";
-
 	private String xsltString;
 	
 	private List<String> xslts = new ArrayList<String>();
@@ -348,14 +346,6 @@ public class ImporterConfiguration {
 
 	public void setLuceneIndex(String luceneIndex) {
 		this.luceneIndex = luceneIndex;
-	}
-
-    public String getStatsLuceneDir() {
-		return statsLuceneDir;
-	}
-
-	public void setStatsLuceneDir(String statsLuceneDir) {
-		this.statsLuceneDir = statsLuceneDir;
 	}
 
     public boolean isLuceneStatistics() {
