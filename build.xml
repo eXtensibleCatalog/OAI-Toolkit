@@ -363,6 +363,8 @@
 					lucene-core-3.0.3.jar
 					mysql-connector-java-5.1.5-bin.jar
 					normalizer.jar
+                                        xercesImpl.jar
+                                        xml-apis.jar
 				"
 				prefix="${project.name}/lib" />
 			<zipfileset file="./lib/marc4j24/marc4j-2.4.jar"
@@ -434,6 +436,8 @@
 					lucene-core-3.0.3.jar
 					mysql-connector-java-5.1.5-bin.jar
 					normalizer.jar
+                                        xercesImpl.jar
+                                        xml-apis.jar
 				"
 				prefix="${project.name}/lib" />
 			<zipfileset file="./lib/marc4j24/marc4j-2.4.jar"
