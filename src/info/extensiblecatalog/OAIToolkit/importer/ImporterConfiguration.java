@@ -70,7 +70,7 @@ public class ImporterConfiguration {
 	private int splitSize = 10000;
 	
 	/** The Lucene index directory */
-	private String luceneIndex;
+	private String luceneIndex = "lucene_index";
 
 	/** The Lucene index directory */
 	private String storageType = StorageTypes.LUCENE;
