@@ -125,6 +125,17 @@ public class Importer {
 		ApplInfo.init(root, configuration.getLogDir());
 		dirNameGiver = new DirectoryNameGiver(configuration);
 	}
+	
+	
+
+	/**
+	* Initialisation function if the lucene statistics is being invoked from the command line
+	* @throws java.lang.Exception
+	*/
+	private void statsinit() throws Exception {
+		String root = new File(".").getAbsoluteFile().getParent();
+		ApplInfo.statsInit(root, configuration.getLogDir());
+	}
 
     public void execute() {
     	if(!configuration.isNeedConvert()
@@ -1001,6 +1012,7 @@ public class Importer {
 
             //System.out.println("Lucene Statistics Value is:" + importer.configuration.isLuceneStatistics());
             if (importer.configuration.isLuceneStatistics()) {
+            	importer.statsinit();
                 importer.statsexecute();
             } else if (importer.configuration.isLuceneDumpIds()) {
             	importer.dumpids();

@@ -152,6 +152,12 @@ public class ApplInfo {
         applVer = webAppName;
 		initApplication();
 	}
+	
+	
+    /** initialize the command line interface for the Lucene Statistics */
+	public static void statsInit(String rootDir, String logDir) throws Exception {
+		initLogging(rootDir, logDir);
+	}
 
 	/**
 	 * Initialize the database setup
