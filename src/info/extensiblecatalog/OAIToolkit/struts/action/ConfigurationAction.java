@@ -87,14 +87,10 @@ public class ConfigurationAction extends Action {
 		conf.setCompression(form.getCompression());
 		conf.setSetsChunk_maxNumberOfRecords(
 				form.getSetsChunk_maxNumberOfRecords());
-		conf.setSetsChunk_maxSizeInBytes(form.getSetsChunk_maxSizeInBytes());
 		conf.setRecordsChunk_maxNumberOfRecords(
 				form.getRecordsChunk_maxNumberOfRecords());
-		conf.setRecordsChunk_maxSizeInBytes(form.getRecordsChunk_maxSizeInBytes());
 		conf.setIdentifiersChunk_maxNumberOfRecords(
 				form.getIdentifiersChunk_maxNumberOfRecords());
-		conf.setIdentifiersChunk_maxSizeInBytes(
-				form.getIdentifiersChunk_maxSizeInBytes());
 		conf.setMaxSimultaneousRequest(form.getMaxSimultaneousRequest());
 		conf.setExpirationDate(form.getExpirationDate());
 		conf.setSchema(form.getSchema());
@@ -127,14 +123,10 @@ public class ConfigurationAction extends Action {
 		form.setCompression(conf.getCompression());
 		form.setSetsChunk_maxNumberOfRecords(
 				conf.getSetsChunk_maxNumberOfRecords());
-		form.setSetsChunk_maxSizeInBytes(conf.getSetsChunk_maxSizeInBytes());
 		form.setRecordsChunk_maxNumberOfRecords(
 				conf.getRecordsChunk_maxNumberOfRecords());
-		form.setRecordsChunk_maxSizeInBytes(conf.getRecordsChunk_maxSizeInBytes());
 		form.setIdentifiersChunk_maxNumberOfRecords(
 				conf.getIdentifiersChunk_maxNumberOfRecords());
-		form.setIdentifiersChunk_maxSizeInBytes(
-				conf.getIdentifiersChunk_maxSizeInBytes());
 		form.setMaxSimultaneousRequest(conf.getMaxSimultaneousRequest());
 		form.setExpirationDate(conf.getExpirationDate());
 		form.setSchema(conf.getSchema());

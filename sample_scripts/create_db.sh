@@ -14,5 +14,5 @@ user=
 # set the MySQL user's password here
 password=
 
-mysql --user=$user --password=$password extensiblecatalog < sql/oai.sql
+mysql --user=$user --password=$password oaitoolkit < sql/oai.sql
 

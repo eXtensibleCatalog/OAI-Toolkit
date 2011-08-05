@@ -36,6 +36,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 //import com.sun.org.apache.xml.internal.utils.FastStringBuffer;
 
@@ -331,5 +332,17 @@ public class TextUtil {
 			//e.printStackTrace();
 		}
 		return content.toString();
+	}
+	
+	/**
+	 * Get the current time in UTC
+	 * @return The current time in UTC
+	 */
+	 public static String nowInUTC() {
+		Date date = new Timestamp(new Date().getTime());
+        SimpleDateFormat df = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ssZ" );
+        TimeZone tz = TimeZone.getTimeZone( "UTC" );
+        df.setTimeZone( tz );
+        return df.format(date);
 	}
 }

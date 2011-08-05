@@ -298,23 +298,6 @@ public class OAIConfigurationTestCase extends TestCase {
 				conf.getIdentifiersChunk_maxNumberOfRecords());
 	}
 
-	public void testGetIdentifiersChunk_maxSizeInBytes() {
-		conf = new OAIConfiguration(new File(configFile));
-		conf.load();
-		assertEquals("bad identifiersChunk_maxSizeInBytes", identifiersChunk_maxSizeInBytes, 
-				conf.getIdentifiersChunk_maxSizeInBytes());
-
-	}
-
-	public void testSetIdentifiersChunk_maxSizeInBytes() {
-		int newValue = identifiersChunk_maxSizeInBytes + 1;
-		conf = new OAIConfiguration(new File(configFile));
-		conf.load();
-		conf.setIdentifiersChunk_maxSizeInBytes(newValue);
-		assertEquals("bad identifiersChunk_maxSizeInBytes", newValue, 
-				conf.getIdentifiersChunk_maxSizeInBytes());
-	}
-
 	public void testGetMaxSimultaneousRequest() {
 		conf = new OAIConfiguration(new File(configFile));
 		conf.load();
@@ -362,22 +345,6 @@ public class OAIConfigurationTestCase extends TestCase {
 				conf.getRecordsChunk_maxNumberOfRecords());
 	}
 
-	public void testGetRecordsChunk_maxSizeInBytes() {
-		conf = new OAIConfiguration(new File(configFile));
-		conf.load();
-		assertEquals("bad recordsChunk_maxSizeInBytes", recordsChunk_maxSizeInBytes, 
-				conf.getRecordsChunk_maxSizeInBytes());
-	}
-
-	public void testSetRecordsChunk_maxSizeInBytes() {
-		int newValue = recordsChunk_maxSizeInBytes + 1;
-		conf = new OAIConfiguration(new File(configFile));
-		conf.load();
-		conf.setRecordsChunk_maxSizeInBytes(newValue);
-		assertEquals("bad recordsChunk_maxSizeInBytes", newValue, 
-				conf.getRecordsChunk_maxSizeInBytes());
-	}
-	
 	public void testGetSetsChunk_maxNumberOfRecords() {
 		conf = new OAIConfiguration(new File(configFile));
 		conf.load();
@@ -392,22 +359,6 @@ public class OAIConfigurationTestCase extends TestCase {
 		conf.setSetsChunk_maxNumberOfRecords(newValue);
 		assertEquals("bad setsChunk_maxNumberOfRecords", newValue, 
 				conf.getSetsChunk_maxNumberOfRecords());
-	}
-
-	public void testGetSetsChunk_maxSizeInBytes() {
-		conf = new OAIConfiguration(new File(configFile));
-		conf.load();
-		assertEquals("bad setsChunk_maxSizeInBytes", setsChunk_maxSizeInBytes, 
-				conf.getSetsChunk_maxSizeInBytes());
-	}
-
-	public void testSetSetsChunk_maxSizeInBytes() {
-		int newValue = setsChunk_maxSizeInBytes + 1;
-		conf = new OAIConfiguration(new File(configFile));
-		conf.load();
-		conf.setSetsChunk_maxSizeInBytes(newValue);
-		assertEquals("bad setsChunk_maxSizeInBytes", newValue, 
-				conf.getSetsChunk_maxSizeInBytes());
 	}
 
 	public void testGetRepositoryName() {

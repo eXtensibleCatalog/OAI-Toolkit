@@ -187,7 +187,7 @@ public class MySQLFacadeDataProvider extends BasicFacadeDataProvider
 		return content;
 	}
 	
-	public void prepareQuery() {
+	public int prepareQuery() {
 		if(null != tokenId) {
 			ResumptionTokenDTO tokenDTO = getSQLsFromResumptionToken(tokenId);
 			if(tokenDTO == null){
@@ -203,6 +203,7 @@ public class MySQLFacadeDataProvider extends BasicFacadeDataProvider
 				prglog.error("[PRG] sql is null");
 			}
 		}
+		return 0;
 	}
 
 	public int getTotalRecordCount() {

@@ -9,28 +9,38 @@
 
 package info.extensiblecatalog.OAIToolkit.oai.dataproviders;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.Collector;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.Version;
 
 import info.extensiblecatalog.OAIToolkit.DTOs.DataTransferObject;
 import info.extensiblecatalog.OAIToolkit.DTOs.RecordDTO;
 import info.extensiblecatalog.OAIToolkit.DTOs.ResumptionTokenDTO;
 import info.extensiblecatalog.OAIToolkit.DTOs.SetToRecordDTO;
+import info.extensiblecatalog.OAIToolkit.db.LuceneSearcher;
 import info.extensiblecatalog.OAIToolkit.db.ResumptionTokensMgr;
 import info.extensiblecatalog.OAIToolkit.utils.ApplInfo;
 import info.extensiblecatalog.OAIToolkit.utils.Logging;
@@ -63,7 +73,83 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 	private long   getIdTime      = 0;
 	private long   doc2RecordTime = 0;
 	private long   getDocTime     = 0;
-    
+	
+    // we want to keep a full harvest in memory for fast initial harvesting (first/initial harvest since server started)
+    static private BitSet cachedFullHarvestIds = null;
+    static private String cachedFullHarvestExpiry = null;
+    static private Timestamp cachedFullHarvestEarliestTimestamp = null;
+    static private IndexSearcher cachedFullHarvestIndexSearcher = null;
+    static private Set<String> cachedFullHarvestTokenIds = new HashSet<String>();
+    // vars used to handle cachedFullHarvest
+    private boolean cachedFullHarvest = false;
+    private int    tempIndex;
+
+	static public void initializeCachedFullHarvest() {
+		if (cachedFullHarvestIds == null) {
+			
+			IndexReader indexReader;
+			try {
+				indexReader = ApplInfo.luceneSearcher.getIndexReader().clone(true);
+			} catch (CorruptIndexException e1) {
+				prglog.error("[PRG] " + e1);
+				return;
+			} catch (IOException e1) {
+				prglog.error("[PRG] " + e1);
+				return;
+			}
+			cachedFullHarvestIndexSearcher = new IndexSearcher(indexReader);
+			
+			try {
+				cachedFullHarvestEarliestTimestamp = TextUtil.luceneToTimestamp(
+						ApplInfo.luceneSearcher.getEarliestDatestamp());
+				cachedFullHarvestExpiry = ApplInfo.luceneSearcher.getLatestDatestamp();					
+			} catch (ParseException pe) {
+				prglog.error("[PRG] " + pe);
+				return;
+			}
+
+	    	Query query = null;
+	    	QueryParser parser = new QueryParser(Version.LUCENE_30, "id", new StandardAnalyzer(Version.LUCENE_30));
+			try {
+				query = parser.parse("+is_deleted:false");
+			} catch (org.apache.lucene.queryParser.ParseException e) {
+				prglog.error("[PRG] " + e);
+				return;
+			}	
+	        try {
+	        	cachedFullHarvestIds = new BitSet(indexReader.maxDoc());                           
+	        	cachedFullHarvestIndexSearcher.search(query, new Collector() {
+	            	   private int docBase;
+	            	 
+	            	   // ignore scorer
+	            	   public void setScorer(Scorer scorer) {
+	            	   }
+
+	            	   // accept docs out of order (for a BitSet it doesn't matter)
+	            	   public boolean acceptsDocsOutOfOrder() {
+	            	     return true;
+	            	   }
+	            	 
+	            	   public void collect(int doc) {
+	            		   cachedFullHarvestIds.set(doc + docBase);
+	            	   }
+	            	 
+	            	   public void setNextReader(IndexReader reader, int docBase) {
+	            	     this.docBase = docBase;
+	            	   }
+	            	 });   
+	        	
+	        	prglog.info("[PRG] Initial Full Harvest Cache created successfully.");
+
+	      } catch (IOException e) {
+	        prglog.error("[PRG] " + e);
+	        cachedFullHarvestIds = null;
+	        return;
+	      }			
+					
+		}
+
+	}
 	
 	public String getEarliestDatestamp() {
 		try {
@@ -110,7 +196,11 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 	}
 	
 	public void selectRecords() {
-        lastRecord = recordLimit;
+		if (cachedFullHarvest) {
+			selectRecordsCachedFullHarvest();
+			return;
+		}
+		lastRecord = recordLimit;
 		if(lastRecord > recordLimit) {
 			lastRecord = recordLimit;
 		}
@@ -118,6 +208,33 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 			lastRecord = hits.scoreDocs.length;
 		}
 		currentRecord = 0; // count each iteration		
+		
+		getIdTime      = 0;
+		doc2RecordTime = 0;
+		getDocTime     = 0;
+	}
+	
+	public void selectRecordsCachedFullHarvest() {
+        lastRecord = offset + recordLimit;
+		if(lastRecord > cachedFullHarvestIds.cardinality()) {
+			lastRecord = cachedFullHarvestIds.cardinality();
+		}
+		currentRecord = offset; // count each iteration
+		
+		int NthBit = 0;
+		int n = offset;
+		// Is the first bit set?  If not, then we need to account for the fact we aren't starting at N=0.
+		if (! cachedFullHarvestIds.get(0)) {
+			n++;
+		}
+		for (; n > 0; n--) {
+			NthBit = cachedFullHarvestIds.nextSetBit(NthBit + 1);
+		}
+		tempIndex = NthBit; // keep track of the current bit (not always incremental!)
+
+		getIdTime      = 0;
+		doc2RecordTime = 0;
+		getDocTime     = 0;
 	}
 	
 	public boolean hasNextRecord() {
@@ -125,12 +242,21 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 	}
 	
 	public boolean hasMoreRecords() {
+		if (cachedFullHarvest) {
+			return hasMoreRecordsCachedFullHarvest();			
+		}
 		return hits.scoreDocs.length > recordLimit;
 	}
     
+	public boolean hasMoreRecordsCachedFullHarvest() {
+		return cachedFullHarvestIds.cardinality() > lastRecord;
+	}
 
 
 	public DataTransferObject nextRecord() {
+		if (cachedFullHarvest) {
+			return nextRecordCachedFullHarvest();
+		}
 		RecordDTO recordDTO = null;
 		int id;
         long t1 = System.currentTimeMillis();
@@ -151,6 +277,30 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
         currentRecord++;
 		return recordDTO;
 	}
+	
+	public DataTransferObject nextRecordCachedFullHarvest() {
+		RecordDTO recordDTO = null;
+		int id;
+        long t1 = System.currentTimeMillis();
+		long t2 = 0;
+		long t3 = 0;
+		try {
+			t2 = System.currentTimeMillis();
+			getIdTime += (t2-t1);
+            id = cachedFullHarvestIds.nextSetBit(tempIndex);
+            Document doc = cachedFullHarvestIndexSearcher.doc(id);
+            t3 = System.currentTimeMillis();
+			getDocTime += (t3-t2);
+            tempIndex = id + 1;
+			recordDTO = doc2RecordDTO(doc, id);
+			doc2RecordTime += (System.currentTimeMillis()-t3);
+		} catch(Exception e) {
+			prglog.error("[PRG] " + e);
+		}
+        currentRecord++;
+		return recordDTO;
+	}
+
 
 	
 	public List<DataTransferObject> getSetsOfRecord(Integer recordId) {
@@ -176,7 +326,7 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 		return ApplInfo.luceneSearcher.getXmlOfRecord(recordId, recordType);
 	}
 	
-	public void prepareQuery() {
+	public int prepareQuery() {
 		if(null != tokenId) {
 			ResumptionTokenDTO tokenDTO = getSQLsFromResumptionToken(tokenId);
 			if(tokenDTO == null){
@@ -185,29 +335,107 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 				queryString = tokenDTO.getQuery();
 				metadataPrefix = tokenDTO.getMetadataPrefix();
 			}
+			if (cachedFullHarvestTokenIds.contains(tokenId)) {
+				cachedFullHarvest = true;
+			} else if (initialHarvest == 1) {
+				// Uh-oh.  This harvester using this resumption token had used the cached full harvest prior to this server's restart
+				// This means it's STALE.  We need to throw an exception here.
+				//TODO: throw invalid resumption token error
+				prglog.warn("[PRG] A prior harvester is attempting to harvest via STALE (no longer viable) cached full harvest resumptionToken.");
+				return -1;
+			}
 		} else {
 			extractQueriesFromParameters(from, until, set);
 			if(0 >= queryString.length()){
 				prglog.error("[PRG] query string is null");
 			}
-		}
-		Sort sort = new Sort(new SortField("xc_id", SortField.INT));
-		
-		try {
-			// query recordLimit+1 (one extra) so that way we'll know if we're done with our list
-			if (lastRecordRead > 0) {
-				String from = String.format("%d", lastRecordRead);
-				hits = ApplInfo.luceneSearcher.searchRange(queryString, "xc_id", Integer.valueOf(from), Integer.MAX_VALUE, false, false, sort, recordLimit+1);
+
+			// Can we use the cached full harvest? (fast!)
+			initializeCachedFullHarvest();						
+			if (cachedFullHarvestIds == null) {
+				
+				prglog.warn("[PRG] The cached full harvest was not created for some reason (???)");		
+			
 			} else {
-					hits = ApplInfo.luceneSearcher.search(queryString, sort, recordLimit+1);
-			}
-		} catch (Exception ex) {
-			hits = null;
+							
+				if (set == null) {
+					boolean fromIsTooRecent = true;
+					boolean untilIsTooRecent = true;
+					boolean untilIsTooOld = true;
+					if (until == null) {
+						until = TextUtil.nowInUTC();
+					}
+					
+					String queryString = "+modification_date:{\"" + cachedFullHarvestExpiry + "\" TO \"" 
+						+ TextUtil.utcToMysqlTimestamp(until) + "\"}";
+					//prglog.error("testing if untilIsTooRecent, queryString:" + queryString);
+					TopDocs h = ApplInfo.luceneSearcher.search(queryString);
+					if (h.totalHits < 1)
+						untilIsTooRecent = false;
+								
+					try {
+						Timestamp uts = TextUtil.utcToTimestamp(until); 
+						Timestamp lts = TextUtil.luceneToTimestamp(cachedFullHarvestExpiry);
+						//prglog.error("testing if untilTimestamp:" + uts + " is more recent than the oldest record:" + lts);
+						if (uts.after(lts)) {
+							untilIsTooOld = false;
+						}
+					} catch (ParseException pe) {
+						prglog.error("[PRG] " + pe);						
+					}
+
+					if (from == null) {
+						fromIsTooRecent = false;
+					} else {
+						try {							
+							Timestamp fts = TextUtil.utcToTimestamp(from);
+							if (fts.before(cachedFullHarvestEarliestTimestamp))
+								fromIsTooRecent = false;
+							//prglog.error("testing if fromTimestamp:" + fts + " is before oldest created rec:" + cachedFullHarvestEarliestTimestamp);							
+						} catch (ParseException pe) {
+							prglog.error("[PRG] " + pe);
+						}
+					}
+					if (!fromIsTooRecent && !untilIsTooRecent && !untilIsTooOld) {
+						cachedFullHarvest = true;
+					}
+					//prglog.info("fromIsTooRecent:" + fromIsTooRecent + " untilIsTooRecent:" + untilIsTooRecent + " untilIsTooOld:" + untilIsTooOld);				
+					
+				}
+			}		
 		}
+						
+		if (cachedFullHarvest) {
+			
+			prglog.info("[PRG] We are using the cached full harvest for extra speed! (That's good!)");
+
+		// for all others, we perform the search each time
+		} else {
+			
+			prglog.info("[PRG] We are not using the cached full harvest. (Standard query.)");
+
+			Sort sort = new Sort(new SortField("xc_id", SortField.INT));			
+			try {
+				// query recordLimit+1 (one extra) so that way we'll know if we're done with our list
+				if (lastRecordRead > 0) {
+					String from = String.format("%d", lastRecordRead);
+					hits = ApplInfo.luceneSearcher.searchRange(queryString, "xc_id", Integer.valueOf(from), null, false, false, sort, recordLimit+1);
+				} else {
+						hits = ApplInfo.luceneSearcher.search(queryString, sort, recordLimit+1);
+				}
+			} catch (Exception ex) {
+				hits = null;
+			}
+		}
+		
+		return cachedFullHarvest ? 1 : 0;
 
 	}
 
-    public int getTotalRecordCount() {    	   	
+    public int getTotalRecordCount() {    	 
+    	if (cachedFullHarvest) {
+    		return getTotalRecordCountCachedFullHarvest();
+    	}
 	    	Sort sort = null;
 	    	Query query = null;
 	    	QueryParser parser = new QueryParser(Version.LUCENE_30, "id", new StandardAnalyzer(Version.LUCENE_30));
@@ -221,7 +449,11 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 	        BitSet ids = ApplInfo.luceneSearcher.searchForBits(query, sort);
 	        return ids.cardinality();
 	}
-    
+  
+    public int getTotalRecordCountCachedFullHarvest() {    	   	
+        return cachedFullHarvestIds.cardinality();
+    }
+
 	
 	public String getMetadataPrefix() {
 		if(metadataPrefix != null) {
@@ -267,11 +499,7 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 
 		// if until is not set, we set it implicitly to "now"
 		if(null == until) {
-			Date date = new Timestamp(new Date().getTime());
-            SimpleDateFormat df = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ssZ" );
-            TimeZone tz = TimeZone.getTimeZone( "UTC" );
-            df.setTimeZone( tz );
-            until = df.format(date);
+            until = TextUtil.utcToMysqlTimestamp(TextUtil.nowInUTC());
 		} else {
 			until = TextUtil.utcToMysqlTimestamp(until);
 		}
@@ -317,7 +545,12 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
             List<Integer> intids = tokenMgr.insert(tokenDTO);
             prglog.info("intids.get(0)" + intids.get(0));
 			String resumptionToken = String.valueOf(intids.get(0));
-            prglog.info("Resumption Token" + resumptionToken);
+            prglog.info("Resumption Token: " + resumptionToken);
+            // we need to keep track of cached harvests based on resumption token
+        	if (cachedFullHarvest) {
+        		cachedFullHarvestTokenIds.add(resumptionToken);
+        	}
+            
             return resumptionToken;
 		} catch(SQLException e) {
 			e.printStackTrace();
@@ -368,4 +601,5 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 	public long getDocTime() {
 		return getDocTime;
 	}
+
 }

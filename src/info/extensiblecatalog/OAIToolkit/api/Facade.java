@@ -153,6 +153,7 @@ public class Facade {
 	
 	private int lastRecordRead = 0;
 	private int totalRecordCount = 0;
+	private int initialHarvest = 0;
 	
 	/** The OAI identifier's prefix */
 	private static final String idPrefix = 
@@ -199,7 +200,7 @@ public class Facade {
         //prglog.info("Value of boolean returned from resumptionToken is " + res);
         if (res == true){
         dataProvider.setParams(tokenId, from, until, set, metadataPrefix, lastRecordRead,
-				offset, totalRecordCount);
+				offset, totalRecordCount, initialHarvest);
 		initCacheRegister();
         }
 
@@ -629,7 +630,7 @@ public class Facade {
         boolean var = parseResumptionToken();
         if (var)  {
         	dataProvider.setParams(tokenId, from, until, set, metadataPrefix, lastRecordRead,
-    				offset, totalRecordCount);
+    				offset, totalRecordCount, initialHarvest);
         	
             if(verb.equals("ListRecords")) {
 
@@ -662,16 +663,13 @@ public class Facade {
 		prglog.info("[PRG] recordLimit: " + recordLimit);
 		dataProvider.setRecordLimit(recordLimit);
 
-		int maxLength = 0;
-		if(verb.equals(Constants.LIST_IDENTIFIERS)) {
-			maxLength = ApplInfo.oaiConf.getIdentifiersChunk_maxSizeInBytes();
-		} else if(verb.equals(Constants.LIST_RECORDS)) {
-			maxLength = ApplInfo.oaiConf.getRecordsChunk_maxSizeInBytes();
+		initialHarvest = dataProvider.prepareQuery();
+		if (initialHarvest < 0) {
+	        result.setContent((ErrorCodes.badResumptionTokenError(
+				"Please restart your harvest.")));
+	        return result;
 		}
-		prglog.info("[PRG] maxLength: " + maxLength);
 		
-		dataProvider.prepareQuery();
-
 		// totalRecordCount is passed via resumptionToken because it's an expensive operation (perform only once at the beginning)
 		if (totalRecordCount < 1) {
 			totalRecordCount = dataProvider.getTotalRecordCount();
@@ -705,11 +703,6 @@ public class Facade {
 					t1 = System.currentTimeMillis();
 					RecordDTO record = (RecordDTO)dataProvider.nextRecord();
 					readTime += (System.currentTimeMillis()-t1);
-					if(xml.length() >= maxLength) {
-						prglog.info("[PRG] The record exceed the maxSizeInBytes at " +
-								"the " + insertedRecords + "th record");
-						break;
-					}
 					t2 = System.currentTimeMillis();
 					xml.append(transformRecord(record, verb));
 					transformTime += (System.currentTimeMillis()-t2);
@@ -744,9 +737,9 @@ public class Facade {
 					hasMore = true;
 				}
 				
-				if(hasMore) {
+				if(hasMore) {						
 					result.setNextResumptionToken(
-							tokenId + "|" + lastReadId + "|" + (offset + recordLimit) + "|" + totalRecordCount);
+							tokenId + "|" + lastReadId + "|" + (offset + recordLimit) + "|" + totalRecordCount + "|" + initialHarvest);
 					xml.append(
 						XMLUtil.xmlTag("resumptionToken",
 							result.getNextResumptionToken(),
@@ -941,6 +934,7 @@ public class Facade {
 			lastRecordRead  = Integer.parseInt(tokens[1]);
 			offset = Integer.parseInt(tokens[2]);
 			totalRecordCount = Integer.parseInt(tokens[3]);
+			initialHarvest = Integer.parseInt(tokens[4]);
             //prglog.info("Value of the lastRecordRead in parseResumptionToken is" + lastRecordRead);
             }
 

@@ -20,11 +20,12 @@ public class BasicFacadeDataProvider {
 	protected String metadataPrefix;
 	protected int lastRecordRead;
 	protected int recordLimit;
+	protected int initialHarvest;
 
 	protected boolean badResumptionTokenError = false;
 
 	public void setParams(String tokenId, String from, 
-			String until, String set, String metadataPrefix, int lastRecordRead, int offset, int totalRecordCount) {
+			String until, String set, String metadataPrefix, int lastRecordRead, int offset, int totalRecordCount, int initialHarvest) {
 		this.tokenId         = tokenId;
 		this.from            = from;
 		this.until           = until;
@@ -33,6 +34,7 @@ public class BasicFacadeDataProvider {
 		this.metadataPrefix  = metadataPrefix;
 		this.lastRecordRead  = lastRecordRead;
 		this.totalRecordCount = totalRecordCount;
+		this.initialHarvest = initialHarvest;
 	}
 
 	public void setRecordLimit(int recordLimit) {

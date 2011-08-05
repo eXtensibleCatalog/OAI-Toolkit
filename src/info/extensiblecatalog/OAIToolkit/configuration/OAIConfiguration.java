@@ -93,20 +93,11 @@ public class OAIConfiguration {
 	/** maximum number of sets in a ListSets response chunk */
 	private int setsChunk_maxNumberOfRecords = 0;
 
-	/** maximum size in bytes of a ListSets response chunk */
-	private int setsChunk_maxSizeInBytes = 0;
-
 	/** maximum number of records in a ListRecords response chunk */
 	private int recordsChunk_maxNumberOfRecords = 0;
 
-	/** maximum size in bytes of a ListRecords response chunk */
-	private int recordsChunk_maxSizeInBytes = 0;
-
 	/** maximum number of identifiers in a ListIdentifiers response chunk */
 	private int identifiersChunk_maxNumberOfRecords = 0;
-
-	/** maximum size in bytes of a ListIdentifiers response chunk */
-	private int identifiersChunk_maxSizeInBytes = 0;
 
 	/** maximum number of simultaneous requests */
 	private int maxSimultaneousRequest = 0;
@@ -181,16 +172,10 @@ public class OAIConfiguration {
 			compression = ((String)defaultProps.getProperty("compression")).split(", ");
 			setsChunk_maxNumberOfRecords = Integer.parseInt(
 					defaultProps.getProperty("setsChunk_maxNumberOfRecords"));
-			setsChunk_maxSizeInBytes = Integer.parseInt(
-					defaultProps.getProperty("setsChunk_maxSizeInBytes"));
 			recordsChunk_maxNumberOfRecords = Integer.parseInt(
 					defaultProps.getProperty("recordsChunk_maxNumberOfRecords"));
-			recordsChunk_maxSizeInBytes = Integer.parseInt(
-					defaultProps.getProperty("recordsChunk_maxSizeInBytes"));
 			identifiersChunk_maxNumberOfRecords = Integer.parseInt(
 					defaultProps.getProperty("identifiersChunk_maxNumberOfRecords"));
-			identifiersChunk_maxSizeInBytes = Integer.parseInt(
-					defaultProps.getProperty("identifiersChunk_maxSizeInBytes"));
 			maxSimultaneousRequest = Integer.parseInt(
 					defaultProps.getProperty("maxSimultaneousRequest"));
 			expirationDate = Integer.parseInt(
@@ -243,11 +228,8 @@ public class OAIConfiguration {
 			defaultProps.setProperty("granularity", granularity);
 			defaultProps.setProperty("compression", TextUtil.join(Arrays.asList(compression), ", "));
 			defaultProps.setProperty("setsChunk_maxNumberOfRecords", String.valueOf(setsChunk_maxNumberOfRecords));
-			defaultProps.setProperty("setsChunk_maxSizeInBytes", String.valueOf(setsChunk_maxSizeInBytes));
 			defaultProps.setProperty("recordsChunk_maxNumberOfRecords", String.valueOf(recordsChunk_maxNumberOfRecords));
-			defaultProps.setProperty("recordsChunk_maxSizeInBytes", String.valueOf(recordsChunk_maxSizeInBytes));
 			defaultProps.setProperty("identifiersChunk_maxNumberOfRecords", String.valueOf(identifiersChunk_maxNumberOfRecords));
-			defaultProps.setProperty("identifiersChunk_maxSizeInBytes", String.valueOf(identifiersChunk_maxSizeInBytes));
 			defaultProps.setProperty("maxSimultaneousRequest", String.valueOf(maxSimultaneousRequest));
 			defaultProps.setProperty("expirationDate", String.valueOf(expirationDate));
 			defaultProps.setProperty("schema", schema);
@@ -372,15 +354,6 @@ public class OAIConfiguration {
 		this.identifiersChunk_maxNumberOfRecords = identifiersChunk_maxNumberOfRecords;
 	}
 
-	public int getIdentifiersChunk_maxSizeInBytes() {
-		return identifiersChunk_maxSizeInBytes;
-	}
-
-	public void setIdentifiersChunk_maxSizeInBytes(
-			int identifiersChunk_maxSizeInBytes) {
-		this.identifiersChunk_maxSizeInBytes = identifiersChunk_maxSizeInBytes;
-	}
-
 	public int getMaxSimultaneousRequest() {
 		return maxSimultaneousRequest;
 	}
@@ -406,14 +379,6 @@ public class OAIConfiguration {
 		this.recordsChunk_maxNumberOfRecords = recordsChunk_maxNumberOfRecords;
 	}
 
-	public int getRecordsChunk_maxSizeInBytes() {
-		return recordsChunk_maxSizeInBytes;
-	}
-
-	public void setRecordsChunk_maxSizeInBytes(int recordsChunk_maxSizeInBytes) {
-		this.recordsChunk_maxSizeInBytes = recordsChunk_maxSizeInBytes;
-	}
-
 	public String getRepositoryName() {
 		return repositoryName;
 	}
@@ -430,14 +395,6 @@ public class OAIConfiguration {
 		this.setsChunk_maxNumberOfRecords = setsChunk_maxNumberOfRecords;
 	}
 
-	public int getSetsChunk_maxSizeInBytes() {
-		return setsChunk_maxSizeInBytes;
-	}
-
-	public void setSetsChunk_maxSizeInBytes(int setsChunk_maxSizeInBytes) {
-		this.setsChunk_maxSizeInBytes = setsChunk_maxSizeInBytes;
-	}
-	
 	public String getSchema() {
 		return schema;
 	}
@@ -485,11 +442,8 @@ public class OAIConfiguration {
 		sb.append(", " + granularity);
 		sb.append(", " + TextUtil.join(compression, ", "));
 		sb.append(", " + setsChunk_maxNumberOfRecords);
-		sb.append(", " + setsChunk_maxSizeInBytes);
 		sb.append(", " + recordsChunk_maxNumberOfRecords);
-		sb.append(", " + recordsChunk_maxSizeInBytes);
 		sb.append(", " + identifiersChunk_maxNumberOfRecords);
-		sb.append(", " + identifiersChunk_maxSizeInBytes);
 		sb.append(", " + maxSimultaneousRequest);
 		sb.append(", " + expirationDate);
 		sb.append(", " + schema);

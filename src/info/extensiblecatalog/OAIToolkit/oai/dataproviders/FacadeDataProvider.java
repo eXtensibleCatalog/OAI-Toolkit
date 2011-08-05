@@ -21,9 +21,9 @@ public interface FacadeDataProvider {
 	/** store parameters */
 	public void setParams(String tokenId, String from, 
 			String until, String set, String metadataPrefix, 
-			int lastRecordRead, int offset, int totalRecordCount);
+			int lastRecordRead, int offset, int totalRecordCount, int initialHarvest);
 	
-	public void prepareQuery();
+	public int prepareQuery();
     
 	/** get the total number of records */
 	public int getTotalRecordCount();

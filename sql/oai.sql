@@ -1,6 +1,6 @@
 -- MySQL dump 10.11
 --
--- Host: localhost    Database: extensiblecatalog
+-- Host: localhost    Database: oaitoolkit
 -- ------------------------------------------------------
 -- Server version	5.0.51a-community-nt
 
@@ -17,14 +17,14 @@
 
 
 --
--- Create database `extensiblecatalog`
+-- Create database `oaitoolkit`
 --
 
-DROP DATABASE IF EXISTS `extensiblecatalog`;
+DROP DATABASE IF EXISTS `oaitoolkit`;
 
-CREATE DATABASE IF NOT EXISTS `extensiblecatalog` DEFAULT CHARACTER SET utf8;
+CREATE DATABASE IF NOT EXISTS `oaitoolkit` DEFAULT CHARACTER SET utf8;
 
-USE `extensiblecatalog`;
+USE `oaitoolkit`;
 
 
 --

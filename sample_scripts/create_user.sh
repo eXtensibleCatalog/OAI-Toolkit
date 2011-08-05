@@ -17,12 +17,12 @@ root_user=$1
 # set the MySQL root user's password here
 root_password=$2
 
-# set the MySQL user name, who will use the extensiblecatalog
+# set the MySQL user name, who will use the oaitoolkit
 user=$3
 
-# set the MySQL user password who will use the extensiblecatalog
+# set the MySQL user password who will use the oaitoolkit
 password=$4
 
 mysql --user="$root_user" --password="$root_password" -e "CREATE USER $user@localhost IDENTIFIED BY '$password';"
-mysql --user="$root_user" --password="$root_password" -e "GRANT all privileges ON extensiblecatalog.* TO $user@localhost;"
+mysql --user="$root_user" --password="$root_password" -e "GRANT all privileges ON oaitoolkit.* TO $user@localhost;"
 

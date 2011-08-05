@@ -9,6 +9,8 @@
 
 package info.extensiblecatalog.OAIToolkit.db;
 
+import info.extensiblecatalog.OAIToolkit.oai.dataproviders.LuceneFacadeDataProvider;
+import info.extensiblecatalog.OAIToolkit.utils.ApplInfo;
 import info.extensiblecatalog.OAIToolkit.utils.Logging;
 
 import java.io.File;
@@ -20,6 +22,7 @@ import java.util.BitSet;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.document.FieldSelectorResult;
 import org.apache.lucene.index.IndexReader;
@@ -37,6 +40,7 @@ import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopScoreDocCollector;
@@ -69,19 +73,18 @@ public class LuceneSearcher {
 	
 	// Make sure that the searcher is using an up-to-date index reader.
 	// If it's not current, then we will miss out on recently committed changes
-	private IndexSearcher getSearcher() {
+	public IndexSearcher getSearcher() {
 		if (searcher == null) {
 			createNewLuceneIndex();
 		}
 		try {				
 			IndexReader ir = searcher.getIndexReader();
 	        if (! ir.isCurrent()) {
-	        	prglog.info("[PRG] " + "Lucene searcher's index reader is not current. Calling reopen().");
-	        	IndexReader newir = ir.reopen();
+	        	prglog.info("[PRG] " + "Lucene searcher's index reader is not current. Retrieving new IndexReader.");
+	        	IndexReader newir = getIndexReader();
 	        	 if (newir != ir) {
 	        	   // reader was reopened
 	        	   prglog.info("[PRG] " + "Lucene searcher's index reader was successfully reopen()-ed.");
-	        	   ir.close(); 
 	        	   searcher = new IndexSearcher(newir);
 	        	 }
 	        }
@@ -98,7 +101,7 @@ public class LuceneSearcher {
 
 	// Make sure we are using an up-to-date index reader.
 	// If it's not current, then we will miss out on recently committed changes
-	private IndexReader getIndexReader() {
+	public IndexReader getIndexReader() {
 		if (indexReader == null) {
 			createNewLuceneIndex();
 		}
@@ -133,8 +136,8 @@ public class LuceneSearcher {
 			writer.close();
 			
 			// attempt once more to open index searcher and reader
-			searcher = new IndexSearcher(fsDir);
 			indexReader = IndexReader.open(fsDir);
+			searcher = new IndexSearcher(indexReader);
 			
 		} catch (IOException e) {
 			System.out.println("Failed to create new lucene index: " + e);
@@ -149,7 +152,7 @@ public class LuceneSearcher {
 
 		getSearcher();
 		getIndexReader();
-			
+					
         //bits = new BitSet(indexReader.maxDoc());
             		
 		/*
@@ -475,6 +478,24 @@ public class LuceneSearcher {
 		return query;
 	}
 
+	public String getLatestDatestamp() {
+		String latest = null;
+		try {
+			Sort sort = new Sort(new SortField("modification_date", SortField.STRING, true));
+			TopDocs hits = search("is_deleted:false OR is_deleted:true", sort, 1);
+			int id = hits.scoreDocs[0].doc;
+            Document doc = getSearcher().doc(id);
+			
+			Field[] flds = doc.getFields("modification_date");
+			// this field is stored in order (if it weren't we'd have to sort them first)
+			// most recent is at the top of the list
+			latest = flds[0].stringValue();
+
+		} catch (Exception e) {		
+			prglog.error("[PRG] " + e);
+		}
+		return latest;
+	}
 	public String getEarliestDatestamp() {
 		if(earliestDatestamp == null) {
 			earliestDatestamp = showFirstTerm("modification_date");
