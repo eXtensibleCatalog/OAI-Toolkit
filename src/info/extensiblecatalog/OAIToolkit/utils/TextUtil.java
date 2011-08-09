@@ -141,26 +141,58 @@ public class TextUtil {
 		return timestamp;
 	}
 
+	/**
+	 * Get the current time in UTC
+	 * @return The current time in UTC
+	 */
+	 public static String nowInUTC() {
+		Date date = new Date();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+        df.setTimeZone(TimeZone.getTimeZone("GMT"));
+        return df.format(date);
+	}
+
 	public static Timestamp utcToTimestamp(String utcTimestamp) 
 			throws ParseException {
-		Timestamp timestamp;
-		Date d = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
-					.parse(utcTimestamp);
+		Timestamp timestamp;		
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+		Date d = df.parse(utcTimestamp);
 		timestamp = new Timestamp(d.getTime());
 		return timestamp;
 	}
-
+	
+	public static Date utcToDate(String utcTimestamp) 
+			throws ParseException {	
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+		df.setTimeZone(TimeZone.getTimeZone("GMT"));
+		Date d = df.parse(utcTimestamp);
+		return d;
+	}
+	
 	public static Timestamp luceneToTimestamp(String utcTimestamp)
 			throws ParseException {
 		Timestamp timestamp;
-		Date d = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S")
-			.parse(utcTimestamp);
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+        Date d = df.parse(utcTimestamp);
 		timestamp = new Timestamp(d.getTime());
 		return timestamp;
 	}
 
-	public static String utcToMysqlTimestamp(String utcTimestamp) {
-		return utcTimestamp.replace('T', ' ').replaceAll("Z", "");
+	public static Date luceneToDate(String utcTimestamp)
+			throws ParseException {
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+		df.setTimeZone(TimeZone.getTimeZone("GMT"));
+		Date d = df.parse(utcTimestamp);
+		return d;
+	}
+
+	public static String utcToMysqlTimestamp(String utcTimestamp) 
+			throws ParseException {
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+		Date d = df.parse(utcTimestamp);
+		df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+		df.setTimeZone(TimeZone.getTimeZone("GMT"));
+		return df.format(d);
 	}
 
 	/**
@@ -172,7 +204,7 @@ public class TextUtil {
 	public static String timestampToString(Timestamp marcTimestamp) {
 		return new SimpleDateFormat("yyyyMMddHHmmss.S").format(marcTimestamp);
 	}
-	
+		
 	/**
 	 * Convert a java.sql.Timestamp object (come from the database) to
 	 * string in UTCdatetime format "yyyy-MM-dd'T'HH:mm:ssZ" format
@@ -334,15 +366,4 @@ public class TextUtil {
 		return content.toString();
 	}
 	
-	/**
-	 * Get the current time in UTC
-	 * @return The current time in UTC
-	 */
-	 public static String nowInUTC() {
-		Date date = new Timestamp(new Date().getTime());
-        SimpleDateFormat df = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ssZ" );
-        TimeZone tz = TimeZone.getTimeZone( "UTC" );
-        df.setTimeZone( tz );
-        return df.format(date);
-	}
 }

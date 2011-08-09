@@ -12,6 +12,7 @@ package info.extensiblecatalog.OAIToolkit.db;
 import info.extensiblecatalog.OAIToolkit.oai.dataproviders.LuceneFacadeDataProvider;
 import info.extensiblecatalog.OAIToolkit.utils.ApplInfo;
 import info.extensiblecatalog.OAIToolkit.utils.Logging;
+import info.extensiblecatalog.OAIToolkit.utils.TextUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -481,15 +482,29 @@ public class LuceneSearcher {
 	public String getLatestDatestamp() {
 		String latest = null;
 		try {
-			Sort sort = new Sort(new SortField("modification_date", SortField.STRING, true));
-			TopDocs hits = search("is_deleted:false OR is_deleted:true", sort, 1);
-			int id = hits.scoreDocs[0].doc;
-            Document doc = getSearcher().doc(id);
-			
+			IndexSearcher searcher = getSearcher();
+            Document doc = searcher.doc(searcher.maxDoc() - 1);			
 			Field[] flds = doc.getFields("modification_date");
 			// this field is stored in order (if it weren't we'd have to sort them first)
 			// most recent is at the top of the list
 			latest = flds[0].stringValue();
+			prglog.info("getLatestDatestamp:" + latest);
+			
+			// It's extremely possible that the max doc id is NOT the most recent record
+			// we just need to narrow our range search to something reasonable
+			Sort sort = new Sort(new SortField("modification_date", SortField.STRING, true));
+			String queryString = "+modification_date:[\"" + latest + "\" TO \"" 
+			+ TextUtil.utcToMysqlTimestamp(TextUtil.nowInUTC()) + "\"]";
+			prglog.info("queryString for latest datestamp:" + queryString);
+			TopDocs hits = search(queryString , sort, 1);
+			
+			if (hits.scoreDocs.length > 0) {
+				int id = hits.scoreDocs[0].doc;
+				doc = searcher.doc(id);
+				flds = doc.getFields("modification_date");
+				latest = flds[0].stringValue();
+			}			
+			prglog.info("getLatestDatestamp pass two:" + latest);
 
 		} catch (Exception e) {		
 			prglog.error("[PRG] " + e);

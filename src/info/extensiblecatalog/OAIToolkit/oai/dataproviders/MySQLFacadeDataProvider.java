@@ -11,6 +11,7 @@ package info.extensiblecatalog.OAIToolkit.oai.dataproviders;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -198,7 +199,12 @@ public class MySQLFacadeDataProvider extends BasicFacadeDataProvider
 				metadataPrefix = tokenDTO.getMetadataPrefix();
 			}
 		} else {
-			extractSQLsFromParameters(from, until, set);
+			try {
+				extractSQLsFromParameters(from, until, set);
+			} catch (ParseException e) {
+				prglog.error("[PRG]" + e);
+				return 0;
+			}
 			if(null != sql){
 				prglog.error("[PRG] sql is null");
 			}
@@ -261,7 +267,7 @@ public class MySQLFacadeDataProvider extends BasicFacadeDataProvider
 	}
 
 	private void extractSQLsFromParameters(String from, String until, 
-			String set) {
+			String set) throws ParseException {
 		List<String> whereList = new ArrayList<String>();
 		List<String> fromList = new ArrayList<String>();
 		fromList.add("records AS a");

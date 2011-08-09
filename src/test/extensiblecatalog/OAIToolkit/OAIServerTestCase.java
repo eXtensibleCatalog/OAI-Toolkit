@@ -10,6 +10,7 @@
 package test.extensiblecatalog.OAIToolkit;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -307,7 +308,7 @@ public class OAIServerTestCase extends TestCase {
 		assertEquals("must have <request verb='ListIdentifiers'>", 1, result.getLength());
 	}
 
-	public void xtestListIdentifier_fromUntil() throws IOException, SAXException {
+	public void xtestListIdentifier_fromUntil() throws IOException, SAXException, ParseException {
 		String from = "1972-06-01T19:20:30Z";
 		String until = "1998-07-01T19:20:30Z";
 		String url = baseUrl + "?verb=ListIdentifiers" +

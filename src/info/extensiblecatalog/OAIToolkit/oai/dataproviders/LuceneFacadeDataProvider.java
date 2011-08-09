@@ -77,14 +77,14 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
     // we want to keep a full harvest in memory for fast initial harvesting (first/initial harvest since server started)
     static private BitSet cachedFullHarvestIds = null;
     static private String cachedFullHarvestExpiry = null;
-    static private Timestamp cachedFullHarvestEarliestTimestamp = null;
+    static private Date cachedFullHarvestEarliestDate = null;
     static private IndexSearcher cachedFullHarvestIndexSearcher = null;
     static private Set<String> cachedFullHarvestTokenIds = new HashSet<String>();
     // vars used to handle cachedFullHarvest
     private boolean cachedFullHarvest = false;
     private int    tempIndex;
 
-	static public void initializeCachedFullHarvest() {
+	synchronized static public void initializeCachedFullHarvest() {
 		if (cachedFullHarvestIds == null) {
 			
 			IndexReader indexReader;
@@ -100,7 +100,7 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 			cachedFullHarvestIndexSearcher = new IndexSearcher(indexReader);
 			
 			try {
-				cachedFullHarvestEarliestTimestamp = TextUtil.luceneToTimestamp(
+				cachedFullHarvestEarliestDate = TextUtil.luceneToDate(
 						ApplInfo.luceneSearcher.getEarliestDatestamp());
 				cachedFullHarvestExpiry = ApplInfo.luceneSearcher.getLatestDatestamp();					
 			} catch (ParseException pe) {
@@ -365,18 +365,18 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 					if (until == null) {
 						until = TextUtil.nowInUTC();
 					}
-					
-					String queryString = "+modification_date:{\"" + cachedFullHarvestExpiry + "\" TO \"" 
-						+ TextUtil.utcToMysqlTimestamp(until) + "\"}";
-					//prglog.error("testing if untilIsTooRecent, queryString:" + queryString);
-					TopDocs h = ApplInfo.luceneSearcher.search(queryString);
-					if (h.totalHits < 1)
-						untilIsTooRecent = false;
-								
+
 					try {
-						Timestamp uts = TextUtil.utcToTimestamp(until); 
-						Timestamp lts = TextUtil.luceneToTimestamp(cachedFullHarvestExpiry);
-						//prglog.error("testing if untilTimestamp:" + uts + " is more recent than the oldest record:" + lts);
+						String queryString = "+modification_date:{\"" + cachedFullHarvestExpiry + "\" TO \"" 
+							+ TextUtil.utcToMysqlTimestamp(until) + "\"}";
+						//prglog.info("testing if untilIsTooRecent, queryString:" + queryString);
+						TopDocs h = ApplInfo.luceneSearcher.search(queryString);
+						if (h.totalHits < 1)
+							untilIsTooRecent = false;
+								
+						Date uts = TextUtil.utcToDate(until); 						
+						Date lts = TextUtil.luceneToDate(cachedFullHarvestExpiry);
+						//prglog.info("testing if untilTimestamp:" + uts + " is more recent than the oldest record:" + lts);
 						if (uts.after(lts)) {
 							untilIsTooOld = false;
 						}
@@ -388,10 +388,10 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 						fromIsTooRecent = false;
 					} else {
 						try {							
-							Timestamp fts = TextUtil.utcToTimestamp(from);
-							if (fts.before(cachedFullHarvestEarliestTimestamp))
+							Date fts = TextUtil.utcToDate(from);
+							if (fts.before(cachedFullHarvestEarliestDate))
 								fromIsTooRecent = false;
-							//prglog.error("testing if fromTimestamp:" + fts + " is before oldest created rec:" + cachedFullHarvestEarliestTimestamp);							
+							//prglog.info("testing if fromTimestamp:" + fts + " is before oldest created rec:" + cachedFullHarvestEarliestDate);							
 						} catch (ParseException pe) {
 							prglog.error("[PRG] " + pe);
 						}
@@ -399,7 +399,7 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 					if (!fromIsTooRecent && !untilIsTooRecent && !untilIsTooOld) {
 						cachedFullHarvest = true;
 					}
-					//prglog.info("fromIsTooRecent:" + fromIsTooRecent + " untilIsTooRecent:" + untilIsTooRecent + " untilIsTooOld:" + untilIsTooOld);				
+					prglog.info("fromIsTooRecent:" + fromIsTooRecent + " untilIsTooRecent:" + untilIsTooRecent + " untilIsTooOld:" + untilIsTooOld);				
 					
 				}
 			}		
@@ -498,18 +498,28 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 		}
 
 		// if until is not set, we set it implicitly to "now"
-		if(null == until) {
-            until = TextUtil.utcToMysqlTimestamp(TextUtil.nowInUTC());
-		} else {
-			until = TextUtil.utcToMysqlTimestamp(until);
+		try {
+			if(null == until) {
+	            until = TextUtil.utcToMysqlTimestamp(TextUtil.nowInUTC());
+			} else {
+				until = TextUtil.utcToMysqlTimestamp(until);
+			}
+		} catch (ParseException e) {
+			prglog.error("[PRG]" + e);
+			return;
 		}
-
+			
 		if(null != from || null != until) {
 			prglog.info("[PRG] " + from + ", " + until);
 			if(null == from) {
 				from = ApplInfo.luceneSearcher.showFirstTerm("modification_date");
 			} else {
-				from = TextUtil.utcToMysqlTimestamp(from);
+				try {
+					from = TextUtil.utcToMysqlTimestamp(from);
+				} catch (ParseException e) {
+					prglog.error("[PRG]" + e);
+					return;
+				}
 			}
 			prglog.info("[PRG] " + from + ", " + until);
 			
