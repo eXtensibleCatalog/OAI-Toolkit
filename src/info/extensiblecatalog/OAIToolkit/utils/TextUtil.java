@@ -189,7 +189,7 @@ public class TextUtil {
 	public static String utcToMysqlTimestamp(String utcTimestamp) 
 			throws ParseException {
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
-		Date d = df.parse(utcTimestamp);
+		Date d = df.parse(utcTimestamp.replaceFirst("Z$", "+0000"));
 		df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
 		df.setTimeZone(TimeZone.getTimeZone("GMT"));
 		return df.format(d);
