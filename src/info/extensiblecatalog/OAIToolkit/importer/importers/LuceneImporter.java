@@ -169,19 +169,29 @@ public class LuceneImporter extends BasicRecordImporter
             if (isExistent == false) {
 				//id = data.getExternalId() + "t" + data.getRecordType();
             	
-				typeList.add(ImportType.CREATED);
-				
-                // Get the last_inserted successful ID from the database.
-                xcoaiid = xcoaiid + trackedOaiIdValue;
-                xcid = String.format("%d", trackedOaiIdValue);
+            	if (rec.isDeleted()) {
+            		
+            		docTest = false;
+        			libloadlog.warn("Attempting to delete a record (" + id + ") which does not exist.");
 
-         	   	//prglog.debug("ID="+ id + " OAIID=" + xcoaiid + " FILE=" + currentFile + " NEW");
-         
-                 // Assign that new id. Insert it into the DB.
-                // Increase the ID, and then update the DB with the new last_inserted_value
-                //prglog.debug(" The value of the xcoai ID (created new) is:"+ xcoaiid);
-                trackedOaiIdValue++;
+            		
+            	} else {
+            	
+					typeList.add(ImportType.CREATED);
+					
+	                // Get the last_inserted successful ID from the database.
+	                xcoaiid = xcoaiid + trackedOaiIdValue;
+	                xcid = String.format("%d", trackedOaiIdValue);
+	
+	         	   	//prglog.debug("ID="+ id + " OAIID=" + xcoaiid + " FILE=" + currentFile + " NEW");
+	         
+	                 // Assign that new id. Insert it into the DB.
+	                // Increase the ID, and then update the DB with the new last_inserted_value
+	                //prglog.debug(" The value of the xcoai ID (created new) is:"+ xcoaiid);
+	                trackedOaiIdValue++;
              
+            	}
+            	
             // modified record
 			} else {
 				Document doc = null;
