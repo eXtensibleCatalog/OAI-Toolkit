@@ -8,5 +8,5 @@ rem parameters according to your needs. Read the
 rem OAIToolkit Manual for the details.
 rem ====================================================
 
-java -Xmx1024m -cp "lib\xercesImpl.jar:lib\xml-apis.jar" -jar lib\OAIToolkit-1.0.5.jar -lucene_statistics -lucene_index lucene_index
+java -Xmx1024m -cp "lib\xercesImpl.jar:lib\xml-apis.jar" -jar lib\OAIToolkit-1.0.6.jar -lucene_statistics -lucene_index lucene_index
 
