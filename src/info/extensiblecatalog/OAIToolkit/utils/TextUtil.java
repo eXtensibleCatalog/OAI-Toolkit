@@ -156,7 +156,7 @@ public class TextUtil {
 			throws ParseException {
 		Timestamp timestamp;		
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
-		Date d = df.parse(utcTimestamp);
+		Date d = df.parse(utcTimestamp.replaceFirst("Z$", "+0000"));
 		timestamp = new Timestamp(d.getTime());
 		return timestamp;
 	}
@@ -165,7 +165,7 @@ public class TextUtil {
 			throws ParseException {	
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 		df.setTimeZone(TimeZone.getTimeZone("GMT"));
-		Date d = df.parse(utcTimestamp);
+		Date d = df.parse(utcTimestamp.replaceFirst("Z$", "+0000"));
 		return d;
 	}
 	
@@ -173,7 +173,7 @@ public class TextUtil {
 			throws ParseException {
 		Timestamp timestamp;
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
-        Date d = df.parse(utcTimestamp);
+        Date d = df.parse(utcTimestamp.replaceFirst("Z$", "+0000"));
 		timestamp = new Timestamp(d.getTime());
 		return timestamp;
 	}
@@ -182,7 +182,7 @@ public class TextUtil {
 			throws ParseException {
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
 		df.setTimeZone(TimeZone.getTimeZone("GMT"));
-		Date d = df.parse(utcTimestamp);
+		Date d = df.parse(utcTimestamp.replaceFirst("Z$", "+0000"));
 		return d;
 	}
 
