@@ -8,4 +8,4 @@
 # OAIToolkit Manual for the details.
 # ====================================================
 
-java -Xmx1024m -cp "lib/xercesImpl.jar:lib/xml-apis.jar" -jar lib/OAIToolkit-1.0.6.jar -lucene_statistics -lucene_index lucene_index
+java -Xmx1024m -cp "lib/xercesImpl.jar:lib/xml-apis.jar" -jar lib/OAIToolkit-1.0.7.jar -lucene_statistics -lucene_index lucene_index
