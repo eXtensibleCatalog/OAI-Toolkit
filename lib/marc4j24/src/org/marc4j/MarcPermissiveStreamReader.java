@@ -660,6 +660,7 @@ public class MarcPermissiveStreamReader implements MarcReader {
 
         String[] tags = new String[size];
         int[] lengths = new int[size];
+        int[] starts = new int[size];
 
         byte[] tag = new byte[3];
         byte[] length = new byte[4];
@@ -706,7 +707,12 @@ public class MarcPermissiveStreamReader implements MarcReader {
                     tmpStr = new String(length);
                     lengths[i] = Integer.parseInt(tmpStr);
     
+                    /**
+                     * Chris D. added:
+                     */
                     inputrec.readFully(start);
+                    tmpStr = new String(start);
+                    starts[i] = Integer.parseInt(tmpStr);
                 }
                 else // length is 5 bytes long 
                 {
@@ -714,7 +720,12 @@ public class MarcPermissiveStreamReader implements MarcReader {
                     tmpStr = new String(start);
                     lengths[i] = Integer.parseInt(tmpStr);
     
-                    inputrec.readFully(start);                    
+                    /**
+                     * Chris D. added:
+                     */
+                    inputrec.readFully(start); 
+                    tmpStr = new String(start);
+                    starts[i] = Integer.parseInt(tmpStr);
                 }
                 totalOffset += lengths[i];
             }
@@ -728,12 +739,40 @@ public class MarcPermissiveStreamReader implements MarcReader {
                                 "Expected field terminator at end of directory. Unable to continue.");
                 throw new MarcException("expected field terminator at end of directory");
             }
-            
+            /** 
+             * Chris D. added:
+             * 
+             * The old way to parse fields depended on record terminators
+             * This can fail if there happen to be any RTs within a field
+             * I think it's better if we rely on the directory's "start" offsets
+             *             
             int numBadLengths = 0;
             
             int totalLength = 0;
+            **/
+            
+            int baseAddr = ldr.getBaseAddressOfData();
+            
+            /** Chris D. added:
+             *
+             * inputrec is currently at beginning of Data; mark this place
+             * 
+             */
+            inputrec.mark(recordLength - baseAddr + 1);
+            
             for (int i = 0; i < size; i++) 
             {
+            	/**
+            	 * Chris D. added:
+            	 * 
+            	 * Here we use directory information to locate each field
+            	 */
+            	inputrec.reset();
+            	inputrec.skipBytes(starts[i]);
+            	
+            	/**
+            	 * Chris D. added:
+            	 * 
                 int fieldLength = getFieldLength(inputrec);
                 if (fieldLength+1 != lengths[i] && permissive)
                 {
@@ -751,6 +790,9 @@ public class MarcPermissiveStreamReader implements MarcReader {
                     }
                 }
                 totalLength += lengths[i];
+                **/
+            	            	
+            	
                 if (isControlField(tags[i])) 
                 {
                     byteArray = new byte[lengths[i] - 1];
@@ -791,11 +833,12 @@ public class MarcPermissiveStreamReader implements MarcReader {
             {
                 guessAndSelectCorrectNonUTF8Encoding();
             }
-            if (inputrec.read() != Constants.RT)
+            int rt = inputrec.read();
+            if (rt != Constants.RT)
             {
                 errors.addError("unknown", "n/a", "n/a", ErrorHandler.FATAL, 
                                 "Expected record terminator at end of record. Unable to continue.");
-                throw new MarcException("expected record terminator");
+                throw new MarcException("expected record terminator " + Constants.RT + ", instead got " + rt);
             } 
         }
         catch (IOException e)
