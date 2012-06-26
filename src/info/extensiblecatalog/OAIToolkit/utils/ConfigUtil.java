@@ -53,7 +53,7 @@ public class ConfigUtil {
 		}
 
         BufferedReader re = new BufferedReader(new FileReader(configFile.getPath()));
-        String tmpfile = "tmpfile.txt";
+/*        String tmpfile = "tmpfile.txt";
         // Create new file
         File temp = new File(tmpfile);
 
@@ -91,14 +91,15 @@ public class ConfigUtil {
                 break;
         }
         out.close();
-
+*/
 		try {
-			PropertiesConfiguration prop = new PropertiesConfiguration(temp);
+			//PropertiesConfiguration prop = new PropertiesConfiguration(temp);
+			PropertiesConfiguration prop = new PropertiesConfiguration(configFile.getPath());
 			prglog.info("[PRG] successful ConfigUtil::load");
             //temp.deleteOnExit();
-            boolean dsuccess = temp.delete();
+            /*boolean dsuccess = temp.delete();
             if (!dsuccess)
-                throw new IllegalArgumentException("Delete: deletion failed");
+                throw new IllegalArgumentException("Delete: deletion failed");*/
 			return prop;
 		} catch (ConfigurationException e) {
 			prglog.error("[PRG] Unable to load properties from configuration file: "
