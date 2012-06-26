@@ -61,7 +61,7 @@ public class LuceneSearcher {
     private static final Logger prglog = Logging.getLogger(programmer_log);
 	//private static final Logger logger = Logging.getLogger();
 
-	private IndexSearcher searcher;
+	private IndexSearcher searcher = null;
 	private IndexReader indexReader;
 		
 	private String luceneDir;
@@ -113,7 +113,7 @@ public class LuceneSearcher {
 	        	 if (newir != indexReader) {
 	        	   // reader was reopened
 	        	   prglog.info("[PRG] " + "Lucene index reader was successfully reopen()-ed.");
-	        	   indexReader.close(); 
+	        	   //indexReader.close(); // closing this causes issues!!! leave it open...
 	        	   indexReader = newir;
 	        	 }
 	        }
@@ -129,6 +129,7 @@ public class LuceneSearcher {
 	}
 	
 	private void createNewLuceneIndex() {
+		prglog.info("Creating new, empty lucene index.");
 		try {
 			File indexDir = new File(luceneDir);
 			SimpleFSDirectory fsDir = new SimpleFSDirectory(indexDir);
@@ -150,10 +151,7 @@ public class LuceneSearcher {
 	public LuceneSearcher(String luceneDir) {
 		
 		this.luceneDir = luceneDir;
-
-		getSearcher();
-		getIndexReader();
-					
+		
         //bits = new BitSet(indexReader.maxDoc());
             		
 		/*
