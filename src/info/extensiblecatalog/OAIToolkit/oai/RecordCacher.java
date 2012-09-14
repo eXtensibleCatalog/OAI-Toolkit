@@ -38,7 +38,7 @@ public class RecordCacher implements Runnable {
 	public void run() {
 		long t0 = System.currentTimeMillis();
 		String caheId = facade.getCacheId();
-		prglog.info("[PRG] " + caheId + " cache registred? " + 
+		prglog.info("[PRG] " + caheId + " cache registered? " + 
 				ApplInfo.cacheRegister.containsKey(caheId));
 		if(!ApplInfo.cacheRegister.containsKey(caheId)) {
 			ApplInfo.cacheRegister.put(caheId, RequestState.STARTED);

@@ -75,6 +75,12 @@ public class ApplInfo {
 
     /** The Web Application version name running */
 	private static String applVer;
+	
+	/** We can filter records containing only this organization code
+	 * Useful if you want to use a single repo for an amalgamation of records, but also
+	 * allowing other OAIToolkit instances the ability to share only a subset of it (based on orgCode)
+	 */
+	private static String orgCodeFilter = null;
 
 	/** The directory, where the (mainly xsl) files are stored outside of
 	 * the web application */
@@ -118,8 +124,8 @@ public class ApplInfo {
 	public static Map<String, RequestState> cacheRegister 
 			= new HashMap<String, RequestState>();
 	
-	/** the timestamp of the last cache clearence 
-	 * -1 means that there haven't been cache clearence yet */
+	/** the timestamp of the last cache clearance 
+	 * -1 means that there haven't been cache clearance yet */
 	public static long lastCacheClear = -1;
 	
 	/** The minimum interval between two cache clearence */
@@ -269,6 +275,8 @@ public class ApplInfo {
                 cacheDir = applConf.getString("cacheDir");
                 cacheDir = cacheDir.replaceAll("\\\\+", "/");
                 System.out.println("ApplInfo::cacheDir: " + cacheDir);
+                orgCodeFilter = applConf.getString("orgCodeFilter");
+                System.out.println("ApplInfo::orgCodeFilter: " + orgCodeFilter);
             }
             else {
             	// alternate config dir is NECESSARY when running multiple instances!
@@ -290,6 +298,9 @@ public class ApplInfo {
                 cacheDir = applConf.getString(versionedCacheDir);
                 cacheDir = cacheDir.replaceAll("\\\\+", "/");
                 System.out.println("ApplInfo::cacheDir: " + cacheDir);
+                String versionedOrgCodeFilter = applVer + "." + "orgCodeFilter";
+                orgCodeFilter = applConf.getString(versionedOrgCodeFilter);
+                System.out.println("ApplInfo::orgCodeFilter: " + orgCodeFilter);
             }
 
 
@@ -380,5 +391,9 @@ public class ApplInfo {
 
 	public static void setResourceDir(String resourceDir) {
 		ApplInfo.resourceDir = resourceDir;
+	}
+	
+	public static String getOrgCodeFilter() {
+		return orgCodeFilter;
 	}
 }

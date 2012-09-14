@@ -25,28 +25,28 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.store.Directory;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.util.Version;
 
 import info.extensiblecatalog.OAIToolkit.DTOs.DataTransferObject;
 import info.extensiblecatalog.OAIToolkit.DTOs.RecordDTO;
 import info.extensiblecatalog.OAIToolkit.DTOs.ResumptionTokenDTO;
 import info.extensiblecatalog.OAIToolkit.DTOs.SetToRecordDTO;
-import info.extensiblecatalog.OAIToolkit.db.LuceneSearcher;
 import info.extensiblecatalog.OAIToolkit.db.ResumptionTokensMgr;
 import info.extensiblecatalog.OAIToolkit.utils.ApplInfo;
 import info.extensiblecatalog.OAIToolkit.utils.Logging;
 import info.extensiblecatalog.OAIToolkit.utils.TextUtil;
-import java.text.SimpleDateFormat;
-import java.util.TimeZone;
 
 /**
  * 
@@ -66,7 +66,6 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 
 
 	private String queryString;
-	private Query  query;
 	private TopDocs   hits;
 	private int    currentRecord;
 	private int    lastRecord;
@@ -108,14 +107,18 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 				return;
 			}
 
-	    	Query query = null;
-	    	QueryParser parser = new QueryParser(Version.LUCENE_30, "id", new StandardAnalyzer(Version.LUCENE_30));
-			try {
-				query = parser.parse("+is_deleted:false");
-			} catch (org.apache.lucene.queryParser.ParseException e) {
-				prglog.error("[PRG] " + e);
-				return;
-			}	
+	    	BooleanQuery query = new BooleanQuery();
+
+	    	// don't include deleted records
+			query.add((Query)new TermQuery(new Term("is_deleted", 
+					"false")), Occur.MUST);
+
+			// do we need to filter based on orgCode?
+			if (ApplInfo.getOrgCodeFilter() != null) {
+				query.add((Query)new TermQuery(new Term("repository_code", 
+						ApplInfo.getOrgCodeFilter())), Occur.MUST);
+			}
+				
 	        try {
 	        	cachedFullHarvestIds = new BitSet(indexReader.maxDoc());                           
 	        	cachedFullHarvestIndexSearcher.search(query, new Collector() {
@@ -168,6 +171,13 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 		Integer docId[] = new Integer[1];
 		Document doc = ApplInfo.luceneSearcher.getRecordByXcOaiID(xcOaiId, docId);
 		if(doc != null) {
+			// make sure this record is part of the orgCode subset!
+			final String orgCode = ApplInfo.getOrgCodeFilter();
+			if (orgCode != null) {
+				if (! doc.get("repository_code").equals(orgCode)) {
+					return list;
+				}
+			}
 			list.add(doc2RecordDTO(doc, docId[0]));
 		}
 
@@ -181,6 +191,13 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 
 		Document doc = ApplInfo.luceneSearcher.getRecordByID(id);
 		if(doc != null) {
+			// make sure this record is part of the orgCode subset!
+			final String orgCode = ApplInfo.getOrgCodeFilter();
+			if (orgCode != null) {
+				if (! doc.get("repository_code").equals(orgCode)) {
+					return list;
+				}
+			}
 			list.add(doc2RecordDTO(doc, id));
 		}
 
@@ -413,7 +430,7 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 		} else {
 			
 			prglog.info("[PRG] We are not using the cached full harvest. (Standard query.)");
-
+			
 			Sort sort = new Sort(new SortField("xc_id", SortField.INT));			
 			try {
 				// query recordLimit+1 (one extra) so that way we'll know if we're done with our list
@@ -540,6 +557,12 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 				queryBuffer.append("+set:" + setId);
 			}
 		}
+		
+		// do we need to filter by orgCode?
+		if (ApplInfo.getOrgCodeFilter() != null) {
+			queryBuffer.append(" AND +repository_code:\"" + ApplInfo.getOrgCodeFilter() + "\"");					
+		}
+
 		queryString = queryBuffer.toString();
 		prglog.info("[PRG] " + queryString);
 	}
