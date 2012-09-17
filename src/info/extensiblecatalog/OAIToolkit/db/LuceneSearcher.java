@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.BitSet;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -468,7 +469,7 @@ public class LuceneSearcher {
 		Query query = null;
 		if(!queryString.equals("")) {
 			try {
-				QueryParser parser = new QueryParser(Version.LUCENE_30, "id", new StandardAnalyzer(Version.LUCENE_30));
+				QueryParser parser = new QueryParser(Version.LUCENE_30, "id", new KeywordAnalyzer());
 				query = parser.parse(queryString);
 			} catch(ParseException e) {
 				prglog.error("[PRG] " + e);

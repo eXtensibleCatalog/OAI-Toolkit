@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.CorruptIndexException;
@@ -455,7 +456,7 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
     	}
 	    	Sort sort = null;
 	    	Query query = null;
-	    	QueryParser parser = new QueryParser(Version.LUCENE_30, "id", new StandardAnalyzer(Version.LUCENE_30));
+	    	QueryParser parser = new QueryParser(Version.LUCENE_30, "id", new KeywordAnalyzer());
 			try {
 				query = parser.parse(queryString);
 			} catch (org.apache.lucene.queryParser.ParseException e) {
