@@ -584,7 +584,8 @@ public class Facade {
 
 		StringBuffer xml = new StringBuffer();
 		try {
-			List<DataTransferObject> records = dataProvider.getRecord(identifier);
+			String id = xlateOaiIdIncoming(identifier);
+			List<DataTransferObject> records = dataProvider.getRecord(id);
 
 			if(null == records || 0 == records.size()){
 				form.setXml(ErrorCodes.idDoesNotExistError());
@@ -595,6 +596,9 @@ public class Facade {
 				int insertedRecords = 0;
 				for(DataTransferObject r : records) {
 					RecordDTO record = (RecordDTO)r;
+					if (!id.equals(identifier)) {
+						record.setXcOaiId(identifier);
+					}
 					xml.append(transformRecord(record, verb));
 					insertedRecords++;
 				}
@@ -606,6 +610,29 @@ public class Facade {
 
 		form.setXml(XMLUtil.xmlTag("GetRecord", xml.toString()));
         
+	}
+	
+	static private String xlateOaiIdIncoming(String incomingId) {
+		final String idFrom = ApplInfo.getOrgCodeFilterXlateOaiIdentifierFrom();
+		final String idTo = ApplInfo.getOrgCodeFilterXlateOaiIdentifierTo();
+		String id = incomingId;
+		if (idFrom != null && idTo != null) {
+			if (id.indexOf(idTo) == 0) {
+				id = idFrom + id.substring(idTo.length());
+			}
+		}		
+		return id;
+	}
+	static private String xlateOaiIdOutgoing(String outgoingId) {
+		final String idFrom = ApplInfo.getOrgCodeFilterXlateOaiIdentifierFrom();
+		final String idTo = ApplInfo.getOrgCodeFilterXlateOaiIdentifierTo();
+		String id = outgoingId;
+		if (idFrom != null && idTo != null) {
+			if (id.indexOf(idFrom) == 0) {
+				id = idTo + id.substring(idFrom.length());
+			}
+		}		
+		return id;
 	}
 
 	/**
@@ -702,6 +729,11 @@ public class Facade {
 				while(dataProvider.hasNextRecord()) {
 					t1 = System.currentTimeMillis();
 					RecordDTO record = (RecordDTO)dataProvider.nextRecord();
+					
+					String oaiId = record.getXcOaiId();
+					oaiId = xlateOaiIdOutgoing(oaiId);
+					record.setXcOaiId(oaiId);
+					
 					readTime += (System.currentTimeMillis()-t1);
 					t2 = System.currentTimeMillis();
 					xml.append(transformRecord(record, verb));

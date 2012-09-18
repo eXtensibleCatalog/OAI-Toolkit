@@ -81,6 +81,8 @@ public class ApplInfo {
 	 * allowing other OAIToolkit instances the ability to share only a subset of it (based on orgCode)
 	 */
 	private static String orgCodeFilter = null;
+	private static String orgCodeFilterXlateOaiIdentifierFrom = null;
+	private static String orgCodeFilterXlateOaiIdentifierTo = null;
 
 	/** The directory, where the (mainly xsl) files are stored outside of
 	 * the web application */
@@ -275,8 +277,7 @@ public class ApplInfo {
                 cacheDir = applConf.getString("cacheDir");
                 cacheDir = cacheDir.replaceAll("\\\\+", "/");
                 System.out.println("ApplInfo::cacheDir: " + cacheDir);
-                orgCodeFilter = applConf.getString("orgCodeFilter");
-                System.out.println("ApplInfo::orgCodeFilter: " + orgCodeFilter);
+                
             }
             else {
             	// alternate config dir is NECESSARY when running multiple instances!
@@ -298,9 +299,7 @@ public class ApplInfo {
                 cacheDir = applConf.getString(versionedCacheDir);
                 cacheDir = cacheDir.replaceAll("\\\\+", "/");
                 System.out.println("ApplInfo::cacheDir: " + cacheDir);
-                String versionedOrgCodeFilter = applVer + "." + "orgCodeFilter";
-                orgCodeFilter = applConf.getString(versionedOrgCodeFilter);
-                System.out.println("ApplInfo::orgCodeFilter: " + orgCodeFilter);
+                
             }
 
 
@@ -339,6 +338,97 @@ public class ApplInfo {
 				oaiConf = new OAIConfiguration(OAI_SERVER_CNF_FILE);
 			}
 			oaiConf.load();
+			
+            // these settings are mainly used for supporting orgCode-based (subset) repositories
+            if(applVer.equals("OAIToolkit")) {
+	            orgCodeFilter = applConf.getString("orgCodeFilter");
+	            System.out.println("ApplInfo::orgCodeFilter: " + orgCodeFilter);
+	            orgCodeFilterXlateOaiIdentifierFrom = applConf.getString("orgCodeFilterXlateOaiIdentifierFrom");
+	            System.out.println("ApplInfo::orgCodeFilterXlateOaiIdentifierFrom: " + orgCodeFilterXlateOaiIdentifierFrom);
+	            orgCodeFilterXlateOaiIdentifierTo = applConf.getString("orgCodeFilterXlateOaiIdentifierTo");
+	            System.out.println("ApplInfo::orgCodeFilterXlateOaiIdentifierTo: " + orgCodeFilterXlateOaiIdentifierTo);
+
+	            String baseUrl = applConf.getString("baseUrl", "");
+	            if (! baseUrl.equals("")) {
+	                System.out.println("ApplInfo.oaiConf::baseUrl: " + baseUrl);
+	            	oaiConf.setBaseUrl(baseUrl);
+	            }
+	            String oaiIdentifierScheme = applConf.getString("oaiIdentifierScheme", "");
+	            if (! oaiIdentifierScheme.equals("")) {
+	                System.out.println("ApplInfo.oaiConf::oaiIdentifierScheme: " + oaiIdentifierScheme);
+	            	oaiConf.setOaiIdentifierScheme(oaiIdentifierScheme);
+	            }
+	            String repositoryName = applConf.getString("repositoryName", "");
+	            if (! repositoryName.equals("")) {
+	                System.out.println("ApplInfo.oaiConf::repositoryName: " + repositoryName);
+	            	oaiConf.setRepositoryName(repositoryName);
+	            }
+	            String oaiIdentifierDelimiter = applConf.getString("oaiIdentifierDelimiter", "");
+	            if (! oaiIdentifierDelimiter.equals("")) {
+	                System.out.println("ApplInfo.oaiConf::oaiIdentifierDelimiter: " + oaiIdentifierDelimiter);
+	            	oaiConf.setOaiIdentifierDelimiter(oaiIdentifierDelimiter);
+	            }
+	            String oaiIdentifierRepositoryIdentifier = applConf.getString("oaiIdentifierRepositoryIdentifier", "");
+	            if (! oaiIdentifierRepositoryIdentifier.equals("")) {
+	                System.out.println("ApplInfo.oaiConf::oaiIdentifierRepositoryIdentifier: " + oaiIdentifierRepositoryIdentifier);
+	            	oaiConf.setOaiIdentifierRepositoryIdentifier(oaiIdentifierRepositoryIdentifier);
+	            }
+	            String oaiIdentifierSampleIdentifier = applConf.getString("oaiIdentifierSampleIdentifier", "");
+	            if (! oaiIdentifierSampleIdentifier.equals("")) {
+	                System.out.println("ApplInfo.oaiConf::oaiIdentifierSampleIdentifier: " + oaiIdentifierSampleIdentifier);
+	            	oaiConf.setOaiIdentifierSampleIdentifier(oaiIdentifierSampleIdentifier);
+	            }
+	            String description = applConf.getString("description", "");
+	            if (! description.equals("")) {
+	                System.out.println("ApplInfo.oaiConf::description: " + description);
+	            	oaiConf.setDescription(description);
+	            }
+            } else {
+                String versionedOrgCodeFilter = applVer + "." + "orgCodeFilter";
+                orgCodeFilter = applConf.getString(versionedOrgCodeFilter);
+                System.out.println("ApplInfo::orgCodeFilter: " + orgCodeFilter);
+	            orgCodeFilterXlateOaiIdentifierFrom = applConf.getString(applVer + "." + "orgCodeFilterXlateOaiIdentifierFrom");
+	            System.out.println("ApplInfo::orgCodeFilterXlateOaiIdentifierFrom: " + orgCodeFilterXlateOaiIdentifierFrom);
+	            orgCodeFilterXlateOaiIdentifierTo = applConf.getString(applVer + "." + "orgCodeFilterXlateOaiIdentifierTo");
+	            System.out.println("ApplInfo::orgCodeFilterXlateOaiIdentifierTo: " + orgCodeFilterXlateOaiIdentifierTo);
+                
+                String baseUrl = applConf.getString(applVer + "." + "baseUrl", "");
+                if (! baseUrl.equals("")) {
+                    System.out.println("ApplInfo.oaiConf::baseUrl: " + baseUrl);
+                	oaiConf.setBaseUrl(baseUrl);
+                }
+                String oaiIdentifierScheme = applConf.getString(applVer + "." + "oaiIdentifierScheme", "");
+                if (! oaiIdentifierScheme.equals("")) {
+                    System.out.println("ApplInfo.oaiConf::oaiIdentifierScheme: " + oaiIdentifierScheme);
+                	oaiConf.setOaiIdentifierScheme(oaiIdentifierScheme);
+                }
+                String repositoryName = applConf.getString(applVer + "." + "repositoryName", "");
+                if (! repositoryName.equals("")) {
+                    System.out.println("ApplInfo.oaiConf::repositoryName: " + repositoryName);
+                	oaiConf.setRepositoryName(repositoryName);
+                }
+                String oaiIdentifierDelimiter = applConf.getString(applVer + "." + "oaiIdentifierDelimiter", "");
+                if (! oaiIdentifierDelimiter.equals("")) {
+                    System.out.println("ApplInfo.oaiConf::oaiIdentifierDelimiter: " + oaiIdentifierDelimiter);
+                	oaiConf.setOaiIdentifierDelimiter(oaiIdentifierDelimiter);
+                }
+                String oaiIdentifierRepositoryIdentifier = applConf.getString(applVer + "." + "oaiIdentifierRepositoryIdentifier", "");
+                if (! oaiIdentifierRepositoryIdentifier.equals("")) {
+                    System.out.println("ApplInfo.oaiConf::oaiIdentifierRepositoryIdentifier: " + oaiIdentifierRepositoryIdentifier);
+                	oaiConf.setOaiIdentifierRepositoryIdentifier(oaiIdentifierRepositoryIdentifier);
+                }
+	            String oaiIdentifierSampleIdentifier = applConf.getString(applVer + "." + "oaiIdentifierSampleIdentifier", "");
+	            if (! oaiIdentifierSampleIdentifier.equals("")) {
+	                System.out.println("ApplInfo.oaiConf::oaiIdentifierSampleIdentifier: " + oaiIdentifierSampleIdentifier);
+	            	oaiConf.setOaiIdentifierSampleIdentifier(oaiIdentifierSampleIdentifier);
+	            }
+	            String description = applConf.getString(applVer + "." + "description", "");
+                if (! description.equals("")) {
+                    System.out.println("ApplInfo.oaiConf::description: " + description);
+                	oaiConf.setDescription(description);
+                }            	
+            }
+			
 			
 			if(!oaiConf.getStorageType().equals(StorageTypes.MYSQL)) {
 				if(luceneDir == null) {
@@ -396,4 +486,14 @@ public class ApplInfo {
 	public static String getOrgCodeFilter() {
 		return orgCodeFilter;
 	}
+
+	public static String getOrgCodeFilterXlateOaiIdentifierFrom() {
+		return orgCodeFilterXlateOaiIdentifierFrom;
+	}
+
+	public static String getOrgCodeFilterXlateOaiIdentifierTo() {
+		return orgCodeFilterXlateOaiIdentifierTo;
+	}
+
+	
 }
