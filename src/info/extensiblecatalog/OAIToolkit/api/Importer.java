@@ -137,6 +137,10 @@ public class Importer {
 		ApplInfo.statsInit(root, configuration.getLogDir());
 	}
 
+	public void setDirNameGiver(DirectoryNameGiver dirNameGiver) {
+		this.dirNameGiver = dirNameGiver;
+	}
+
     public void execute() {
     	if(!configuration.isNeedConvert()
     		&& !configuration.isNeedModify()
