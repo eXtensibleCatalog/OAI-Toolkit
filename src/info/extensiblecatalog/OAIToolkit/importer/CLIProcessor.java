@@ -92,7 +92,7 @@ public class CLIProcessor {
 				"Flag to switch production mode. It means, that the" +
 				"toolkit won't create any temporary files (except error" +
 				" records) so it read MARC records, process it, and put " +
-				"directly to the database or the target file format");
+				"directly to the database or the target file format [DEPRECATED: OPTION IS NO LONGER AVAILABLE]");
 
 		OptionBuilder.withArgName("source");
 		OptionBuilder.hasArg();
@@ -309,7 +309,15 @@ public class CLIProcessor {
 
 			// production
 			if (line.hasOption("production")) {
-				importer.configuration.setProductionMode(true);
+				/****
+				 * WE NO LONGER HONOR THIS OPTION:
+				 * 
+				 * There appears to be a lot of duplicated code for this in the Converter class,
+				 * and it hasn't been kept up-to-date (or is just plain wrong).
+				 * 
+				 * Most importantly, this code doesn't track the OAI ID whatsoever. VERY IMPORTANT!
+				 */
+				//importer.configuration.setProductionMode(true);
 			}
 
 			// convert
