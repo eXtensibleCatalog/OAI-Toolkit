@@ -620,7 +620,7 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 	private SetToRecordDTO doc2SetToRecordDTO(Document doc, Integer recordId) {
 		SetToRecordDTO setsToRecordDTO = new SetToRecordDTO();
 		setsToRecordDTO.setRecordId(recordId.intValue());
-		setsToRecordDTO.setSetId(Integer.parseInt(doc.get("set")));
+		if (doc != null) setsToRecordDTO.setSetId(Integer.parseInt(doc.get("set")));
 		return setsToRecordDTO;
 	}
 
