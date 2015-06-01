@@ -324,7 +324,8 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 	public List<DataTransferObject> getSetsOfRecord(Integer recordId) {
 		Document doc = ApplInfo.luceneSearcher.getRecordByID(recordId);
 		List<DataTransferObject> sets = new ArrayList<DataTransferObject>();
-		sets.add(doc2SetToRecordDTO(doc, recordId));
+		DataTransferObject dto = doc2SetToRecordDTO(doc, recordId);
+		if (dto != null) sets.add(dto);
 		return sets;
 	}
 
@@ -336,7 +337,8 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
         //Document doc = docs.get(0);
 		prglog.info("[PRG] doc: " + doc);
 		List<DataTransferObject> sets = new ArrayList<DataTransferObject>();
-		sets.add(doc2SetToRecordDTO(doc, recordId));
+		DataTransferObject dto = doc2SetToRecordDTO(doc, recordId);
+		if (dto != null) sets.add(dto);
 		return sets;
 	}
 
@@ -620,7 +622,12 @@ public class LuceneFacadeDataProvider extends BasicFacadeDataProvider
 	private SetToRecordDTO doc2SetToRecordDTO(Document doc, Integer recordId) {
 		SetToRecordDTO setsToRecordDTO = new SetToRecordDTO();
 		setsToRecordDTO.setRecordId(recordId.intValue());
-		if (doc != null) setsToRecordDTO.setSetId(Integer.parseInt(doc.get("set")));
+		try {
+			if (doc != null) setsToRecordDTO.setSetId(Integer.parseInt(doc.get("set")));
+		} catch (Exception e) {
+			prglog.info("[PRG] exception in doc2SetToRecordDTO; Couldn't parse 'set' property; recordId: " + recordId + "\n\ndoc: " + doc + "\n");
+			return null;
+		}
 		return setsToRecordDTO;
 	}
 
