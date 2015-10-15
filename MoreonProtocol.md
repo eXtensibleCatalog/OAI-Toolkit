@@ -1,0 +1,7 @@
+# More Info on the OAI-PMH Protocol #
+
+The OAI-PMH protocol is the standard used to move metadata from the OAI Toolkit into other XC applications, such as the Metadata Services Toolkit.
+
+The Open Archives Initiative–Protocol for Metadata Harvesting (OAI-PMH) is a lightweight data harvesting protocol used for sharing metadata between services (“providers” and “harvesters”). It is used to harvest, or collect, the metadata descriptions of the records in an archive so that services may be built using metadata from many archives. The goal is to decouple the data and make it available from outside of the original service, so that independent services can use the information. In OAI-PMH, a repository is a network accessible server that is able to process OAI-PMH requests. The harvester sends an HTTP request and the provider responds in XML format. For a more in-depth overview of the OAI-PMH protocol, please review the following sites and refer to the "ILS Connectors" sections on the side bar.
+  * [OAI](http://www.openarchives.org/) – This site is the official OAI website and contains a lot of valuable information.
+  * [OAI-PMH tutorial](http://www.oaforum.org/tutorial/) – This site contains a great overview of OAI-PMH as well as a glossary of terms.
